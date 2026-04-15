@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
+from src.models import JobPosting
 from src.scrapers.workday import WorkdayScraper
 
 
@@ -12,8 +13,8 @@ class Aggregator:
     def add_scraper(self, scraper: Any) -> None:
         self.scrapers.append(scraper)
 
-    def run(self) -> list[dict[str, Any]]:
-        results: list[dict[str, Any]] = []
+    def run(self) -> list[JobPosting]:
+        results: list[JobPosting] = []
         for scraper in self.scrapers:
             scraped = scraper.scrape()
             if scraped:
@@ -21,7 +22,7 @@ class Aggregator:
         return results
 
 
-def run_test() -> list[dict[str, Any]]:
+def run_test() -> list[JobPosting]:
     aggregator = Aggregator(
         [WorkdayScraper(url="https://example.workday.com/careers", company="acme")]
     )

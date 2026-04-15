@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .base import BaseScraper
+from src.models import EmploymentType, JobPosting, JobTitle
 
 
 class WorkdayScraper(BaseScraper):
@@ -16,25 +17,36 @@ class WorkdayScraper(BaseScraper):
         super().__init__(url, **kwargs)
         self.company = company
 
-    def scrape(self) -> list[dict[str, Any]]:
+    def scrape(self) -> list[JobPosting]:
         now = datetime.now(timezone.utc).isoformat()
         return [
-            {
-                "source": "workday",
-                "company": self.company,
-                "title": "Software Engineer (Stub)",
-                "location": "Remote",
-                "url": self.url,
-                "posted_at": now,
-            },
-            {
-                "source": "workday",
-                "company": self.company,
-                "title": "Data Analyst (Stub)",
-                "location": "New York, NY",
-                "url": self.url,
-                "posted_at": now,
-            },
+            JobPosting(
+                source="workday",
+                company=self.company,
+                title=JobTitle.SOFTWARE_ENGINEER,
+                employment_type=EmploymentType.FULL_TIME,
+                location="Remote",
+                url=self.url,
+                posted_at=now,
+            ),
+            JobPosting(
+                source="workday",
+                company=self.company,
+                title=JobTitle.DEVOPS_ENGINEER,
+                employment_type=EmploymentType.PART_TIME,
+                location="New York, NY",
+                url=self.url,
+                posted_at=now,
+            ),
+            JobPosting(
+                source="workday",
+                company=self.company,
+                title=JobTitle.DATA_ANALYST,
+                employment_type=EmploymentType.INTERN,
+                location="San Francisco, CA",
+                url=self.url,
+                posted_at=now,
+            ),
         ]
 
 

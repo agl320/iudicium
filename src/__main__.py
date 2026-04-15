@@ -6,7 +6,7 @@ from src import run_test
 
 
 def main() -> None:
-    pprint(run_test())
+    pprint([job.to_dict() for job in run_test()])
 
 
 if __name__ == "__main__":
