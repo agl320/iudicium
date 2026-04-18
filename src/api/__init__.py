@@ -1,11 +1,38 @@
-from .errors import MotorolaAPIError, WorkdayAPIError
-from .motorola import MOTOROLA_REGION_FACET_IDS, MotorolaAPIClient
-from .workday_cxs import WorkdayCxsClient
+from .errors import (
+    AutodeskAPIError,
+    MotorolaAPIError,
+    RBCAPIError,
+    SalesforceAPIError,
+    TDAPIError,
+    TelusAPIError,
+    WorkdayAPIError,
+)
+from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
+from .workday import (
+    AutodeskAPIClient,
+    MotorolaAPIClient,
+    RBCAPIClient,
+    SalesforceAPIClient,
+    TDAPIClient,
+    TelusAPIClient,
+    WorkdayCxsClient,
+)
 
 __all__ = [
-	"MOTOROLA_REGION_FACET_IDS",
-	"MotorolaAPIClient",
-	"MotorolaAPIError",
-	"WorkdayCxsClient",
-	"WorkdayAPIError",
+    "AutodeskAPIClient",
+    "AutodeskAPIError",
+    "MOTOROLA_REGION_FACET_IDS",
+    "MotorolaAPIClient",
+    "MotorolaAPIError",
+    "RBCAPIClient",
+    "RBCAPIError",
+    "SalesforceAPIClient",
+    "SalesforceAPIError",
+    "TDAPIClient",
+    "TDAPIError",
+    "TD_JOB_TYPE_FACET_IDS",
+    "TelusAPIClient",
+    "TelusAPIError",
+    "WorkdayCxsClient",
+    "WorkdayAPIError",
 ]

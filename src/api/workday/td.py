@@ -3,16 +3,19 @@ from __future__ import annotations
 from typing import Any
 
 from src.api.errors import TDAPIError
-from src.api.workday_cxs import WorkdayCxsClient
 from src.config import DEFAULT_HEADERS, DEFAULT_PAYLOAD, TD_API_URL
+
+from .cxs import WorkdayCxsClient
+
 
 TD_JOB_TYPE_FACET_IDS: dict[str, str] = {
     "full-time": "14c9322ea8e3014f4096d9d2dc025400",
-    "part-time": "14c9322ea8e301e83781d9d2dc025300"
+    "part-time": "14c9322ea8e301e83781d9d2dc025300",
 }
 
+
 class TDAPIClient(WorkdayCxsClient):
-    """TD Workday CXS client"""
+    """TD Workday CXS client."""
 
     def __init__(
         self,

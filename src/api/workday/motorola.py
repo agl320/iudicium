@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 from src.api.errors import MotorolaAPIError
-from src.api.workday_cxs import WorkdayCxsClient
 from src.config import DEFAULT_HEADERS, MOTOROLA_API_URL, MOTOROLA_PAYLOAD
+
+from .cxs import WorkdayCxsClient
 
 
 MOTOROLA_REGION_FACET_IDS: dict[str, str] = {
@@ -16,7 +17,7 @@ MOTOROLA_REGION_FACET_IDS: dict[str, str] = {
 
 
 class MotorolaAPIClient(WorkdayCxsClient):
-    """Motorola Workday CXS client"""
+    """Motorola Workday CXS client."""
 
     def __init__(
         self,

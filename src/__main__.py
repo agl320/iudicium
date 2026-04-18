@@ -3,8 +3,7 @@ from __future__ import annotations
 import sys
 from pprint import pprint
 
-from src.api.motorola import MotorolaAPIError, MotorolaAPIClient
-from src.api.td import TDAPIError, TDAPIClient
+from src.api.workday.td import TDAPIError, TDAPIClient
 
 
 def main() -> None:
