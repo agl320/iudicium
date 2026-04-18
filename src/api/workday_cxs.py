@@ -6,27 +6,29 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from src.api.errors import WorkdayAPIError
-from src.config import HEADERS as DEFAULT_HEADERS
-from src.config import PAYLOAD as DEFAULT_PAYLOAD
-from src.config import URL as WORKDAY_API_URL
 
 
+class WorkdayCxsClient:
+    """Generic Workday Careers (CXS) JSON API client.
 
-
-class WorkdayAPIClient:
-    """Minimal Workday JSON API accessor.
+    This is intentionally minimal: it POSTs a JSON payload to the configured CXS
+    endpoint and returns the decoded JSON object.
     """
 
     def __init__(
         self,
-        api_url: str = WORKDAY_API_URL,
+        api_url: str,
         *,
+        headers: dict[str, str] | None = None,
+        payload: dict[str, Any] | None = None,
         timeout_s: float = 30.0,
+        error_cls: type[RuntimeError] = WorkdayAPIError,
     ) -> None:
         self.api_url = api_url
-        self.headers = DEFAULT_HEADERS
-        self.payload = DEFAULT_PAYLOAD
+        self.headers = dict(headers or {})
+        self.payload = dict(payload or {})
         self.timeout_s = timeout_s
+        self.error_cls = error_cls
 
     def search_raw(
         self,
@@ -43,8 +45,14 @@ class WorkdayAPIClient:
             payload["offset"] = offset
         if search_text is not None:
             payload["searchText"] = search_text
+
         if applied_facets is not None:
-            payload["appliedFacets"] = applied_facets
+            base_facets: dict[str, Any] = {}
+            existing_facets = payload.get("appliedFacets")
+            if isinstance(existing_facets, dict):
+                base_facets.update(existing_facets)
+            base_facets.update(applied_facets)
+            payload["appliedFacets"] = base_facets
 
         request_headers = dict(self.headers)
         request_headers.setdefault("Content-Type", "application/json")
@@ -66,15 +74,15 @@ class WorkdayAPIClient:
             detail = f"HTTP {exc.code} {exc.reason}"
             if error_body:
                 detail = f"{detail}\nResponse body:\n{error_body}"
-            raise WorkdayAPIError(f"Workday API request failed: {detail}") from exc
+            raise self.error_cls(f"Workday API request failed: {detail}") from exc
         except URLError as exc:
-            raise WorkdayAPIError(f"Workday API request failed: {exc}") from exc
+            raise self.error_cls(f"Workday API request failed: {exc}") from exc
 
         try:
             decoded = json.loads(body)
         except json.JSONDecodeError as exc:
-            raise WorkdayAPIError("Workday API returned non-JSON response") from exc
+            raise self.error_cls("Workday API returned non-JSON response") from exc
 
         if not isinstance(decoded, dict):
-            raise WorkdayAPIError("Workday API returned unexpected JSON shape")
+            raise self.error_cls("Workday API returned unexpected JSON shape")
         return decoded
