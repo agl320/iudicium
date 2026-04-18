@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any, Iterable
 
 from src.models import JobPosting
-from src.scrapers.workday import WorkdayScraper
 
 
 class Aggregator:
@@ -23,7 +22,4 @@ class Aggregator:
 
 
 def run_test() -> list[JobPosting]:
-    aggregator = Aggregator(
-        [WorkdayScraper(url="https://example.workday.com/careers", company="acme")]
-    )
-    return aggregator.run()
+    return []

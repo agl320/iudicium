@@ -1,7 +1,5 @@
-
 from __future__ import annotations
 
-from src.services.aggregator import run_test
+from src.api.workday import WorkdayAPIClient, WorkdayAPIError
 
-
-__all__ = ["run_test"]
+__all__ = ["WorkdayAPIClient", "WorkdayAPIError"]

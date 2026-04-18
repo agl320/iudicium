@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import sys
 from pprint import pprint
 
-from src import run_test
+from src.api.motorola import MotorolaAPIError, MotorolaAPIClient
 
 
 def main() -> None:
-    pprint([job.to_dict() for job in run_test()])
+    try:
+        pprint(MotorolaAPIClient().search_raw())
+    except MotorolaAPIError as exc:
+        print(str(exc), file=sys.stderr)
 
 
 if __name__ == "__main__":
