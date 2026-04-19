@@ -5,6 +5,7 @@ AUTODESK_API_URL = "https://autodesk.wd1.myworkdayjobs.com/wday/cxs/autodesk/Ext
 RBC_API_URL = "https://rbc.wd3.myworkdayjobs.com/RBCGLOBAL1"
 TELUS_API_URL = "https://lifeworks.wd3.myworkdayjobs.com/wday/cxs/lifeworks/External/jobs"
 SALESFORCE_API_URL = "https://salesforce.wd12.myworkdayjobs.com/wday/cxs/salesforce/External_Career_Site/jobs"
+CIBC_API_URL = "https://cibc.wd3.myworkdayjobs.com/wday/cxs/cibc/search/jobs"
 
 MOTOROLA_PAYLOAD = {"appliedFacets": {}, "limit": 20, "offset": 0, "searchText": ""}
 DEFAULT_PAYLOAD = {"appliedFacets": {}, "limit": 20, "offset": 0, "searchText": ""}
@@ -21,6 +22,7 @@ AUTODESK_URL = AUTODESK_API_URL
 RBC_URL = RBC_API_URL
 TELUS_URL = TELUS_API_URL
 SALESFORCE_URL = SALESFORCE_API_URL
+CIBC_URL = CIBC_API_URL
 
 PAYLOAD = DEFAULT_PAYLOAD
 HEADERS = DEFAULT_HEADERS

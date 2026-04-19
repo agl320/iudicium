@@ -1,5 +1,6 @@
 from .errors import (
     AutodeskAPIError,
+    CIBCAPIError,
     MotorolaAPIError,
     RBCAPIError,
     SalesforceAPIError,
@@ -10,6 +11,7 @@ from .errors import (
 from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
 from .workday import (
     AutodeskAPIClient,
+    CIBCAPIClient,
     MotorolaAPIClient,
     RBCAPIClient,
     SalesforceAPIClient,
@@ -21,6 +23,8 @@ from .workday import (
 __all__ = [
     "AutodeskAPIClient",
     "AutodeskAPIError",
+    "CIBCAPIClient",
+    "CIBCAPIError",
     "MOTOROLA_REGION_FACET_IDS",
     "MotorolaAPIClient",
     "MotorolaAPIError",

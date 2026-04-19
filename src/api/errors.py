@@ -12,3 +12,5 @@ class TelusAPIError(RuntimeError):
     pass
 class SalesforceAPIError(RuntimeError):
     pass
+class CIBCAPIError(RuntimeError):
+    pass

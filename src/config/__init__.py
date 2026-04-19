@@ -6,6 +6,7 @@ single import location.
 
 from .config import (
     AUTODESK_API_URL,
+    CIBC_API_URL,
     DEFAULT_API_URL,
     DEFAULT_HEADERS,
     DEFAULT_PAYLOAD,
@@ -20,6 +21,7 @@ from .config import (
 # Legacy exports
 from .config import (
     AUTODESK_URL,
+    CIBC_URL,
     HEADERS,
     MOTOROLA_URL,
     PAYLOAD,
@@ -32,6 +34,7 @@ from .config import (
 
 __all__ = [
     "AUTODESK_API_URL",
+    "CIBC_API_URL",
     "DEFAULT_API_URL",
     "DEFAULT_HEADERS",
     "DEFAULT_PAYLOAD",
@@ -42,6 +45,7 @@ __all__ = [
     "TD_API_URL",
     "TELUS_API_URL",
     "AUTODESK_URL",
+    "CIBC_URL",
     "HEADERS",
     "MOTOROLA_URL",
     "PAYLOAD",
