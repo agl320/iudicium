@@ -1,6 +1,7 @@
 import json
 from typing import Any
 from urllib.error import HTTPError
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from src.api.errors import RipplingAPIError
@@ -50,14 +51,14 @@ class RipplingBoardClient:
             payload["workplaceType"] = workplace_type
 
         request_headers = dict(self.headers)
-        request_headers.setdefault("Content-Type", "application/json")
         request_headers.setdefault("Accept", "application/json")
         request_headers.setdefault("User-Agent", "iudicium/0.1")
 
-        data = json.dumps(payload).encode("utf-8")
-        request = Request(
-            self.api_url, data=data, headers=request_headers, method="POST"
-        )
+        request_url = self.api_url
+        if payload:
+            request_url = f"{request_url}?{urlencode(payload)}"
+
+        request = Request(request_url, headers=request_headers, method="GET")
 
         try:
             with urlopen(request, timeout=self.timeout_s) as response:

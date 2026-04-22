@@ -10,6 +10,8 @@ from .config import (
     DEFAULT_API_URL,
     DEFAULT_HEADERS,
     DEFAULT_WORKDAY_PAYLOAD,
+    DEFAULT_RIPPLING_PAYLOAD,
+    DWAVE_API_URL,
     MOTOROLA_API_URL,
     MOTOROLA_PAYLOAD,
     RBC_API_URL,
@@ -18,40 +20,18 @@ from .config import (
     TELUS_API_URL,
 )
 
-# Legacy exports
-from .config import (
-    AUTODESK_URL,
-    CIBC_URL,
-    HEADERS,
-    MOTOROLA_URL,
-    PAYLOAD,
-    RBC_URL,
-    SALESFORCE_URL,
-    TD_URL,
-    TELUS_URL,
-    URL,
-)
-
 __all__ = [
     "AUTODESK_API_URL",
     "CIBC_API_URL",
     "DEFAULT_API_URL",
     "DEFAULT_HEADERS",
+    "DEFAULT_RIPPLING_PAYLOAD",
     "DEFAULT_WORKDAY_PAYLOAD",
+    "DWAVE_API_URL",
     "MOTOROLA_API_URL",
     "MOTOROLA_PAYLOAD",
     "RBC_API_URL",
     "SALESFORCE_API_URL",
     "TD_API_URL",
     "TELUS_API_URL",
-    "AUTODESK_URL",
-    "CIBC_URL",
-    "HEADERS",
-    "MOTOROLA_URL",
-    "PAYLOAD",
-    "RBC_URL",
-    "SALESFORCE_URL",
-    "TD_URL",
-    "TELUS_URL",
-    "URL",
 ]
