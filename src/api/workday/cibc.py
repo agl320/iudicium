@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from src.api.errors import CIBCAPIError
-from src.config import CIBC_API_URL, DEFAULT_HEADERS, DEFAULT_PAYLOAD
+from src.config import CIBC_API_URL, DEFAULT_HEADERS, DEFAULT_WORKDAY_PAYLOAD
 
 from .cxs import WorkdayCxsClient
 
@@ -23,6 +23,6 @@ class CIBCAPIClient(WorkdayCxsClient):
             api_url,
             timeout_s=timeout_s,
             headers=headers or DEFAULT_HEADERS,
-            payload=payload or DEFAULT_PAYLOAD,
+            payload=payload or DEFAULT_WORKDAY_PAYLOAD,
             error_cls=CIBCAPIError,
         )
