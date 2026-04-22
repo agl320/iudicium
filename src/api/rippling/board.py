@@ -3,6 +3,8 @@ from typing import Any
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
+from src.api.errors import RipplingAPIError
+
 
 class RipplingBoardClient:
     def __init__(
@@ -12,7 +14,7 @@ class RipplingBoardClient:
         headers: dict[str, str] | None = None,
         payload: dict[str, Any] | None = None,
         timeout_s: float = 30.0,
-        error_cls: type[RuntimeError] = RuntimeError,
+        error_cls: type[RuntimeError] = RipplingAPIError,
     ) -> None:
         self.api_url = api_url
         self.headers = dict(headers or {})

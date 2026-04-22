@@ -7,6 +7,8 @@ from .errors import (
     TDAPIError,
     TelusAPIError,
     WorkdayAPIError,
+    DWaveAPIError,
+    RipplingAPIError,
 )
 from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
 from .workday import (
@@ -18,6 +20,10 @@ from .workday import (
     TDAPIClient,
     TelusAPIClient,
     WorkdayCxsClient,
+)
+from .rippling import (
+    RipplingBoardClient,
+    DWaveAPIClient,
 )
 
 __all__ = [
@@ -39,4 +45,8 @@ __all__ = [
     "TelusAPIError",
     "WorkdayCxsClient",
     "WorkdayAPIError",
+    "RipplingAPIError",
+    "DWaveAPIError",
+    "RipplingBoardClient",
+    "DWaveAPIClient",
 ]

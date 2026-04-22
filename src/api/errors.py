@@ -32,3 +32,7 @@ class CIBCAPIError(RuntimeError):
 
 class DWaveAPIError(RuntimeError):
     pass
+
+
+class RipplingAPIError(RuntimeError):
+    pass
