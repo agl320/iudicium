@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -60,7 +58,9 @@ class WorkdayCxsClient:
         request_headers.setdefault("User-Agent", "iudicium/0.1")
 
         data = json.dumps(payload).encode("utf-8")
-        request = Request(self.api_url, data=data, headers=request_headers, method="POST")
+        request = Request(
+            self.api_url, data=data, headers=request_headers, method="POST"
+        )
 
         try:
             with urlopen(request, timeout=self.timeout_s) as response:
@@ -73,7 +73,7 @@ class WorkdayCxsClient:
                 error_body = ""
             detail = f"HTTP {exc.code} {exc.reason}"
             if error_body:
-                detail = f"{detail}\nResponse body:\n{error_body}"
+                detail += f": {error_body}"
             raise self.error_cls(f"Workday API request failed: {detail}") from exc
         except URLError as exc:
             raise self.error_cls(f"Workday API request failed: {exc}") from exc
