@@ -7,7 +7,7 @@ single import location.
 from .config import (
     AUTODESK_API_URL,
     CIBC_API_URL,
-    DEFAULT_API_URL,
+    DEFAULT_WORKDAY_API_URL,
     DEFAULT_HEADERS,
     DEFAULT_WORKDAY_PAYLOAD,
     DEFAULT_RIPPLING_PAYLOAD,
@@ -23,7 +23,7 @@ from .config import (
 __all__ = [
     "AUTODESK_API_URL",
     "CIBC_API_URL",
-    "DEFAULT_API_URL",
+    "DEFAULT_WORKDAY_API_URL",
     "DEFAULT_HEADERS",
     "DEFAULT_RIPPLING_PAYLOAD",
     "DEFAULT_WORKDAY_PAYLOAD",

@@ -1,4 +1,4 @@
-DEFAULT_API_URL = "https://company.wd1.myworkdayjobs.com/wday/cxs/company/jobs"
+DEFAULT_WORKDAY_API_URL = "https://company.wd1.myworkdayjobs.com/wday/cxs/company/jobs"
 MOTOROLA_API_URL = "https://motorolasolutions.wd5.myworkdayjobs.com/wday/cxs/motorolasolutions/Careers/jobs"
 TD_API_URL = "https://td.wd3.myworkdayjobs.com/wday/cxs/td/TD_Bank_Careers/jobs"
 AUTODESK_API_URL = "https://autodesk.wd1.myworkdayjobs.com/wday/cxs/autodesk/Ext/jobs"
@@ -28,18 +28,13 @@ DEFAULT_RIPPLING_PAYLOAD = {
 }
 
 DWAVE_API_URL = "https://ats.rippling.com/api/v2/board/d-wave-quantum/jobs"
+RIPPLING_API_URL = "https://ats.rippling.com/api/v2/board/rippling/jobs"
+ANACONDA_API_URL = "https://api.rippling.com/platform/api/ats/v1/board/anaconda/jobs"
 
 DEFAULT_HEADERS = {"Content-Type": "application/json"}
 
-# Legacy aliases (kept for backward-compatible imports)
-URL = DEFAULT_API_URL
-HEADERS = DEFAULT_HEADERS
-PAYLOAD = DEFAULT_WORKDAY_PAYLOAD
+PERPLEXITY_API_URL = (
+    "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
+)
 
-AUTODESK_URL = AUTODESK_API_URL
-CIBC_URL = CIBC_API_URL
-MOTOROLA_URL = MOTOROLA_API_URL
-RBC_URL = RBC_API_URL
-SALESFORCE_URL = SALESFORCE_API_URL
-TD_URL = TD_API_URL
-TELUS_URL = TELUS_API_URL
+RAPTOR_MAPS_API_URL = "https://ats.rippling.com/api/v2/board/raptor-maps-inc/jobs"

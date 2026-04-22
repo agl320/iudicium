@@ -34,5 +34,13 @@ class DWaveAPIError(RuntimeError):
     pass
 
 
+class AnacondaAPIError(RuntimeError):
+    pass
+
+
+class RipplingBoardAPIError(RuntimeError):
+    pass
+
+
 class RipplingAPIError(RuntimeError):
     pass
