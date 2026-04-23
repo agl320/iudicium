@@ -54,6 +54,14 @@ class SnowflakeAPIError(RuntimeError):
     pass
 
 
+class GreenhouseAPIError(RuntimeError):
+    pass
+
+
+class StripeGreenhouseAPIError(RuntimeError):
+    pass
+
+
 class AnacondaAPIError(RuntimeError):
     pass
 

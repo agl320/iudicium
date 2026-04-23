@@ -18,6 +18,7 @@ from .config import (
     NVIDIA_API_URL,
     RBC_API_URL,
     SALESFORCE_API_URL,
+    STRIPE_GREENHOUSE_API_URL,
     TD_API_URL,
     TELUS_API_URL,
 )
@@ -36,6 +37,7 @@ __all__ = [
     "NVIDIA_API_URL",
     "RBC_API_URL",
     "SALESFORCE_API_URL",
+    "STRIPE_GREENHOUSE_API_URL",
     "TD_API_URL",
     "TELUS_API_URL",
 ]

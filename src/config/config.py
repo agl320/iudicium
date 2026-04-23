@@ -38,4 +38,6 @@ DEFAULT_HEADERS = {"Content-Type": "application/json"}
 
 ASHBY_API_URL = "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
 
+STRIPE_GREENHOUSE_API_URL = "https://boards-api.greenhouse.io/v1/boards/stripe/jobs"
+
 RAPTOR_MAPS_API_URL = "https://ats.rippling.com/api/v2/board/raptor-maps-inc/jobs"
