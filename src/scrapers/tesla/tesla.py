@@ -15,11 +15,11 @@ with sync_playwright() as p:
     page.wait_for_timeout(3000)
 
     while True:
-        print("Refreshing page...")
-
+        # Refresh the page to trigger the API call and get the latest data
         page.reload(wait_until="domcontentloaded")
         page.wait_for_timeout(3000)
 
+        # TODO: Fix
         data = page.content()
         print("Response size:", len(data))
         print("Response preview:", data[:500])
