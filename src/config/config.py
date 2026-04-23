@@ -40,4 +40,6 @@ ASHBY_API_URL = "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWit
 
 STRIPE_GREENHOUSE_API_URL = "https://boards-api.greenhouse.io/v1/boards/stripe/jobs"
 
+TESLA_CAREERS_STATE_API_URL = "https://www.tesla.com/cua-api/apps/careers/state"
+
 RAPTOR_MAPS_API_URL = "https://ats.rippling.com/api/v2/board/raptor-maps-inc/jobs"

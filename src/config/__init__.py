@@ -19,6 +19,7 @@ from .config import (
     RBC_API_URL,
     SALESFORCE_API_URL,
     STRIPE_GREENHOUSE_API_URL,
+    TESLA_CAREERS_STATE_API_URL,
     TD_API_URL,
     TELUS_API_URL,
 )
@@ -38,6 +39,7 @@ __all__ = [
     "RBC_API_URL",
     "SALESFORCE_API_URL",
     "STRIPE_GREENHOUSE_API_URL",
+    "TESLA_CAREERS_STATE_API_URL",
     "TD_API_URL",
     "TELUS_API_URL",
 ]

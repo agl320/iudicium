@@ -9,6 +9,7 @@ from .errors import (
     PerplexityAPIError,
     SnowflakeAPIError,
     StripeGreenhouseAPIError,
+    TeslaAPIError,
     RBCAPIError,
     SalesforceAPIError,
     TDAPIError,
@@ -41,6 +42,7 @@ from .rippling import (
     DWaveAPIClient,
 )
 from .greenhouse import GreenhouseBoardClient, StripeGreenhouseAPIClient
+from .tesla import TeslaCareersStateClient
 
 __all__ = [
     "AshbyAPIClient",
@@ -75,6 +77,8 @@ __all__ = [
     "GreenhouseAPIError",
     "StripeGreenhouseAPIClient",
     "StripeGreenhouseAPIError",
+    "TeslaCareersStateClient",
+    "TeslaAPIError",
     "RipplingAPIError",
     "DWaveAPIError",
     "RipplingBoardClient",
