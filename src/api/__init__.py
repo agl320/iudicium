@@ -7,6 +7,7 @@ from .errors import (
     MotorolaAPIError,
     NvidiaAPIError,
     PerplexityAPIError,
+    CohereAPIError,
     SnowflakeAPIError,
     StripeGreenhouseAPIError,
     TeslaAPIError,
@@ -34,6 +35,7 @@ from .workday import (
 from .ashby import (
     AshbyAPIClient,
     AshbyHQAPIClient,
+    CohereAPIClient,
     PerplexityAPIClient,
     SnowflakeAPIClient,
 )
@@ -69,6 +71,8 @@ __all__ = [
     "TelusAPIError",
     "WorkdayCxsClient",
     "WorkdayAPIError",
+    "CohereAPIClient",
+    "CohereAPIError",
     "PerplexityAPIClient",
     "PerplexityAPIError",
     "SnowflakeAPIClient",

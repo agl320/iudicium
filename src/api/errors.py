@@ -50,6 +50,10 @@ class PerplexityAPIError(RuntimeError):
     pass
 
 
+class CohereAPIError(RuntimeError):
+    pass
+
+
 class SnowflakeAPIError(RuntimeError):
     pass
 
