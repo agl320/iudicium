@@ -2,6 +2,7 @@ import time
 from playwright.sync_api import sync_playwright
 
 URL = "https://www.tesla.com/cua-api/apps/careers/state"
+INTERVAL = 300
 
 with sync_playwright() as p:
     browser = p.chromium.connect_over_cdp("http://localhost:9222")
@@ -9,13 +10,18 @@ with sync_playwright() as p:
 
     page = context.pages[0] if context.pages else context.new_page()
 
-    while True:
-        print("Navigating...")
+    # initial navigation only once
+    page.goto(URL, wait_until="domcontentloaded")
+    page.wait_for_timeout(3000)
 
-        page.goto(URL, wait_until="domcontentloaded")
+    while True:
+        print("Refreshing page...")
+
+        page.reload(wait_until="domcontentloaded")
         page.wait_for_timeout(3000)
 
         data = page.content()
-        print(len(data))
+        print("Response size:", len(data))
+        print("Response preview:", data[:500])
 
-        time.sleep(300)  # 5 min
+        time.sleep(INTERVAL)
