@@ -66,10 +66,6 @@ class StripeGreenhouseAPIError(RuntimeError):
     pass
 
 
-class TeslaAPIError(RuntimeError):
-    pass
-
-
 class AnacondaAPIError(RuntimeError):
     pass
 
