@@ -1,7 +1,10 @@
 from .errors import (
+    AshbyAPIError,
+    AshbyHQAPIError,
     AutodeskAPIError,
     CIBCAPIError,
     MotorolaAPIError,
+    PerplexityAPIError,
     RBCAPIError,
     SalesforceAPIError,
     TDAPIError,
@@ -22,12 +25,17 @@ from .workday import (
     TelusAPIClient,
     WorkdayCxsClient,
 )
+from .ashby import AshbyAPIClient, AshbyHQAPIClient, PerplexityAPIClient
 from .rippling import (
     RipplingBoardClient,
     DWaveAPIClient,
 )
 
 __all__ = [
+    "AshbyAPIClient",
+    "AshbyAPIError",
+    "AshbyHQAPIClient",
+    "AshbyHQAPIError",
     "AutodeskAPIClient",
     "AutodeskAPIError",
     "CIBCAPIClient",
@@ -46,6 +54,8 @@ __all__ = [
     "TelusAPIError",
     "WorkdayCxsClient",
     "WorkdayAPIError",
+    "PerplexityAPIClient",
+    "PerplexityAPIError",
     "RipplingAPIError",
     "DWaveAPIError",
     "RipplingBoardClient",

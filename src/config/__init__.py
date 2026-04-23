@@ -5,6 +5,7 @@ single import location.
 """
 
 from .config import (
+    ASHBY_API_URL,
     AUTODESK_API_URL,
     CIBC_API_URL,
     DEFAULT_WORKDAY_API_URL,
@@ -21,6 +22,7 @@ from .config import (
 )
 
 __all__ = [
+    "ASHBY_API_URL",
     "AUTODESK_API_URL",
     "CIBC_API_URL",
     "DEFAULT_WORKDAY_API_URL",

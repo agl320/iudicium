@@ -33,8 +33,6 @@ ANACONDA_API_URL = "https://api.rippling.com/platform/api/ats/v1/board/anaconda/
 
 DEFAULT_HEADERS = {"Content-Type": "application/json"}
 
-PERPLEXITY_API_URL = (
-    "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
-)
+ASHBY_API_URL = "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
 
 RAPTOR_MAPS_API_URL = "https://ats.rippling.com/api/v2/board/raptor-maps-inc/jobs"

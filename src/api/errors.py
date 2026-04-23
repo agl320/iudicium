@@ -34,6 +34,18 @@ class DWaveAPIError(RuntimeError):
     pass
 
 
+class AshbyAPIError(RuntimeError):
+    pass
+
+
+class AshbyHQAPIError(RuntimeError):
+    pass
+
+
+class PerplexityAPIError(RuntimeError):
+    pass
+
+
 class AnacondaAPIError(RuntimeError):
     pass
 
