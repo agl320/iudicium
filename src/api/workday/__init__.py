@@ -2,6 +2,7 @@ from .cxs import WorkdayCxsClient
 from .autodesk import AutodeskAPIClient
 from .cibc import CIBCAPIClient
 from .motorola import MOTOROLA_REGION_FACET_IDS, MotorolaAPIClient
+from .nvidia import NvidiaAPIClient
 from .rbc import RBCAPIClient
 from .salesforce import SalesforceAPIClient
 from .telus import TelusAPIClient
@@ -12,6 +13,7 @@ __all__ = [
     "CIBCAPIClient",
     "MOTOROLA_REGION_FACET_IDS",
     "MotorolaAPIClient",
+    "NvidiaAPIClient",
     "RBCAPIClient",
     "SalesforceAPIClient",
     "TelusAPIClient",

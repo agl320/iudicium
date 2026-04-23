@@ -30,6 +30,10 @@ class CIBCAPIError(RuntimeError):
     pass
 
 
+class NvidiaAPIError(RuntimeError):
+    pass
+
+
 class DWaveAPIError(RuntimeError):
     pass
 
@@ -43,6 +47,10 @@ class AshbyHQAPIError(RuntimeError):
 
 
 class PerplexityAPIError(RuntimeError):
+    pass
+
+
+class SnowflakeAPIError(RuntimeError):
     pass
 
 

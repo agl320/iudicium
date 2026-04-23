@@ -4,7 +4,9 @@ from .errors import (
     AutodeskAPIError,
     CIBCAPIError,
     MotorolaAPIError,
+    NvidiaAPIError,
     PerplexityAPIError,
+    SnowflakeAPIError,
     RBCAPIError,
     SalesforceAPIError,
     TDAPIError,
@@ -19,13 +21,19 @@ from .workday import (
     AutodeskAPIClient,
     CIBCAPIClient,
     MotorolaAPIClient,
+    NvidiaAPIClient,
     RBCAPIClient,
     SalesforceAPIClient,
     TDAPIClient,
     TelusAPIClient,
     WorkdayCxsClient,
 )
-from .ashby import AshbyAPIClient, AshbyHQAPIClient, PerplexityAPIClient
+from .ashby import (
+    AshbyAPIClient,
+    AshbyHQAPIClient,
+    PerplexityAPIClient,
+    SnowflakeAPIClient,
+)
 from .rippling import (
     RipplingBoardClient,
     DWaveAPIClient,
@@ -43,6 +51,8 @@ __all__ = [
     "MOTOROLA_REGION_FACET_IDS",
     "MotorolaAPIClient",
     "MotorolaAPIError",
+    "NvidiaAPIClient",
+    "NvidiaAPIError",
     "RBCAPIClient",
     "RBCAPIError",
     "SalesforceAPIClient",
@@ -56,6 +66,8 @@ __all__ = [
     "WorkdayAPIError",
     "PerplexityAPIClient",
     "PerplexityAPIError",
+    "SnowflakeAPIClient",
+    "SnowflakeAPIError",
     "RipplingAPIError",
     "DWaveAPIError",
     "RipplingBoardClient",

@@ -3,14 +3,14 @@ from __future__ import annotations
 import sys
 from pprint import pprint
 
-from src.api.ashby.perplexity import PerplexityAPIClient
-from src.api.errors import PerplexityAPIError
+from src.api.errors import NvidiaAPIError
+from src.api.workday.nvidia import NvidiaAPIClient
 
 
 def main() -> None:
     try:
-        pprint(PerplexityAPIClient().search_raw())
-    except PerplexityAPIError as exc:
+        pprint(NvidiaAPIClient().search_raw())
+    except NvidiaAPIError as exc:
         print(str(exc), file=sys.stderr)
 
 
