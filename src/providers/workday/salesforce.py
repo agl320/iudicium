@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.api.errors import SalesforceAPIError
+from src.providers.errors import SalesforceAPIError
 from src.config import (
     DEFAULT_HEADERS,
     DEFAULT_WORKDAY_PAYLOAD,

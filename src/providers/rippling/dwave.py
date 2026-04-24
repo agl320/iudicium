@@ -1,4 +1,4 @@
-from src.api.errors import DWaveAPIError
+from src.providers.errors import DWaveAPIError
 from src.config.config import DEFAULT_HEADERS, DEFAULT_RIPPLING_PAYLOAD, DWAVE_API_URL
 
 from .v2 import RipplingBoardClient

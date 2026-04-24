@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.api.errors import SnowflakeAPIError
+from src.providers.errors import SnowflakeAPIError
 
 from .api import AshbyAPIClient
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.api.errors import StripeGreenhouseAPIError
+from src.providers.errors import StripeGreenhouseAPIError
 from src.config import DEFAULT_HEADERS, STRIPE_GREENHOUSE_API_URL
 
 from .board import GreenhouseBoardClient

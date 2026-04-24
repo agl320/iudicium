@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.api.errors import CIBCAPIError
+from src.providers.errors import CIBCAPIError
 from src.config import (
     CIBC_API_URL,
     CIBC_COMPANY_URL,

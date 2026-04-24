@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.api.errors import CohereAPIError
+from src.providers.errors import CohereAPIError
 
 from .api import AshbyAPIClient
 

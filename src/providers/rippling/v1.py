@@ -4,7 +4,7 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from src.api.errors import RipplingAPIError
+from src.providers.errors import RipplingAPIError
 
 
 class RipplingAtsV1BoardClient:

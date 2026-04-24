@@ -6,7 +6,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from src.api.errors import GreenhouseAPIError
+from src.providers.errors import GreenhouseAPIError
 from src.models import JobPosting
 
 

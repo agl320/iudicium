@@ -5,7 +5,7 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from src.api.errors import DeloitteAPIError
+from src.providers.errors import DeloitteAPIError
 from src.config import DELOITTE_API_URL, DELOITTE_PAYLOAD, DEFAULT_HEADERS
 
 

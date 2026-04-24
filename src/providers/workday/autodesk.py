@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.api.errors import AutodeskAPIError
+from src.providers.errors import AutodeskAPIError
 from src.config import (
     AUTODESK_API_URL,
     AUTODESK_COMPANY_URL,

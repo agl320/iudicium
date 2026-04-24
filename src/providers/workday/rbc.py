@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.api.errors import RBCAPIError
+from src.providers.errors import RBCAPIError
 from src.config import (
     DEFAULT_HEADERS,
     DEFAULT_WORKDAY_PAYLOAD,

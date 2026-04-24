@@ -5,7 +5,7 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from src.api.errors import AshbyAPIError
+from src.providers.errors import AshbyAPIError
 from src.config import ASHBY_API_URL, DEFAULT_HEADERS
 
 

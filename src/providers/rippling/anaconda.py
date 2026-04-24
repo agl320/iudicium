@@ -1,6 +1,6 @@
 from typing import Any
 
-from src.api.errors import AnacondaAPIError
+from src.providers.errors import AnacondaAPIError
 from src.config.config import ANACONDA_API_URL, DEFAULT_HEADERS
 
 from .v1 import RipplingAtsV1BoardClient

@@ -5,7 +5,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin, urlsplit
 from urllib.request import Request, urlopen
 
-from src.api.errors import WorkdayAPIError
+from src.providers.errors import WorkdayAPIError
 from src.models import JobPosting
 
 

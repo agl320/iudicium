@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.api.errors import AshbyHQAPIError
+from src.providers.errors import AshbyHQAPIError
 
 from .api import AshbyAPIClient
 

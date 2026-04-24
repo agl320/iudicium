@@ -3,15 +3,15 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from time import monotonic, sleep
 
-from src.api.errors import WorkdayAPIError
-from src.api.workday.autodesk import AutodeskAPIClient
-from src.api.workday.cibc import CIBCAPIClient
-from src.api.workday.motorola import MotorolaAPIClient
-from src.api.workday.nvidia import NvidiaAPIClient
-from src.api.workday.rbc import RBCAPIClient
-from src.api.workday.salesforce import SalesforceAPIClient
-from src.api.workday.td import TDAPIClient
-from src.api.workday.telus import TelusAPIClient
+from src.providers.errors import WorkdayAPIError
+from src.providers.workday.autodesk import AutodeskAPIClient
+from src.providers.workday.cibc import CIBCAPIClient
+from src.providers.workday.motorola import MotorolaAPIClient
+from src.providers.workday.nvidia import NvidiaAPIClient
+from src.providers.workday.rbc import RBCAPIClient
+from src.providers.workday.salesforce import SalesforceAPIClient
+from src.providers.workday.td import TDAPIClient
+from src.providers.workday.telus import TelusAPIClient
 
 
 def build_default_workday_clients() -> list[object]:

@@ -1,4 +1,4 @@
-from src.api.errors import RipplingAPIError
+from src.providers.errors import RipplingAPIError
 from src.config.config import (
     DEFAULT_HEADERS,
     DEFAULT_RIPPLING_PAYLOAD,

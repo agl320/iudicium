@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.api.errors import PerplexityAPIError
+from src.providers.errors import PerplexityAPIError
 
 from .api import AshbyAPIClient
 
