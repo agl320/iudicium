@@ -76,3 +76,7 @@ class RipplingBoardAPIError(RuntimeError):
 
 class RipplingAPIError(RuntimeError):
     pass
+
+
+class DeloitteAPIError(RuntimeError):
+    pass

@@ -21,6 +21,8 @@ from .config import (
     STRIPE_GREENHOUSE_API_URL,
     TD_API_URL,
     TELUS_API_URL,
+    DELOITTE_API_URL,
+    DELOITTE_PAYLOAD,
 )
 
 __all__ = [
@@ -40,4 +42,6 @@ __all__ = [
     "STRIPE_GREENHOUSE_API_URL",
     "TD_API_URL",
     "TELUS_API_URL",
+    "DELOITTE_API_URL",
+    "DELOITTE_PAYLOAD",
 ]

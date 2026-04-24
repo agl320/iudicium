@@ -18,6 +18,7 @@ from .errors import (
     DWaveAPIError,
     RipplingAPIError,
     RipplingBoardAPIError,
+    DeloitteAPIError,
 )
 from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
 from .workday import (
@@ -43,6 +44,7 @@ from .rippling import (
     DWaveAPIClient,
 )
 from .greenhouse import GreenhouseBoardClient, StripeGreenhouseAPIClient
+from .deloitte import DeloitteAPIClient
 
 __all__ = [
     "AshbyAPIClient",
@@ -84,4 +86,6 @@ __all__ = [
     "RipplingBoardClient",
     "DWaveAPIClient",
     "RipplingBoardAPIError",
+    "DeloitteAPIClient",
+    "DeloitteAPIError",
 ]

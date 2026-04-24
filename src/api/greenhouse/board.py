@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from src.api.errors import GreenhouseAPIError
+from src.models import JobPosting
 
 
 class GreenhouseBoardClient:
@@ -79,3 +80,50 @@ class GreenhouseBoardClient:
             )
 
         return decoded
+
+    def search_job_postings(
+        self,
+        *,
+        page: int | None = 1,
+        per_page: int | None = 20,
+        params: dict[str, Any] | None = None,
+    ) -> list[JobPosting]:
+        decoded = self.search_raw(page=page, per_page=per_page, params=params)
+        jobs = decoded.get("jobs")
+        if not isinstance(jobs, list):
+            return []
+
+        results: list[JobPosting] = []
+        for job in jobs:
+            if not isinstance(job, dict):
+                continue
+
+            title = job.get("title")
+            title_str = str(title) if title is not None else ""
+
+            company_name = job.get("company_name")
+            if isinstance(company_name, dict):
+                company_str = str(company_name.get("name") or "")
+            else:
+                company_str = str(company_name) if company_name is not None else ""
+
+            location = job.get("location")
+            if isinstance(location, dict):
+                location_str = str(location.get("name") or "")
+            else:
+                location_str = str(location) if location is not None else ""
+
+            absolute_url = job.get("absolute_url")
+            url_str = str(absolute_url) if absolute_url is not None else ""
+
+            results.append(
+                JobPosting(
+                    source=self.api_url,
+                    title=title_str,
+                    company=company_str,
+                    location=location_str,
+                    url=url_str,
+                )
+            )
+
+        return results

@@ -41,3 +41,18 @@ ASHBY_API_URL = "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWit
 STRIPE_GREENHOUSE_API_URL = "https://boards-api.greenhouse.io/v1/boards/stripe/jobs"
 
 RAPTOR_MAPS_API_URL = "https://ats.rippling.com/api/v2/board/raptor-maps-inc/jobs"
+
+DELOITTE_API_URL = "https://careers.deloitte.ca/services/recruiting/v1/jobs"
+DELOITTE_PAYLOAD = {
+    "locale": "en_US",
+    "pageNumber": 0,
+    "sortBy": "",
+    "keywords": "",
+    "location": "",
+    "facetFilters": {},
+    "brand": "",
+    "skills": [],
+    "categoryId": 984400,
+    "alertId": "",
+    "rcmCandidateId": "",
+}
