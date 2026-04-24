@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import Any
 
 from src.api.errors import TelusAPIError
-from src.config import DEFAULT_HEADERS, DEFAULT_WORKDAY_PAYLOAD, TELUS_API_URL
+from src.config import (
+    DEFAULT_HEADERS,
+    DEFAULT_WORKDAY_PAYLOAD,
+    TELUS_API_URL,
+    TELUS_COMPANY_URL,
+)
 
 from .cxs import WorkdayCxsClient
 
@@ -27,4 +32,5 @@ class TelusAPIClient(WorkdayCxsClient):
             payload=payload or DEFAULT_WORKDAY_PAYLOAD,
             error_cls=TelusAPIError,
             company=company,
+            company_url=TELUS_COMPANY_URL,
         )

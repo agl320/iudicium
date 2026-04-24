@@ -1,24 +1,33 @@
 from __future__ import annotations
-from pprint import pprint
+import argparse
 
-from src.api.errors import MotorolaAPIError, NvidiaAPIError
-from src.api.workday.motorola import MotorolaAPIClient
-from src.api.workday.nvidia import NvidiaAPIClient
-from src.api.workday.td import TDAPIClient
+from src.services.workday_poller import WorkdayPoller
 
 
 def main() -> None:
-    clients = [
-        MotorolaAPIClient(),
-        NvidiaAPIClient(),
-        TDAPIClient(),
-    ]
-    try:
-        for client in clients:
-            pprint(client.search_job_postings()[:1])
+    parser = argparse.ArgumentParser(description="Run the Workday debug poller.")
+    parser.add_argument(
+        "--interval-minutes",
+        type=float,
+        default=5.0,
+        help="Polling interval in minutes (default: 5).",
+    )
+    parser.add_argument(
+        "--run-once",
+        action="store_true",
+        help="Run one cycle and exit.",
+    )
+    args = parser.parse_args()
 
-    except (MotorolaAPIError, NvidiaAPIError) as exc:
-        print(f"Error: {exc}")
+    poller = WorkdayPoller(interval_minutes=args.interval_minutes)
+    if args.run_once:
+        poller.run_once()
+        return
+
+    try:
+        poller.run_forever()
+    except KeyboardInterrupt:
+        print("Poller stopped.")
 
 
 if __name__ == "__main__":

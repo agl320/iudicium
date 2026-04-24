@@ -4,12 +4,19 @@ MOTOROLA_COMPANY_URL = "https://motorolasolutions.wd5.myworkdayjobs.com/Careers"
 MOTOROLA_API_URL = "https://motorolasolutions.wd5.myworkdayjobs.com/wday/cxs/motorolasolutions/Careers/jobs"
 TD_COMPANY_URL = "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers"
 TD_API_URL = "https://td.wd3.myworkdayjobs.com/wday/cxs/td/TD_Bank_Careers/jobs"
+AUTODESK_COMPANY_URL = "https://autodesk.wd1.myworkdayjobs.com/en-US/Ext/"
 AUTODESK_API_URL = "https://autodesk.wd1.myworkdayjobs.com/wday/cxs/autodesk/Ext/jobs"
-RBC_API_URL = "https://rbc.wd3.myworkdayjobs.com/RBCGLOBAL1"
+RBC_COMPANY_URL = "https://rbc.wd3.myworkdayjobs.com/en-US/RBCGLOBAL1"
+RBC_API_URL = "https://rbc.wd3.myworkdayjobs.com/wday/cxs/rbc/RBCGLOBAL1/jobs"
+TELUS_COMPANY_URL = "https://lifeworks.wd3.myworkdayjobs.com/en-US/External"
 TELUS_API_URL = (
     "https://lifeworks.wd3.myworkdayjobs.com/wday/cxs/lifeworks/External/jobs"
 )
+SALESFORCE_COMPANY_URL = (
+    "https://salesforce.wd12.myworkdayjobs.com/en-US/External_Career_Site"
+)
 SALESFORCE_API_URL = "https://salesforce.wd12.myworkdayjobs.com/wday/cxs/salesforce/External_Career_Site/jobs"
+CIBC_COMPANY_URL = "https://cibc.wd3.myworkdayjobs.com/en-US/search"
 CIBC_API_URL = "https://cibc.wd3.myworkdayjobs.com/wday/cxs/cibc/search/jobs"
 NVIDIA_API_URL = (
     "https://nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite/jobs"
