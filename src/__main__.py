@@ -4,14 +4,18 @@ from pprint import pprint
 from src.api.errors import MotorolaAPIError, NvidiaAPIError
 from src.api.workday.motorola import MotorolaAPIClient
 from src.api.workday.nvidia import NvidiaAPIClient
+from src.api.workday.td import TDAPIClient
 
 
 def main() -> None:
+    clients = [
+        MotorolaAPIClient(),
+        NvidiaAPIClient(),
+        TDAPIClient(),
+    ]
     try:
-        client = MotorolaAPIClient()
-        client_nvidia = NvidiaAPIClient()
-        pprint(client.search_job_postings()[:1])
-        pprint(client_nvidia.search_job_postings()[:1])
+        for client in clients:
+            pprint(client.search_job_postings()[:1])
 
     except (MotorolaAPIError, NvidiaAPIError) as exc:
         print(f"Error: {exc}")

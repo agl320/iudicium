@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import Any
 
 from src.api.errors import NvidiaAPIError
-from src.config import DEFAULT_HEADERS, DEFAULT_WORKDAY_PAYLOAD, NVIDIA_API_URL
+from src.config import (
+    DEFAULT_HEADERS,
+    DEFAULT_WORKDAY_PAYLOAD,
+    NVIDIA_API_URL,
+    NVIDIA_COMPANY_URL,
+)
 
 from .cxs import WorkdayCxsClient
 
@@ -27,4 +32,5 @@ class NvidiaAPIClient(WorkdayCxsClient):
             payload=payload or DEFAULT_WORKDAY_PAYLOAD,
             error_cls=NvidiaAPIError,
             company=company,
+            company_url=NVIDIA_COMPANY_URL,
         )

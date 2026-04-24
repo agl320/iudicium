@@ -1,5 +1,8 @@
 DEFAULT_WORKDAY_API_URL = "https://company.wd1.myworkdayjobs.com/wday/cxs/company/jobs"
+DEFAULT_WORKDAY_COMPANY_URL = "https://company.wd1.myworkdayjobs.com/Careers"
+MOTOROLA_COMPANY_URL = "https://motorolasolutions.wd5.myworkdayjobs.com/Careers"
 MOTOROLA_API_URL = "https://motorolasolutions.wd5.myworkdayjobs.com/wday/cxs/motorolasolutions/Careers/jobs"
+TD_COMPANY_URL = "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers"
 TD_API_URL = "https://td.wd3.myworkdayjobs.com/wday/cxs/td/TD_Bank_Careers/jobs"
 AUTODESK_API_URL = "https://autodesk.wd1.myworkdayjobs.com/wday/cxs/autodesk/Ext/jobs"
 RBC_API_URL = "https://rbc.wd3.myworkdayjobs.com/RBCGLOBAL1"
@@ -10,6 +13,9 @@ SALESFORCE_API_URL = "https://salesforce.wd12.myworkdayjobs.com/wday/cxs/salesfo
 CIBC_API_URL = "https://cibc.wd3.myworkdayjobs.com/wday/cxs/cibc/search/jobs"
 NVIDIA_API_URL = (
     "https://nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite/jobs"
+)
+NVIDIA_COMPANY_URL = (
+    "https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite"
 )
 
 MOTOROLA_PAYLOAD = {"appliedFacets": {}, "limit": 20, "offset": 0, "searchText": ""}

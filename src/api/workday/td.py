@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import Any
 
 from src.api.errors import TDAPIError
-from src.config import DEFAULT_HEADERS, DEFAULT_WORKDAY_PAYLOAD, TD_API_URL
+from src.config import (
+    DEFAULT_HEADERS,
+    DEFAULT_WORKDAY_PAYLOAD,
+    TD_API_URL,
+    TD_COMPANY_URL,
+)
 
 from .cxs import WorkdayCxsClient
 
@@ -33,4 +38,5 @@ class TDAPIClient(WorkdayCxsClient):
             payload=payload or DEFAULT_WORKDAY_PAYLOAD,
             error_cls=TDAPIError,
             company=company,
+            company_url=TD_COMPANY_URL,
         )

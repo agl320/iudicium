@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import Any
 
 from src.api.errors import MotorolaAPIError
-from src.config import DEFAULT_HEADERS, MOTOROLA_API_URL, MOTOROLA_PAYLOAD
+from src.config import (
+    DEFAULT_HEADERS,
+    MOTOROLA_API_URL,
+    MOTOROLA_COMPANY_URL,
+    MOTOROLA_PAYLOAD,
+)
 
 from .cxs import WorkdayCxsClient
 
@@ -35,4 +40,5 @@ class MotorolaAPIClient(WorkdayCxsClient):
             payload=payload or MOTOROLA_PAYLOAD,
             error_cls=MotorolaAPIError,
             company=company,
+            company_url=MOTOROLA_COMPANY_URL,
         )

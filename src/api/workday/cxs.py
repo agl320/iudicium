@@ -1,6 +1,8 @@
 import json
+import re
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import urljoin, urlsplit
 from urllib.request import Request, urlopen
 
 from src.api.errors import WorkdayAPIError
@@ -23,6 +25,7 @@ class WorkdayCxsClient:
         timeout_s: float = 30.0,
         error_cls: type[RuntimeError] = WorkdayAPIError,
         company: str = "",
+        company_url: str | None = None,
     ) -> None:
         self.api_url = api_url
         self.headers = dict(headers or {})
@@ -30,6 +33,7 @@ class WorkdayCxsClient:
         self.timeout_s = timeout_s
         self.error_cls = error_cls
         self.company = company
+        self.company_url = company_url
 
     def search_raw(
         self,
@@ -90,6 +94,39 @@ class WorkdayCxsClient:
             raise self.error_cls("Workday API returned unexpected JSON shape")
         return decoded
 
+    def _build_job_url(self, external_path: Any) -> str:
+        if external_path is None:
+            return ""
+
+        external_path_str = str(external_path).strip()
+        if not external_path_str:
+            return ""
+
+        if external_path_str.startswith(("http://", "https://")):
+            return external_path_str
+
+        if self.company_url:
+            company_url_parts = urlsplit(self.company_url)
+            company_path = company_url_parts.path.strip("/")
+            job_id = external_path_str.rstrip("/").split("/")[-1]
+            if company_path and job_id:
+                path_segments = company_path.split("/", 1)
+                has_locale_prefix = bool(
+                    path_segments
+                    and re.fullmatch(r"[a-z]{2}-[A-Z]{2}", path_segments[0])
+                )
+                details_base_path = (
+                    company_path if has_locale_prefix else f"en-US/{company_path}"
+                )
+                return (
+                    f"{company_url_parts.scheme}://{company_url_parts.netloc}"
+                    f"/{details_base_path}/details/{job_id}"
+                )
+
+        api_url_parts = urlsplit(self.api_url)
+        site_base_url = f"{api_url_parts.scheme}://{api_url_parts.netloc}"
+        return urljoin(site_base_url, external_path_str)
+
     def search_job_postings(
         self,
         *,
@@ -121,7 +158,7 @@ class WorkdayCxsClient:
             location_str = str(location) if location is not None else ""
 
             external_path = job.get("externalPath")
-            external_path_str = str(external_path) if external_path is not None else ""
+            external_path_str = self._build_job_url(external_path)
 
             results.append(
                 JobPosting(
