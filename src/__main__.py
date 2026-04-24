@@ -1,15 +1,19 @@
 from __future__ import annotations
 from pprint import pprint
 
-from src.api.errors import StripeGreenhouseAPIError
-from src.api.greenhouse.stripe import StripeGreenhouseAPIClient
+from src.api.errors import MotorolaAPIError, NvidiaAPIError
+from src.api.workday.motorola import MotorolaAPIClient
+from src.api.workday.nvidia import NvidiaAPIClient
 
 
 def main() -> None:
     try:
-        pprint(StripeGreenhouseAPIClient().search_job_postings())
+        client = MotorolaAPIClient()
+        client_nvidia = NvidiaAPIClient()
+        pprint(client.search_job_postings()[:1])
+        pprint(client_nvidia.search_job_postings()[:1])
 
-    except StripeGreenhouseAPIError as exc:
+    except (MotorolaAPIError, NvidiaAPIError) as exc:
         print(f"Error: {exc}")
 
 

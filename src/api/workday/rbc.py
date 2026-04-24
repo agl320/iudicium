@@ -23,6 +23,7 @@ class RBCAPIClient(WorkdayCxsClient):
         timeout_s: float = 30.0,
         headers: dict[str, str] | None = None,
         payload: dict[str, Any] | None = None,
+        company: str = "RBC",
     ) -> None:
         super().__init__(
             api_url,
@@ -30,4 +31,5 @@ class RBCAPIClient(WorkdayCxsClient):
             headers=headers or DEFAULT_HEADERS,
             payload=payload or DEFAULT_WORKDAY_PAYLOAD,
             error_cls=RBCAPIError,
+            company=company,
         )

@@ -26,6 +26,7 @@ class MotorolaAPIClient(WorkdayCxsClient):
         timeout_s: float = 30.0,
         headers: dict[str, str] | None = None,
         payload: dict[str, Any] | None = None,
+        company: str = "Motorola",
     ) -> None:
         super().__init__(
             api_url,
@@ -33,4 +34,5 @@ class MotorolaAPIClient(WorkdayCxsClient):
             headers=headers or DEFAULT_HEADERS,
             payload=payload or MOTOROLA_PAYLOAD,
             error_cls=MotorolaAPIError,
+            company=company,
         )

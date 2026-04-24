@@ -4,6 +4,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from src.api.errors import WorkdayAPIError
+from src.models import JobPosting
 
 
 class WorkdayCxsClient:
@@ -21,12 +22,14 @@ class WorkdayCxsClient:
         payload: dict[str, Any] | None = None,
         timeout_s: float = 30.0,
         error_cls: type[RuntimeError] = WorkdayAPIError,
+        company: str = "",
     ) -> None:
         self.api_url = api_url
         self.headers = dict(headers or {})
         self.payload = dict(payload or {})
         self.timeout_s = timeout_s
         self.error_cls = error_cls
+        self.company = company
 
     def search_raw(
         self,
@@ -86,3 +89,48 @@ class WorkdayCxsClient:
         if not isinstance(decoded, dict):
             raise self.error_cls("Workday API returned unexpected JSON shape")
         return decoded
+
+    def search_job_postings(
+        self,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+        search_text: str | None = None,
+        applied_facets: dict[str, Any] | None = None,
+    ) -> list[JobPosting]:
+        decoded = self.search_raw(
+            limit=limit,
+            offset=offset,
+            search_text=search_text,
+            applied_facets=applied_facets,
+        )
+
+        job_postings = decoded.get("jobPostings")
+        if not isinstance(job_postings, list):
+            return []
+
+        results: list[JobPosting] = []
+        for job in job_postings:
+            if not isinstance(job, dict):
+                continue
+
+            title = job.get("title")
+            title_str = str(title) if title is not None else ""
+
+            location = job.get("locationsText")
+            location_str = str(location) if location is not None else ""
+
+            external_path = job.get("externalPath")
+            external_path_str = str(external_path) if external_path is not None else ""
+
+            results.append(
+                JobPosting(
+                    source=self.api_url,
+                    title=title_str,
+                    company=self.company,
+                    location=location_str,
+                    url=external_path_str,
+                )
+            )
+
+        return results

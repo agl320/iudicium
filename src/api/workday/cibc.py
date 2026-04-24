@@ -9,8 +9,6 @@ from .cxs import WorkdayCxsClient
 
 
 class CIBCAPIClient(WorkdayCxsClient):
-    """CIBC Workday CXS client."""
-
     def __init__(
         self,
         api_url: str = CIBC_API_URL,
@@ -18,6 +16,7 @@ class CIBCAPIClient(WorkdayCxsClient):
         timeout_s: float = 30.0,
         headers: dict[str, str] | None = None,
         payload: dict[str, Any] | None = None,
+        company: str = "CIBC",
     ) -> None:
         super().__init__(
             api_url,
@@ -25,4 +24,5 @@ class CIBCAPIClient(WorkdayCxsClient):
             headers=headers or DEFAULT_HEADERS,
             payload=payload or DEFAULT_WORKDAY_PAYLOAD,
             error_cls=CIBCAPIError,
+            company=company,
         )
