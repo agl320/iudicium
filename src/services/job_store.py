@@ -33,6 +33,7 @@ class JobPostingStore:
         )
         self.connection.commit()
 
+    # Required since providers don't provide consistent ID
     @staticmethod
     def build_entry_hash(*, company: str, title: str, url: str) -> str:
         normalized = (
@@ -49,34 +50,46 @@ class JobPostingStore:
                 title=posting.title,
                 url=posting.url,
             )
+
+            params = {
+                "entry_hash": entry_hash,
+                "company": posting.company,
+                "title": posting.title,
+                "url": posting.url,
+                "source": posting.source,
+                "location": posting.location,
+                "first_seen": now,
+                "last_seen": now,
+            }
+
             self.connection.execute(
                 """
-                INSERT INTO job_postings (
-                    entry_hash,
-                    company,
-                    title,
-                    url,
-                    source,
-                    location,
-                    first_seen,
-                    last_seen
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(entry_hash) DO UPDATE SET
-                    source = excluded.source,
-                    location = excluded.location,
-                    last_seen = excluded.last_seen
-                """,
-                (
-                    entry_hash,
-                    posting.company,
-                    posting.title,
-                    posting.url,
-                    posting.source,
-                    posting.location,
-                    now,
-                    now,
-                ),
+            INSERT INTO job_postings (
+                entry_hash,
+                company,
+                title,
+                url,
+                source,
+                location,
+                first_seen,
+                last_seen
+            )
+            VALUES (
+                :entry_hash,
+                :company,
+                :title,
+                :url,
+                :source,
+                :location,
+                :first_seen,
+                :last_seen
+            )
+            ON CONFLICT(entry_hash) DO UPDATE SET
+                source = excluded.source,
+                location = excluded.location,
+                last_seen = excluded.last_seen
+            """,
+                params,
             )
 
         self.connection.commit()
