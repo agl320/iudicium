@@ -4,6 +4,7 @@ from .errors import (
     AutodeskAPIError,
     CIBCAPIError,
     GreenhouseAPIError,
+    PinterestGreenhouseAPIError,
     MotorolaAPIError,
     NvidiaAPIError,
     PerplexityAPIError,
@@ -11,6 +12,7 @@ from .errors import (
     SnowflakeAPIError,
     RampAPIError,
     StripeGreenhouseAPIError,
+    TwilioGreenhouseAPIError,
     RBCAPIError,
     SalesforceAPIError,
     TDAPIError,
@@ -45,7 +47,12 @@ from .rippling import (
     RipplingBoardClient,
     DWaveAPIClient,
 )
-from .greenhouse import GreenhouseBoardClient, StripeGreenhouseAPIClient
+from .greenhouse import (
+    GreenhouseBoardClient,
+    PinterestGreenhouseAPIClient,
+    StripeGreenhouseAPIClient,
+    TwilioGreenhouseAPIClient,
+)
 from .deloitte import DeloitteAPIClient
 
 __all__ = [
@@ -83,8 +90,12 @@ __all__ = [
     "SnowflakeAPIError",
     "GreenhouseBoardClient",
     "GreenhouseAPIError",
+    "PinterestGreenhouseAPIClient",
+    "PinterestGreenhouseAPIError",
     "StripeGreenhouseAPIClient",
     "StripeGreenhouseAPIError",
+    "TwilioGreenhouseAPIClient",
+    "TwilioGreenhouseAPIError",
     "RipplingAPIError",
     "DWaveAPIError",
     "RipplingBoardClient",

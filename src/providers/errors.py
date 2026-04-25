@@ -70,6 +70,14 @@ class StripeGreenhouseAPIError(RuntimeError):
     pass
 
 
+class PinterestGreenhouseAPIError(RuntimeError):
+    pass
+
+
+class TwilioGreenhouseAPIError(RuntimeError):
+    pass
+
+
 class AnacondaAPIError(RuntimeError):
     pass
 
