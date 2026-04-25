@@ -1,9 +1,9 @@
 import json
 import re
 from typing import Any
-from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin, urlsplit
-from urllib.request import Request, urlopen
+
+import aiohttp
 
 from src.providers.errors import WorkdayAPIError
 from src.models import JobPosting
@@ -35,7 +35,7 @@ class WorkdayCxsClient:
         self.company = company
         self.company_url = company_url
 
-    def search_raw(
+    async def search_raw(
         self,
         *,
         limit: int | None = None,
@@ -64,26 +64,24 @@ class WorkdayCxsClient:
         request_headers.setdefault("Accept", "application/json")
         request_headers.setdefault("User-Agent", "iudicium/0.1")
 
-        data = json.dumps(payload).encode("utf-8")
-        request = Request(
-            self.api_url, data=data, headers=request_headers, method="POST"
-        )
-
+        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
         try:
-            with urlopen(request, timeout=self.timeout_s) as response:
-                body = response.read().decode("utf-8")
-        except HTTPError as exc:
-            error_body = ""
-            try:
-                error_body = exc.read().decode("utf-8", errors="replace")
-            except Exception:
-                error_body = ""
-            detail = f"HTTP {exc.code} {exc.reason}"
-            if error_body:
-                detail += f": {error_body}"
-            raise self.error_cls(f"Workday API request failed: {detail}") from exc
-        except URLError as exc:
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.post(
+                    self.api_url,
+                    json=payload,
+                    headers=request_headers,
+                ) as response:
+                    body = await response.text()
+                    if response.status >= 400:
+                        detail = f"HTTP {response.status} {response.reason}"
+                        if body:
+                            detail += f": {body}"
+                        raise self.error_cls(f"Workday API request failed: {detail}")
+        except aiohttp.ClientError as exc:
             raise self.error_cls(f"Workday API request failed: {exc}") from exc
+        except TimeoutError as exc:
+            raise self.error_cls(f"Workday API request timed out: {exc}") from exc
 
         try:
             decoded = json.loads(body)
@@ -127,7 +125,7 @@ class WorkdayCxsClient:
         site_base_url = f"{api_url_parts.scheme}://{api_url_parts.netloc}"
         return urljoin(site_base_url, external_path_str)
 
-    def search_job_postings(
+    async def search_job_postings(
         self,
         *,
         limit: int | None = None,
@@ -135,7 +133,7 @@ class WorkdayCxsClient:
         search_text: str | None = None,
         applied_facets: dict[str, Any] | None = None,
     ) -> list[JobPosting]:
-        decoded = self.search_raw(
+        decoded = await self.search_raw(
             limit=limit,
             offset=offset,
             search_text=search_text,

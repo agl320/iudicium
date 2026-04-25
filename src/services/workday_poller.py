@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime
-from time import monotonic, sleep
+from time import monotonic
 
 from src.providers.errors import WorkdayAPIError
 from src.providers.workday.autodesk import AutodeskAPIClient
@@ -12,6 +13,7 @@ from src.providers.workday.rbc import RBCAPIClient
 from src.providers.workday.salesforce import SalesforceAPIClient
 from src.providers.workday.td import TDAPIClient
 from src.providers.workday.telus import TelusAPIClient
+from src.services.job_store import JobPostingStore
 
 
 def build_default_workday_clients() -> list[object]:
@@ -28,28 +30,41 @@ def build_default_workday_clients() -> list[object]:
 
 
 class WorkdayPoller:
-    def __init__(self, *, interval_minutes: float = 5.0) -> None:
+    def __init__(
+        self,
+        *,
+        interval_minutes: float = 5.0,
+        db_path: str = "data/iudicium.db",
+    ) -> None:
         self.clients = build_default_workday_clients()
         self.interval_seconds = max(1.0, interval_minutes * 60.0)
+        self.store = JobPostingStore(db_path=db_path)
 
-    def run(self) -> None:
-        for client in self.clients:
-            try:
-                postings = client.search_job_postings()
-                first = postings[:1]
-                print(f"[{client.__class__.__name__}] first job: {first}\n")
-            except WorkdayAPIError as exc:
-                print(f"[{client.__class__.__name__}] error: {exc}\n")
+    async def _run_client(self, client: object) -> None:
+        try:
+            postings = await client.search_job_postings()
+            self.store.upsert_postings(postings)
+            first = postings[:1]
+            print(first, end="\n")
+        except WorkdayAPIError as exc:
+            print(f"[{client.__class__.__name__}] error: {exc}\n")
 
-    def run_poll(self) -> None:
+    async def run(self) -> None:
+        tasks = [self._run_client(client) for client in self.clients]
+        await asyncio.gather(*tasks)
+
+    async def run_poll(self) -> None:
         while True:
             cycle_started = datetime.now(UTC).isoformat()
             print(f"\nCycle started at {cycle_started}")
 
             started_monotonic = monotonic()
-            self.run()
+            await self.run()
 
             elapsed = monotonic() - started_monotonic
             sleep_seconds = max(0.0, self.interval_seconds - elapsed)
             print(f"Cycle complete. Sleeping for {sleep_seconds:.1f}s")
-            sleep(sleep_seconds)
+            await asyncio.sleep(sleep_seconds)
+
+    def close(self) -> None:
+        self.store.close()
