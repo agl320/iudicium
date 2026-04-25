@@ -9,6 +9,7 @@ from .errors import (
     PerplexityAPIError,
     CohereAPIError,
     SnowflakeAPIError,
+    RampAPIError,
     StripeGreenhouseAPIError,
     RBCAPIError,
     SalesforceAPIError,
@@ -37,6 +38,7 @@ from .ashby import (
     AshbyHQAPIClient,
     CohereAPIClient,
     PerplexityAPIClient,
+    RampAPIClient,
     SnowflakeAPIClient,
 )
 from .rippling import (
@@ -75,6 +77,8 @@ __all__ = [
     "CohereAPIError",
     "PerplexityAPIClient",
     "PerplexityAPIError",
+    "RampAPIClient",
+    "RampAPIError",
     "SnowflakeAPIClient",
     "SnowflakeAPIError",
     "GreenhouseBoardClient",

@@ -32,22 +32,22 @@ class WorkdayPoller:
         self.clients = build_default_workday_clients()
         self.interval_seconds = max(1.0, interval_minutes * 60.0)
 
-    def run_once(self) -> None:
+    def run(self) -> None:
         for client in self.clients:
             try:
                 postings = client.search_job_postings()
                 first = postings[:1]
-                print(f"[{client.__class__.__name__}] first job: {first}")
+                print(f"[{client.__class__.__name__}] first job: {first}\n")
             except WorkdayAPIError as exc:
-                print(f"[{client.__class__.__name__}] error: {exc}")
+                print(f"[{client.__class__.__name__}] error: {exc}\n")
 
-    def run_forever(self) -> None:
+    def run_poll(self) -> None:
         while True:
             cycle_started = datetime.now(UTC).isoformat()
             print(f"\nCycle started at {cycle_started}")
 
             started_monotonic = monotonic()
-            self.run_once()
+            self.run()
 
             elapsed = monotonic() - started_monotonic
             sleep_seconds = max(0.0, self.interval_seconds - elapsed)

@@ -58,6 +58,10 @@ class SnowflakeAPIError(RuntimeError):
     pass
 
 
+class RampAPIError(RuntimeError):
+    pass
+
+
 class GreenhouseAPIError(RuntimeError):
     pass
 
