@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-from src.models import JobPosting
+from backend.models import JobPosting
 
 
 class Aggregator:

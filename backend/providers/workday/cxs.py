@@ -5,8 +5,8 @@ from urllib.parse import urljoin, urlsplit
 
 import aiohttp
 
-from src.providers.errors import WorkdayAPIError
-from src.models import JobPosting
+from backend.providers.errors import WorkdayAPIError
+from backend.models import JobPosting
 
 
 class WorkdayCxsClient:

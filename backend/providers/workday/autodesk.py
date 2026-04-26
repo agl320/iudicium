@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.providers.errors import AutodeskAPIError
-from src.config import (
+from backend.providers.errors import AutodeskAPIError
+from backend.config import (
     AUTODESK_API_URL,
     AUTODESK_COMPANY_URL,
     DEFAULT_HEADERS,

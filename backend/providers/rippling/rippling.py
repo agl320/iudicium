@@ -1,5 +1,5 @@
-from src.providers.errors import RipplingAPIError
-from src.config.config import (
+from backend.providers.errors import RipplingAPIError
+from backend.config.config import (
     DEFAULT_HEADERS,
     DEFAULT_RIPPLING_PAYLOAD,
     RIPPLING_API_URL,

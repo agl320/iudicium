@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.models import JobPosting
+from backend.models import JobPosting
 
 
 class BaseScraper:

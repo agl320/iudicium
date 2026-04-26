@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.providers.errors import TDAPIError
-from src.config import (
+from backend.providers.errors import TDAPIError
+from backend.config import (
     DEFAULT_HEADERS,
     DEFAULT_WORKDAY_PAYLOAD,
     TD_API_URL,

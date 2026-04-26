@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.providers.errors import MotorolaAPIError
-from src.config import (
+from backend.providers.errors import MotorolaAPIError
+from backend.config import (
     DEFAULT_HEADERS,
     MOTOROLA_API_URL,
     MOTOROLA_COMPANY_URL,

@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI, Query
 from pydantic import BaseModel
 
-from src.services.job_store import JobPostingStore
+from backend.services.job_store import JobPostingStore
 
 
 class JobPostingResponse(BaseModel):

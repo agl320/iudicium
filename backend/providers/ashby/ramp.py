@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.providers.errors import RampAPIError
+from backend.providers.errors import RampAPIError
 
 from .api import AshbyAPIClient
 

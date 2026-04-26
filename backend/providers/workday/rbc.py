@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.providers.errors import RBCAPIError
-from src.config import (
+from backend.providers.errors import RBCAPIError
+from backend.config import (
     DEFAULT_HEADERS,
     DEFAULT_WORKDAY_PAYLOAD,
     RBC_API_URL,

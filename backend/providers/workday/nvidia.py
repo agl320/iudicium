@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.providers.errors import NvidiaAPIError
-from src.config import (
+from backend.providers.errors import NvidiaAPIError
+from backend.config import (
     DEFAULT_HEADERS,
     DEFAULT_WORKDAY_PAYLOAD,
     NVIDIA_API_URL,

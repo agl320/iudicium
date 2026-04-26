@@ -5,7 +5,7 @@ import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
-from src.models import JobPosting
+from backend.models import JobPosting
 
 
 class JobPostingStore:

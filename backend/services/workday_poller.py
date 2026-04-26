@@ -4,16 +4,16 @@ import asyncio
 from datetime import UTC, datetime
 from time import monotonic
 
-from src.providers.errors import WorkdayAPIError
-from src.providers.workday.autodesk import AutodeskAPIClient
-from src.providers.workday.cibc import CIBCAPIClient
-from src.providers.workday.motorola import MotorolaAPIClient
-from src.providers.workday.nvidia import NvidiaAPIClient
-from src.providers.workday.rbc import RBCAPIClient
-from src.providers.workday.salesforce import SalesforceAPIClient
-from src.providers.workday.td import TDAPIClient
-from src.providers.workday.telus import TelusAPIClient
-from src.services.job_store import JobPostingStore
+from backend.providers.errors import WorkdayAPIError
+from backend.providers.workday.autodesk import AutodeskAPIClient
+from backend.providers.workday.cibc import CIBCAPIClient
+from backend.providers.workday.motorola import MotorolaAPIClient
+from backend.providers.workday.nvidia import NvidiaAPIClient
+from backend.providers.workday.rbc import RBCAPIClient
+from backend.providers.workday.salesforce import SalesforceAPIClient
+from backend.providers.workday.td import TDAPIClient
+from backend.providers.workday.telus import TelusAPIClient
+from backend.services.job_store import JobPostingStore
 
 
 def build_default_workday_clients() -> list[object]:

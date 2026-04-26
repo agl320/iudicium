@@ -5,8 +5,8 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from src.providers.errors import AshbyAPIError
-from src.config import ASHBY_API_URL, DEFAULT_HEADERS
+from backend.providers.errors import AshbyAPIError
+from backend.config import ASHBY_API_URL, DEFAULT_HEADERS
 
 
 # GraphQL query for Ashby's API to fetch job board data with teams.

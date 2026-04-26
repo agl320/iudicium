@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from json.tool import main
 
-from src.services.workday_poller import WorkdayPoller
+from backend.services.workday_poller import WorkdayPoller
 
 
 async def run_once_and_read() -> None:

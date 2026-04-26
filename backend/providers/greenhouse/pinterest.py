@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from src.providers.errors import PinterestGreenhouseAPIError
-from src.config import DEFAULT_HEADERS, PINTEREST_GREENHOUSE_API_URL
+from backend.providers.errors import PinterestGreenhouseAPIError
+from backend.config import DEFAULT_HEADERS, PINTEREST_GREENHOUSE_API_URL
 
 from .board import GreenhouseBoardClient
 

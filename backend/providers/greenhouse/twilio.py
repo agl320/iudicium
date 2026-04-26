@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from src.providers.errors import TwilioGreenhouseAPIError
-from src.config import DEFAULT_HEADERS, TWILIO_GREENHOUSE_API_URL
+from backend.providers.errors import TwilioGreenhouseAPIError
+from backend.config import DEFAULT_HEADERS, TWILIO_GREENHOUSE_API_URL
 
 from .board import GreenhouseBoardClient
 
