@@ -31,6 +31,12 @@ class JobPostingStore:
             )
             """
         )
+        self.connection.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_job_postings_last_seen
+            ON job_postings(last_seen DESC)
+            """
+        )
         self.connection.commit()
 
     # Required since providers don't provide consistent ID
