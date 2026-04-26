@@ -4,6 +4,7 @@ from fastapi import FastAPI, Query
 from pydantic import BaseModel
 
 from backend.services.job_store import JobPostingStore
+from fastapi.middleware.cors import CORSMiddleware
 
 
 class JobPostingResponse(BaseModel):
@@ -18,6 +19,14 @@ class JobPostingResponse(BaseModel):
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")
