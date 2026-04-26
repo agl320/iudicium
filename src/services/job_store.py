@@ -100,5 +100,29 @@ class JobPostingStore:
 
         self.connection.commit()
 
+    def get_recent_postings(self, limit: int = 50) -> list[dict[str, str | int]]:
+        capped_limit = max(1, min(limit, 500))
+        cursor = self.connection.execute(
+            """
+            SELECT
+                id,
+                company,
+                title,
+                url,
+                source,
+                location,
+                first_seen,
+                last_seen
+            FROM job_postings
+            ORDER BY last_seen DESC
+            LIMIT ?
+            """,
+            (capped_limit,),
+        )
+
+        columns = [description[0] for description in cursor.description or ()]
+        rows = cursor.fetchall()
+        return [dict(zip(columns, row, strict=False)) for row in rows]
+
     def close(self) -> None:
         self.connection.close()
