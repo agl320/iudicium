@@ -92,3 +92,11 @@ class RipplingAPIError(RuntimeError):
 
 class DeloitteAPIError(RuntimeError):
     pass
+
+
+class PhenomPeopleAPIError(RuntimeError):
+    pass
+
+
+class PaloAltoNetworksPhenomAPIError(RuntimeError):
+    pass

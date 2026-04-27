@@ -73,3 +73,36 @@ DELOITTE_PAYLOAD = {
     "alertId": "",
     "rcmCandidateId": "",
 }
+
+PHENOM_PALO_ALTO_NETWORKS_API_URL = (
+    "https://jobs.paloaltonetworks.com/en/search-jobs/results"
+    "?ActiveFacetID=0"
+    "&CurrentPage=1"
+    "&RecordsPerPage=15"
+    "&TotalContentResults=164"
+    "&Distance=50"
+    "&RadiusUnitType=0"
+    "&Keywords="
+    "&Location="
+    "&ShowRadius=False"
+    "&IsPagination=False"
+    "&CustomFacetName="
+    "&FacetTerm="
+    "&FacetType=0"
+    "&SearchResultsModuleName=Section+29+-+Search+Results"
+    "&SearchFiltersModuleName=Section+29+-+Search+Filters"
+    "&SortCriteria=0"
+    "&SortDirection=0"
+    "&SearchType=5"
+    "&PostalCode="
+    "&ResultsType=0"
+    "&fc="
+    "&fl="
+    "&fcf="
+    "&afc="
+    "&afl="
+    "&afcf="
+    "&TotalContentPages=11"
+)
+
+PHENOM_PALO_ALTO_NETWORKS_COMPANY_URL = "https://jobs.paloaltonetworks.com"

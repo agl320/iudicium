@@ -22,6 +22,8 @@ from .errors import (
     RipplingAPIError,
     RipplingBoardAPIError,
     DeloitteAPIError,
+    PhenomPeopleAPIError,
+    PaloAltoNetworksPhenomAPIError,
 )
 from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
 from .workday import (
@@ -54,6 +56,7 @@ from .greenhouse import (
     TwilioGreenhouseAPIClient,
 )
 from .deloitte import DeloitteAPIClient
+from .phenom_people import PhenomPeopleClient, PaloAltoNetworksPhenomAPIClient
 
 __all__ = [
     "AshbyAPIClient",
@@ -103,4 +106,8 @@ __all__ = [
     "RipplingBoardAPIError",
     "DeloitteAPIClient",
     "DeloitteAPIError",
+    "PhenomPeopleClient",
+    "PhenomPeopleAPIError",
+    "PaloAltoNetworksPhenomAPIClient",
+    "PaloAltoNetworksPhenomAPIError",
 ]
