@@ -114,3 +114,47 @@ DATABRICKS_API_URL = (
 )
 # Also probably broken
 DATABRICKS_COMPANY_URL = "https://www.databricks.com/company/careers/open-positions"
+
+DATADOG_API_URL = "https://gk6e3zbyuntvc5dap.a1.typesense.net/multi_search"
+DATADOG_API_KEY = "1Hwq7hntXp211hKvRS3CSI2QSU7w2gFm"
+DATADOG_COMPANY_URL = "https://careers.datadoghq.com"
+DATADOG_PAYLOAD = {
+    "searches": [
+        {
+            "preset": "careers_list_view",
+            "collection": "careers_alias",
+            "q": "*",
+            "facet_by": (
+                "child_department_Engineering,"
+                "child_department_GeneralAdministrative,"
+                "child_department_Marketing,"
+                "child_department_Sales,"
+                "child_department_TechnicalSolutions,"
+                "location_APAC,location_Americas,location_EMEA,"
+                "parent_department_Engineering,"
+                "parent_department_GeneralAdministrative,"
+                "parent_department_Marketing,"
+                "parent_department_ProductDesign,"
+                "parent_department_ProductManagement,"
+                "parent_department_Sales,"
+                "parent_department_TechnicalSolutions,"
+                "region_APAC,region_Americas,region_EMEA,"
+                "remote,time_type"
+            ),
+            "filter_by": "language: en && time_type:=[Early Career]",
+            "max_facet_values": 50,
+            "page": 1,
+            "per_page": 10,
+        },
+        {
+            "preset": "careers_list_view",
+            "collection": "careers_alias",
+            "q": "*",
+            "facet_by": "time_type",
+            "filter_by": "language: en",
+            "max_facet_values": 50,
+            "page": 1,
+            "per_page": 0,
+        },
+    ]
+}

@@ -104,3 +104,7 @@ class PaloAltoNetworksPhenomAPIError(RuntimeError):
 
 class DatabricksAPIError(RuntimeError):
     pass
+
+
+class DatadogAPIError(RuntimeError):
+    pass

@@ -25,6 +25,7 @@ from .errors import (
     PhenomPeopleAPIError,
     PaloAltoNetworksPhenomAPIError,
     DatabricksAPIError,
+    DatadogAPIError,
 )
 from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
 from .workday import (
@@ -59,6 +60,7 @@ from .greenhouse import (
 from .deloitte import DeloitteAPIClient
 from .phenom_people import PhenomPeopleClient, PaloAltoNetworksPhenomAPIClient
 from .databricks import DatabricksClient, DatabricksAPIClient
+from .datadog import DatadogClient, DatadogAPIClient
 
 __all__ = [
     "AshbyAPIClient",
@@ -115,4 +117,7 @@ __all__ = [
     "DatabricksClient",
     "DatabricksAPIClient",
     "DatabricksAPIError",
+    "DatadogClient",
+    "DatadogAPIClient",
+    "DatadogAPIError",
 ]
