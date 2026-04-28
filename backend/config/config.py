@@ -105,4 +105,12 @@ PHENOM_PALO_ALTO_NETWORKS_API_URL = (
     "&TotalContentPages=11"
 )
 
+# Probably broken
 PHENOM_PALO_ALTO_NETWORKS_COMPANY_URL = "https://jobs.paloaltonetworks.com"
+
+DATABRICKS_API_URL = (
+    "https://www.databricks.com/careers-assets/page-data/company/careers/"
+    "open-positions/page-data.json"
+)
+# Also probably broken
+DATABRICKS_COMPANY_URL = "https://www.databricks.com/company/careers/open-positions"

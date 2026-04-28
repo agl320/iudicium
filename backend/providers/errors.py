@@ -100,3 +100,7 @@ class PhenomPeopleAPIError(RuntimeError):
 
 class PaloAltoNetworksPhenomAPIError(RuntimeError):
     pass
+
+
+class DatabricksAPIError(RuntimeError):
+    pass
