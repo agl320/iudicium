@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from backend.config.config import DEFAULT_WORKDAY_PAYLOAD
 from backend.providers.errors import MotorolaAPIError
 from backend.config import (
     DEFAULT_HEADERS,
     MOTOROLA_API_URL,
     MOTOROLA_COMPANY_URL,
-    MOTOROLA_PAYLOAD,
 )
 
 from .cxs import WorkdayCxsClient
@@ -37,7 +37,7 @@ class MotorolaAPIClient(WorkdayCxsClient):
             api_url,
             timeout_s=timeout_s,
             headers=headers or DEFAULT_HEADERS,
-            payload=payload or MOTOROLA_PAYLOAD,
+            payload=payload or DEFAULT_WORKDAY_PAYLOAD,
             error_cls=MotorolaAPIError,
             company=company,
             company_url=MOTOROLA_COMPANY_URL,

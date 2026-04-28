@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import argparse
 
 from backend.services.workday_poller import WorkdayPoller
 from backend.services.greenhouse_poller import GreenhousePoller
 
 
-async def run_pollers_once() -> None:
-    workday_poller = WorkdayPoller()
+async def run_pollers_once(*, max_jobs_per_client: int = 100) -> None:
+    workday_poller = WorkdayPoller(max_jobs_per_client=max_jobs_per_client)
     greenhouse_poller = GreenhousePoller()
 
     try:
@@ -23,4 +24,13 @@ async def run_pollers_once() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(run_pollers_once())
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--workday-max-jobs-per-client",
+        type=int,
+        default=100,
+        help="Maximum number of Workday postings to fetch per client",
+    )
+    args = parser.parse_args()
+
+    asyncio.run(run_pollers_once(max_jobs_per_client=args.workday_max_jobs_per_client))

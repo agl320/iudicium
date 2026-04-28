@@ -36,11 +36,12 @@ def health() -> dict[str, str]:
 
 @app.get("/jobs/recent", response_model=list[JobPostingResponse])
 def jobs_recent(
-    limit: int = Query(default=50, ge=1, le=500)
+    limit: int = Query(default=50, ge=1, le=100),
+    query: str = Query(default="", min_length=0, max_length=120),
 ) -> list[JobPostingResponse]:
     store = JobPostingStore()
     try:
-        rows = store.get_recent_postings(limit=limit)
+        rows = store.get_recent_postings(limit=limit, title_query=query)
         return [JobPostingResponse(**row) for row in rows]
     finally:
         store.close()

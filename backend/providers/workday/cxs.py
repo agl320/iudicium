@@ -169,3 +169,50 @@ class WorkdayCxsClient:
             )
 
         return results
+
+    async def search_job_postings_page(
+        self,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+        search_text: str | None = None,
+        applied_facets: dict[str, Any] | None = None,
+    ) -> tuple[list[JobPosting], int | None]:
+        decoded = await self.search_raw(
+            limit=limit,
+            offset=offset,
+            search_text=search_text,
+            applied_facets=applied_facets,
+        )
+
+        job_postings = decoded.get("jobPostings")
+        total = decoded.get("total")
+
+        if not isinstance(job_postings, list):
+            return [], total if isinstance(total, int) else None
+
+        results: list[JobPosting] = []
+        for job in job_postings:
+            if not isinstance(job, dict):
+                continue
+
+            title = job.get("title")
+            title_str = str(title) if title is not None else ""
+
+            location = job.get("locationsText")
+            location_str = str(location) if location is not None else ""
+
+            external_path = job.get("externalPath")
+            external_path_str = self._build_job_url(external_path)
+
+            results.append(
+                JobPosting(
+                    source=self.api_url,
+                    title=title_str,
+                    company=self.company,
+                    location=location_str,
+                    url=external_path_str,
+                )
+            )
+
+        return results, total if isinstance(total, int) else None

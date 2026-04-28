@@ -29,7 +29,6 @@ NVIDIA_COMPANY_URL = (
     "https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite"
 )
 
-MOTOROLA_PAYLOAD = {"appliedFacets": {}, "limit": 20, "offset": 0, "searchText": ""}
 DEFAULT_WORKDAY_PAYLOAD = {
     "appliedFacets": {},
     "limit": 20,
