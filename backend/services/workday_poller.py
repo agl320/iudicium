@@ -37,7 +37,7 @@ class WorkdayPoller:
         self,
         *,
         interval_minutes: float = 5.0,
-        max_jobs_per_client: int = 100,
+        max_jobs_per_client: int = 500,
         db_path: str = "data/iudicium.db",
     ) -> None:
         self.clients = build_default_workday_clients()
