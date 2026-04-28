@@ -6,6 +6,8 @@ single import location.
 
 from .config import (
     ASHBY_API_URL,
+    CAPITALONE_API_URL,
+    CAPITALONE_COMPANY_URL,
     AUTODESK_COMPANY_URL,
     AUTODESK_API_URL,
     CIBC_COMPANY_URL,
@@ -46,6 +48,8 @@ from .config import (
 
 __all__ = [
     "ASHBY_API_URL",
+    "CAPITALONE_API_URL",
+    "CAPITALONE_COMPANY_URL",
     "AUTODESK_COMPANY_URL",
     "AUTODESK_API_URL",
     "CIBC_COMPANY_URL",

@@ -1,5 +1,9 @@
 DEFAULT_WORKDAY_API_URL = "https://company.wd1.myworkdayjobs.com/wday/cxs/company/jobs"
 DEFAULT_WORKDAY_COMPANY_URL = "https://company.wd1.myworkdayjobs.com/Careers"
+CAPITALONE_COMPANY_URL = "https://capitalone.wd12.myworkdayjobs.com/Careers"
+CAPITALONE_API_URL = (
+    "https://capitalone.wd12.myworkdayjobs.com/wday/cxs/capitalone/Capital_One/jobs"
+)
 MOTOROLA_COMPANY_URL = "https://motorolasolutions.wd5.myworkdayjobs.com/Careers"
 MOTOROLA_API_URL = "https://motorolasolutions.wd5.myworkdayjobs.com/wday/cxs/motorolasolutions/Careers/jobs"
 TD_COMPANY_URL = "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers"

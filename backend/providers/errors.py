@@ -6,6 +6,10 @@ class WorkdayAPIError(RuntimeError):
     pass
 
 
+class CapitalOneAPIError(WorkdayAPIError):
+    pass
+
+
 class TDAPIError(RuntimeError):
     pass
 

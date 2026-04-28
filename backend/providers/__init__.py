@@ -26,9 +26,11 @@ from .errors import (
     PaloAltoNetworksPhenomAPIError,
     DatabricksAPIError,
     DatadogAPIError,
+    CapitalOneAPIError,
 )
 from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
 from .workday import (
+    CapitalOneAPIClient,
     AutodeskAPIClient,
     CIBCAPIClient,
     MotorolaAPIClient,
@@ -69,6 +71,8 @@ __all__ = [
     "AshbyHQAPIError",
     "AutodeskAPIClient",
     "AutodeskAPIError",
+    "CapitalOneAPIError",
+    "CapitalOneAPIClient",
     "CIBCAPIClient",
     "CIBCAPIError",
     "MOTOROLA_REGION_FACET_IDS",

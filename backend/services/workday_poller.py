@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from time import monotonic
 
 from backend.providers.errors import WorkdayAPIError
+from backend.providers.workday.capitalone import CapitalOneAPIClient
 from backend.providers.workday.autodesk import AutodeskAPIClient
 from backend.providers.workday.cibc import CIBCAPIClient
 from backend.providers.workday.motorola import MotorolaAPIClient
@@ -18,6 +19,7 @@ from backend.services.job_store import JobPostingStore
 
 def build_default_workday_clients() -> list[object]:
     return [
+        CapitalOneAPIClient(),
         AutodeskAPIClient(),
         CIBCAPIClient(),
         MotorolaAPIClient(),

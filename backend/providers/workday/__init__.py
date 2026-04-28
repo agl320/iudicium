@@ -1,4 +1,5 @@
 from .cxs import WorkdayCxsClient
+from .capitalone import CapitalOneAPIClient
 from .autodesk import AutodeskAPIClient
 from .cibc import CIBCAPIClient
 from .motorola import MOTOROLA_REGION_FACET_IDS, MotorolaAPIClient
@@ -9,6 +10,7 @@ from .telus import TelusAPIClient
 from .td import TDAPIClient, TD_JOB_TYPE_FACET_IDS
 
 __all__ = [
+    "CapitalOneAPIClient",
     "AutodeskAPIClient",
     "CIBCAPIClient",
     "MOTOROLA_REGION_FACET_IDS",
