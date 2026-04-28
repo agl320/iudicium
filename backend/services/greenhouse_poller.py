@@ -4,51 +4,39 @@ import asyncio
 from datetime import UTC, datetime
 from time import monotonic
 
-from backend.providers.errors import WorkdayAPIError
-from backend.providers.workday.autodesk import AutodeskAPIClient
-from backend.providers.workday.cibc import CIBCAPIClient
-from backend.providers.workday.motorola import MotorolaAPIClient
-from backend.providers.workday.nvidia import NvidiaAPIClient
-from backend.providers.workday.rbc import RBCAPIClient
-from backend.providers.workday.salesforce import SalesforceAPIClient
-from backend.providers.workday.td import TDAPIClient
-from backend.providers.workday.telus import TelusAPIClient
+from backend.providers.errors import GreenhouseAPIError
+from backend.providers.greenhouse.pinterest import PinterestGreenhouseAPIClient
+from backend.providers.greenhouse.stripe import StripeGreenhouseAPIClient
+from backend.providers.greenhouse.twilio import TwilioGreenhouseAPIClient
 from backend.services.job_store import JobPostingStore
 
 
-def build_default_workday_clients() -> list[object]:
+def build_default_greenhouse_clients() -> list[object]:
     return [
-        AutodeskAPIClient(),
-        CIBCAPIClient(),
-        MotorolaAPIClient(),
-        NvidiaAPIClient(),
-        RBCAPIClient(),
-        SalesforceAPIClient(),
-        TDAPIClient(),
-        TelusAPIClient(),
+        PinterestGreenhouseAPIClient(),
+        StripeGreenhouseAPIClient(),
+        TwilioGreenhouseAPIClient(),
     ]
 
 
-class WorkdayPoller:
+class GreenhousePoller:
     def __init__(
         self,
         *,
         interval_minutes: float = 5.0,
         db_path: str = "data/iudicium.db",
     ) -> None:
-        self.clients = build_default_workday_clients()
+        self.clients = build_default_greenhouse_clients()
         self.interval_seconds = max(1.0, interval_minutes * 60.0)
         self.store = JobPostingStore(db_path=db_path)
 
-    """Polls Workday job postings for multiple clients and stores them in a local database."""
-
     async def _run_client(self, client: object) -> None:
         try:
-            postings = await client.search_job_postings()
+            postings = await asyncio.to_thread(client.search_job_postings)
             self.store.upsert_postings(postings)
             first = postings[:1]
             print(first, end="\n")
-        except WorkdayAPIError as exc:
+        except GreenhouseAPIError as exc:
             print(f"[{client.__class__.__name__}] error: {exc}\n")
 
     async def run(self) -> None:
