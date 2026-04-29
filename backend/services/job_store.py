@@ -31,17 +31,15 @@ class JobPostingStore:
                 last_seen TEXT NOT NULL
             )
             """)
-        
+
         # Add company_url column if it doesn't exist (for existing databases)
-        cursor = self.connection.execute(
-            "PRAGMA table_info(job_postings)"
-        )
+        cursor = self.connection.execute("PRAGMA table_info(job_postings)")
         columns = {row[1] for row in cursor.fetchall()}
         if "company_url" not in columns:
             self.connection.execute(
                 "ALTER TABLE job_postings ADD COLUMN company_url TEXT"
             )
-        
+
         self.connection.execute("""
             CREATE INDEX IF NOT EXISTS idx_job_postings_last_seen
             ON job_postings(last_seen DESC)

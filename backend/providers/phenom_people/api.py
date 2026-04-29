@@ -10,15 +10,19 @@ from urllib.request import Request, urlopen
 from backend.config import (
     DEFAULT_HEADERS,
     PHENOM_PALO_ALTO_NETWORKS_COMPANY_URL,
+    COMPANY_URL_MAPPING,
 )
 from backend.models import JobPosting
 from backend.providers.errors import PhenomPeopleAPIError
 
 
 class _PhenomResultsHTMLParser(HTMLParser):
-    def __init__(self, *, company: str, source: str, base_url: str) -> None:
+    def __init__(
+        self, *, company: str, company_url: str, source: str, base_url: str
+    ) -> None:
         super().__init__()
         self.company = company
+        self.company_url = company_url
         self.source = source
         self.base_url = base_url
         self.jobs: list[JobPosting] = []
@@ -80,6 +84,7 @@ class _PhenomResultsHTMLParser(HTMLParser):
                         source=self.source,
                         title=title,
                         company=self.company,
+                        company_url=self.company_url,
                         location=location,
                         url=urljoin(self.base_url, self._current_href),
                     )
@@ -104,6 +109,7 @@ class PhenomPeopleClient:
         api_url: str,
         *,
         company: str,
+        company_url: str = "",
         base_url: str = PHENOM_PALO_ALTO_NETWORKS_COMPANY_URL,
         timeout_s: float = 30.0,
         headers: dict[str, str] | None = None,
@@ -111,6 +117,7 @@ class PhenomPeopleClient:
     ) -> None:
         self.api_url = api_url
         self.company = company
+        self.company_url = company_url or COMPANY_URL_MAPPING.get(company, "")
         self.base_url = base_url
         self.timeout_s = timeout_s
         self.headers = dict(headers or DEFAULT_HEADERS)
@@ -159,6 +166,7 @@ class PhenomPeopleClient:
 
         parser = _PhenomResultsHTMLParser(
             company=self.company,
+            company_url=self.company_url,
             source=self.api_url,
             base_url=self.base_url,
         )

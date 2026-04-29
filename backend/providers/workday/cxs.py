@@ -164,8 +164,7 @@ class WorkdayCxsClient:
                     source=self.api_url,
                     title=title_str,
                     company=self.company,
-                    company_url=self.company_url
-                    or COMPANY_URL_MAPPING.get(self.company, ""),
+                    company_url=COMPANY_URL_MAPPING.get(self.company, ""),
                     location=location_str,
                     url=external_path_str,
                 )
@@ -213,8 +212,7 @@ class WorkdayCxsClient:
                     source=self.api_url,
                     title=title_str,
                     company=self.company,
-                    company_url=self.company_url
-                    or COMPANY_URL_MAPPING.get(self.company, ""),
+                    company_url=COMPANY_URL_MAPPING.get(self.company, ""),
                     location=location_str,
                     url=external_path_str,
                 )
