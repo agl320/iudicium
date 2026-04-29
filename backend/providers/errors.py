@@ -1,8 +1,23 @@
-class MotorolaAPIError(RuntimeError):
+class ProviderAPIError(RuntimeError):
+    """Base provider error that prints a simple message when instantiated.
+
+    This keeps existing behavior of being a RuntimeError while providing
+    a short, consistent printed output for debugging and visibility.
+    """
+
+    def __init__(self, message: str | None = None) -> None:
+        if message is None:
+            message = self.__class__.__name__
+        # Print a concise message for quick debugging/visibility
+        print(f"{self.__class__.__name__}: {message}")
+        super().__init__(message)
+
+
+class MotorolaAPIError(ProviderAPIError):
     pass
 
 
-class WorkdayAPIError(RuntimeError):
+class WorkdayAPIError(ProviderAPIError):
     pass
 
 
@@ -10,105 +25,109 @@ class CapitalOneAPIError(WorkdayAPIError):
     pass
 
 
-class TDAPIError(RuntimeError):
+class TDAPIError(ProviderAPIError):
     pass
 
 
-class AutodeskAPIError(RuntimeError):
+class AutodeskAPIError(ProviderAPIError):
     pass
 
 
-class RBCAPIError(RuntimeError):
+class RBCAPIError(ProviderAPIError):
     pass
 
 
-class TelusAPIError(RuntimeError):
+class TelusAPIError(ProviderAPIError):
     pass
 
 
-class SalesforceAPIError(RuntimeError):
+class SalesforceAPIError(ProviderAPIError):
     pass
 
 
-class CIBCAPIError(RuntimeError):
+class CIBCAPIError(ProviderAPIError):
     pass
 
 
-class NvidiaAPIError(RuntimeError):
+class NvidiaAPIError(ProviderAPIError):
     pass
 
 
-class DWaveAPIError(RuntimeError):
+class DWaveAPIError(ProviderAPIError):
     pass
 
 
-class AshbyAPIError(RuntimeError):
+class AshbyAPIError(ProviderAPIError):
     pass
 
 
-class AshbyHQAPIError(RuntimeError):
+class AshbyHQAPIError(ProviderAPIError):
     pass
 
 
-class PerplexityAPIError(RuntimeError):
+class PerplexityAPIError(ProviderAPIError):
     pass
 
 
-class CohereAPIError(RuntimeError):
+class CohereAPIError(ProviderAPIError):
     pass
 
 
-class SnowflakeAPIError(RuntimeError):
+class SnowflakeAPIError(ProviderAPIError):
     pass
 
 
-class RampAPIError(RuntimeError):
+class RampAPIError(ProviderAPIError):
     pass
 
 
-class GreenhouseAPIError(RuntimeError):
+class WealthsimpleAPIError(ProviderAPIError):
     pass
 
 
-class StripeGreenhouseAPIError(RuntimeError):
+class GreenhouseAPIError(ProviderAPIError):
     pass
 
 
-class PinterestGreenhouseAPIError(RuntimeError):
+class StripeGreenhouseAPIError(ProviderAPIError):
     pass
 
 
-class TwilioGreenhouseAPIError(RuntimeError):
+class PinterestGreenhouseAPIError(ProviderAPIError):
     pass
 
 
-class AnacondaAPIError(RuntimeError):
+class TwilioGreenhouseAPIError(ProviderAPIError):
     pass
 
 
-class RipplingBoardAPIError(RuntimeError):
+class AnacondaAPIError(ProviderAPIError):
     pass
 
 
-class RipplingAPIError(RuntimeError):
+class RipplingBoardAPIError(ProviderAPIError):
     pass
 
 
-class DeloitteAPIError(RuntimeError):
+class RipplingAPIError(ProviderAPIError):
     pass
 
 
-class PhenomPeopleAPIError(RuntimeError):
+class DeloitteAPIError(ProviderAPIError):
     pass
 
 
-class PaloAltoNetworksPhenomAPIError(RuntimeError):
+class PhenomPeopleAPIError(ProviderAPIError):
     pass
 
 
-class DatabricksAPIError(RuntimeError):
+class PaloAltoNetworksPhenomAPIError(ProviderAPIError):
     pass
 
 
-class DatadogAPIError(RuntimeError):
+class DatabricksAPIError(ProviderAPIError):
+    pass
+
+
+class DatadogAPIError(ProviderAPIError):
     pass

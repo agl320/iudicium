@@ -29,6 +29,9 @@ NVIDIA_COMPANY_URL = (
     "https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite"
 )
 
+CISCO_COMPANY_URL = "https://cisco.wd5.myworkdayjobs.com/Careers"
+CISCO_API_URL = "https://cisco.wd5.myworkdayjobs.com/wday/cxs/cisco/Cisco_Careers/jobs"
+
 DEFAULT_WORKDAY_PAYLOAD = {
     "appliedFacets": {},
     "limit": 20,

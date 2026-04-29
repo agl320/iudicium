@@ -4,6 +4,7 @@ from .cohere import CohereAPIClient
 from .perplexity import PerplexityAPIClient
 from .ramp import RampAPIClient
 from .snowflake import SnowflakeAPIClient
+from .wealthsimple import WealthsimpleAPIClient
 
 __all__ = [
     "AshbyAPIClient",
@@ -12,4 +13,5 @@ __all__ = [
     "PerplexityAPIClient",
     "RampAPIClient",
     "SnowflakeAPIClient",
+    "WealthsimpleAPIClient",
 ]
