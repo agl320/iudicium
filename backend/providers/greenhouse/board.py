@@ -8,6 +8,7 @@ from urllib.request import Request, urlopen
 
 from backend.providers.errors import GreenhouseAPIError
 from backend.models import JobPosting
+from backend.config.config import COMPANY_URL_MAPPING
 
 
 class GreenhouseBoardClient:
@@ -121,6 +122,7 @@ class GreenhouseBoardClient:
                     source=self.api_url,
                     title=title_str,
                     company=company_str,
+                    company_url=COMPANY_URL_MAPPING.get(company_str, ""),
                     location=location_str,
                     url=url_str,
                 )

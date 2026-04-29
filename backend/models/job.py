@@ -9,6 +9,7 @@ class JobPosting:
     source: str
     title: str
     company: str
+    company_url: str
     location: str
     url: str
 

@@ -17,12 +17,12 @@ class JobPostingStore:
         self._create_schema()
 
     def _create_schema(self) -> None:
-        self.connection.execute(
-            """
+        self.connection.execute("""
             CREATE TABLE IF NOT EXISTS job_postings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 entry_hash TEXT NOT NULL UNIQUE,
                 company TEXT NOT NULL,
+                company_url TEXT,
                 title TEXT NOT NULL,
                 url TEXT NOT NULL,
                 source TEXT NOT NULL,
@@ -30,14 +30,22 @@ class JobPostingStore:
                 first_seen TEXT NOT NULL,
                 last_seen TEXT NOT NULL
             )
-            """
+            """)
+        
+        # Add company_url column if it doesn't exist (for existing databases)
+        cursor = self.connection.execute(
+            "PRAGMA table_info(job_postings)"
         )
-        self.connection.execute(
-            """
+        columns = {row[1] for row in cursor.fetchall()}
+        if "company_url" not in columns:
+            self.connection.execute(
+                "ALTER TABLE job_postings ADD COLUMN company_url TEXT"
+            )
+        
+        self.connection.execute("""
             CREATE INDEX IF NOT EXISTS idx_job_postings_last_seen
             ON job_postings(last_seen DESC)
-            """
-        )
+            """)
         self.connection.commit()
 
     # Required since providers don't provide consistent ID
@@ -66,6 +74,7 @@ class JobPostingStore:
             params = {
                 "entry_hash": entry_hash,
                 "company": posting.company,
+                "company_url": posting.company_url,
                 "title": posting.title,
                 "url": posting.url,
                 "source": posting.source,
@@ -79,6 +88,7 @@ class JobPostingStore:
             INSERT INTO job_postings (
                 entry_hash,
                 company,
+                company_url,
                 title,
                 url,
                 source,
@@ -89,6 +99,7 @@ class JobPostingStore:
             VALUES (
                 :entry_hash,
                 :company,
+                :company_url,
                 :title,
                 :url,
                 :source,
@@ -125,6 +136,7 @@ class JobPostingStore:
                 SELECT
                     id,
                     company,
+                    company_url,
                     title,
                     url,
                     source,
@@ -144,6 +156,7 @@ class JobPostingStore:
                 SELECT
                     id,
                     company,
+                    company_url,
                     title,
                     url,
                     source,

@@ -164,3 +164,40 @@ DATADOG_PAYLOAD = {
         },
     ]
 }
+
+# Company URL mapping for logo.dev and careers pages
+COMPANY_URL_MAPPING = {
+    # Workday companies
+    "Autodesk": "autodesk.com",
+    "CIBC": "cibc.com",
+    "Capital One": "capitalone.com",
+    "Cisco": "cisco.com",
+    "NVIDIA": "nvidia.com",
+    "Motorola": "motorolasolutions.com",
+    "RBC": "rbc.com",
+    "Salesforce": "salesforce.com",
+    "TD": "td.com",
+    "Telus": "telus.com",
+    # Greenhouse companies
+    "Stripe": "stripe.com",
+    "Pinterest": "pinterest.com",
+    "Twilio": "twilio.com",
+    # Rippling companies
+    "D-Wave": "dwavesys.com",
+    "Rippling": "rippling.com",
+    "Anaconda": "anaconda.com",
+    "Raptor Maps": "rapidmaps.com",
+    # Phenom People companies
+    "Palo Alto Networks": "paloaltonetworks.com",
+    # Direct API companies
+    "Databricks": "databricks.com",
+    "Datadog": "datadog.com",
+    # Ashby companies
+    "Cohere": "cohere.io",
+    "Perplexity": "perplexity.ai",
+    "RAMP": "ramppro.com",
+    "Snowflake": "snowflake.com",
+    "WealthSimple": "wealthsimple.com",
+    # Other
+    "Deloitte": "deloitte.com",
+}

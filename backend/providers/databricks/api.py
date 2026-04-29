@@ -5,7 +5,7 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from backend.config import DATABRICKS_COMPANY_URL, DEFAULT_HEADERS
+from backend.config import DATABRICKS_COMPANY_URL, DEFAULT_HEADERS, COMPANY_URL_MAPPING
 from backend.models import JobPosting
 from backend.providers.errors import DatabricksAPIError
 
@@ -108,6 +108,7 @@ class DatabricksClient:
                         source=self.api_url,
                         title=title,
                         company=self.company,
+                        company_url=self.company_url,
                         location=location,
                         url=url,
                     )

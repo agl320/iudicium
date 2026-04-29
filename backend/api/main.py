@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 class JobPostingResponse(BaseModel):
     id: int
     company: str
+    company_url: str
     title: str
     url: str
     source: str

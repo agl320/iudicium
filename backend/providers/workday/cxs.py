@@ -7,6 +7,7 @@ import aiohttp
 
 from backend.providers.errors import WorkdayAPIError
 from backend.models import JobPosting
+from backend.config.config import COMPANY_URL_MAPPING
 
 
 class WorkdayCxsClient:
@@ -163,6 +164,8 @@ class WorkdayCxsClient:
                     source=self.api_url,
                     title=title_str,
                     company=self.company,
+                    company_url=self.company_url
+                    or COMPANY_URL_MAPPING.get(self.company, ""),
                     location=location_str,
                     url=external_path_str,
                 )
@@ -210,6 +213,8 @@ class WorkdayCxsClient:
                     source=self.api_url,
                     title=title_str,
                     company=self.company,
+                    company_url=self.company_url
+                    or COMPANY_URL_MAPPING.get(self.company, ""),
                     location=location_str,
                     url=external_path_str,
                 )

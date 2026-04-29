@@ -11,6 +11,7 @@ from backend.config import (
     DATADOG_COMPANY_URL,
     DATADOG_PAYLOAD,
     DEFAULT_HEADERS,
+    COMPANY_URL_MAPPING,
 )
 from backend.models import JobPosting
 from backend.providers.errors import DatadogAPIError
@@ -118,6 +119,7 @@ class DatadogClient:
                         source=self.api_url,
                         title=title,
                         company=self.company,
+                        company_url=self.company_url,
                         location=location,
                         url=url,
                     )
