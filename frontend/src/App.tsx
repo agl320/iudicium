@@ -71,98 +71,110 @@ function App() {
   }
 
   return (
-    <section className="flex min-h-screen">
-      <div className="w-1/5"></div>
-      <div className="w-3/5 border-l border-r border-zinc-300 items-center text-center space-y-8 py-16 text-zinc-800 px-16">
-        <h1 className="text-7xl font-medium text-zinc-800">Iudicium</h1>
-        <form className="" onSubmit={handleSearchSubmit}>
-          <label className="" htmlFor="job-search">
-            <input
-              id="job-search"
-              type="search"
-              className="bg-gray-200 px-4 py-2 mx-2 "
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="e.g. engineer, manager, analyst"
-            />
-          </label>
-          <button
-            className="bg-zinc-800 text-white px-4 py-2  hover:bg-zinc-700 cursor-pointer"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "Search"}
-          </button>
-        </form>
+    <div>
+      <header className="h-16 w-full border-b border-zinc-300"></header>
+      <section className="flex min-h-screen">
+        <div className="w-1/5"></div>
+        <div className="w-3/5 border-l border-r border-zinc-300 items-center text-center text-zinc-800 flex">
+          <div className="w-8 h-full border-r border-dashed border-zinc-300"></div>
+          <div className="w-full space-y-8 py-12">
+            <h1 className="text-7xl font-medium text-zinc-800">Iudicium</h1>
+            <form className="" onSubmit={handleSearchSubmit}>
+              <label className="" htmlFor="job-search">
+                <input
+                  id="job-search"
+                  type="search"
+                  className="bg-gray-200 px-4 py-2 mx-2 "
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="e.g. engineer, manager, analyst"
+                />
+              </label>
+              <button
+                className="bg-zinc-800 text-white px-4 py-2 hover:bg-zinc-700 cursor-pointer"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Loading..." : "Search"}
+              </button>
+            </form>
 
-        {error ? <p>{error}</p> : null}
+            {error ? <p>{error}</p> : null}
 
-        <div className="text-sm text-zinc-600">
-          <p>Showing {jobs.length} jobs</p>
+            <div className="text-sm text-zinc-600">
+              <p>Showing {jobs.length} jobs</p>
+            </div>
+
+            <div className="text-left space-y-8">
+              {jobs.map((job) => (
+                <article
+                  key={job.id}
+                  className="flex gap-x-4 border-t border-b border-dashed border-zinc-300  p-4 "
+                >
+                  <img
+                    src={`https://img.logo.dev/${job.company_url}?token=${LOGO_DEV_PUBLIC_KEY}`}
+                    className=" w-12 h-12"
+                    alt={`${job.company} logo`}
+                  />
+                  <div className="w-full space-y-8">
+                    <h3 className="font-medium text-xl max-w-120">
+                      {job.title}
+                    </h3>
+                    <div className="grid grid-cols-[1fr_1fr_2fr_1fr_1fr] gap-4 uppercase">
+                      <div className="min-w-0 w-full">
+                        <p>COMPANY</p>
+                        <p className="font-medium truncate" title={job.company}>
+                          {truncateText(job.company, 24)}
+                        </p>
+                      </div>
+                      <div className="min-w-0 w-full">
+                        <p>DATE</p>
+                        <p
+                          className="font-medium truncate"
+                          title={formatDate(job.first_seen)}
+                        >
+                          {truncateText(formatDate(job.first_seen), 24)}
+                        </p>
+                      </div>
+                      <div className="min-w-0 w-full">
+                        <p>LOCATION</p>
+                        <p
+                          className="font-medium truncate"
+                          title={job.location}
+                        >
+                          {truncateText(job.location, 24)}
+                        </p>
+                      </div>
+                      <div className="min-w-0 w-full">
+                        <p>ID</p> <p className="font-medium">{job.id}</p>
+                      </div>
+                      <div className="min-w-0 w-full">
+                        <p>LINK</p>
+                        {job.url === "" ? (
+                          <a
+                            className="font-medium truncate block"
+                            href={job.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            title={job.url}
+                          >
+                            {truncateText("View", 24)}
+                          </a>
+                        ) : (
+                          <p className="font-medium text-zinc-400">View</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+          <div className="w-8 h-full border-l border-dashed border-zinc-300"></div>
         </div>
-
-        <div className="text-left space-y-8">
-          {jobs.map((job) => (
-            <article
-              key={job.id}
-              className="flex gap-x-4 border border-dashed border-zinc-300  p-4 "
-            >
-              <img
-                src={`https://img.logo.dev/${job.company_url}?token=${LOGO_DEV_PUBLIC_KEY}`}
-                className=" w-12 h-12"
-                alt={`${job.company} logo`}
-              />
-              <div className="w-full space-y-8">
-                <h3 className="font-medium text-xl max-w-120">{job.title}</h3>
-                <div className="grid grid-cols-[1fr_1fr_2fr_1fr_1fr] gap-4 uppercase">
-                  <div className="min-w-0 w-full">
-                    <p>COMPANY</p>
-                    <p className="font-medium truncate" title={job.company}>
-                      {truncateText(job.company, 24)}
-                    </p>
-                  </div>
-                  <div className="min-w-0 w-full">
-                    <p>DATE</p>
-                    <p
-                      className="font-medium truncate"
-                      title={formatDate(job.first_seen)}
-                    >
-                      {truncateText(formatDate(job.first_seen), 24)}
-                    </p>
-                  </div>
-                  <div className="min-w-0 w-full">
-                    <p>LOCATION</p>
-                    <p className="font-medium truncate" title={job.location}>
-                      {truncateText(job.location, 24)}
-                    </p>
-                  </div>
-                  <div className="min-w-0 w-full">
-                    <p>ID</p> <p className="font-medium">{job.id}</p>
-                  </div>
-                  <div className="min-w-0 w-full">
-                    <p>LINK</p>
-                    <a
-                      className="font-medium truncate block"
-                      href={job.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      title={job.url}
-                    >
-                      {truncateText("View", 24)}
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </article>
-          ))}
-
-          {!loading && jobs.length === 0 ? (
-            <p className="">No jobs found for that search.</p>
-          ) : null}
-        </div>
-      </div>
-      <div className="w-1/5"></div>
-    </section>
+        <div className="w-1/5"></div>
+      </section>
+    </div>
   );
 }
 

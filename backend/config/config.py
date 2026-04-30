@@ -26,6 +26,11 @@ WESTERN_DIGITAL_COMPANY_URL = "https://careers.westerndigital.com"
 WESTERN_DIGITAL_API_URL = (
     "https://api.smartrecruiters.com/v1/companies/westerndigital/postings"
 )
+TEXAS_INSTRUMENTS_COMPANY_URL = "https://careers.ti.com"
+TEXAS_INSTRUMENTS_API_URL = (
+    "https://edbz.fa.us2.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?"
+    "finder=findReqs;siteNumber=CX&onlyData=true&limit=25&expand=requisitionList.workLocation"
+)
 SALESFORCE_COMPANY_URL = (
     "https://salesforce.wd12.myworkdayjobs.com/en-US/External_Career_Site"
 )
@@ -208,6 +213,7 @@ COMPANY_URL_MAPPING = {
     "Datadog": "datadog.com",
     "Sandisk": "sandisk.com",
     "Western Digital": "westerndigital.com",
+    "Texas Instruments": "ti.com",
     # Ashby companies
     "Cohere": "cohere.io",
     "Perplexity": "perplexity.ai",

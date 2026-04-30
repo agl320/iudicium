@@ -74,6 +74,7 @@ from .smartrecruiters import (
     SandiskAPIClient,
     WesternDigitalAPIClient,
 )
+from .oraclecloud import OracleCloudClient, TexasInstrumentsAPIClient
 
 __all__ = [
     "AshbyAPIClient",
@@ -142,6 +143,8 @@ __all__ = [
     "SmartRecruitersClient",
     "SandiskAPIClient",
     "WesternDigitalAPIClient",
+    "OracleCloudClient",
+    "TexasInstrumentsAPIClient",
     "DatadogClient",
     "DatadogAPIClient",
     "DatadogAPIError",

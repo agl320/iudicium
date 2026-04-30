@@ -139,3 +139,11 @@ class DatadogAPIError(ProviderAPIError):
 
 class SmartRecruitersAPIError(ProviderAPIError):
     pass
+
+
+class OracleCloudAPIError(ProviderAPIError):
+    pass
+
+
+class TexasInstrumentsOracleCloudAPIError(ProviderAPIError):
+    pass
