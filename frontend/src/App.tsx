@@ -62,19 +62,25 @@ function App() {
     return date.toLocaleDateString();
   }
 
+  function truncateText(value: string, maxLength: number): string {
+    if (value.length <= maxLength) {
+      return value;
+    }
+
+    return `${value.slice(0, maxLength - 1)}…`;
+  }
+
   return (
     <section className="flex min-h-screen">
-      <div className="w-1/6"></div>
-      <div className="w-4/6 border-l border-r border-zinc-300 items-center text-center space-y-8 py-16 text-zinc-800 px-16">
-        <h1 className="text-7xl font-rubber-biscuit italic text-zinc-800">
-          iudicium
-        </h1>
+      <div className="w-1/5"></div>
+      <div className="w-3/5 border-l border-r border-zinc-300 items-center text-center space-y-8 py-16 text-zinc-800 px-16">
+        <h1 className="text-7xl font-medium text-zinc-800">Iudicium</h1>
         <form className="" onSubmit={handleSearchSubmit}>
           <label className="" htmlFor="job-search">
             <input
               id="job-search"
               type="search"
-              className="bg-gray-200 rounded px-4 py-2 mx-2"
+              className="bg-gray-200 rounded px-4 py-2 mx-2 "
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="e.g. engineer, manager, analyst"
@@ -97,25 +103,55 @@ function App() {
 
         <div className="text-left space-y-8">
           {jobs.map((job) => (
-            <article key={job.id} className="flex gap-x-4">
+            <article
+              key={job.id}
+              className="flex gap-x-4 border border-dashed border-zinc-300  p-4 "
+            >
               <img
                 src={`https://img.logo.dev/${job.company_url}?token=${LOGO_DEV_PUBLIC_KEY}`}
                 className="rounded w-12 h-12"
                 alt={`${job.company} logo`}
               />
-              <div>
-                <div className="">
-                  <h3 className="font-medium">{job.title}</h3>
-                  <span>{job.company}</span>
+              <div className="w-full space-y-8">
+                <h3 className="font-medium text-xl max-w-120">{job.title}</h3>
+                <div className="grid grid-cols-[1fr_1fr_2fr_1fr_1fr] gap-4 uppercase">
+                  <div className="min-w-0 w-full">
+                    <p>COMPANY</p>
+                    <p className="font-medium truncate" title={job.company}>
+                      {truncateText(job.company, 24)}
+                    </p>
+                  </div>
+                  <div className="min-w-0 w-full">
+                    <p>DATE</p>
+                    <p
+                      className="font-medium truncate"
+                      title={formatDate(job.first_seen)}
+                    >
+                      {truncateText(formatDate(job.first_seen), 24)}
+                    </p>
+                  </div>
+                  <div className="min-w-0 w-full">
+                    <p>LOCATION</p>
+                    <p className="font-medium truncate" title={job.location}>
+                      {truncateText(job.location, 24)}
+                    </p>
+                  </div>
+                  <div className="min-w-0 w-full">
+                    <p>ID</p> <p className="font-medium">{job.id}</p>
+                  </div>
+                  <div className="min-w-0 w-full">
+                    <p>LINK</p>
+                    <a
+                      className="font-medium truncate block"
+                      href={job.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={job.url}
+                    >
+                      {truncateText("View posting", 24)}
+                    </a>
+                  </div>
                 </div>
-                <p>{job.location}</p>
-                <p>{job.company_url}</p>
-                <p>{formatDate(job.first_seen)}</p>
-                <p>
-                  <a href={job.url} target="_blank" rel="noreferrer">
-                    View posting
-                  </a>
-                </p>
               </div>
             </article>
           ))}
@@ -125,7 +161,7 @@ function App() {
           ) : null}
         </div>
       </div>
-      <div className="w-1/6"></div>
+      <div className="w-1/5"></div>
     </section>
   );
 }
