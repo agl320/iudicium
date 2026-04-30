@@ -101,6 +101,10 @@ class TwilioGreenhouseAPIError(ProviderAPIError):
     pass
 
 
+class SofiGreenhouseAPIError(ProviderAPIError):
+    pass
+
+
 class AnacondaAPIError(ProviderAPIError):
     pass
 
@@ -130,4 +134,8 @@ class DatabricksAPIError(ProviderAPIError):
 
 
 class DatadogAPIError(ProviderAPIError):
+    pass
+
+
+class SmartRecruitersAPIError(ProviderAPIError):
     pass

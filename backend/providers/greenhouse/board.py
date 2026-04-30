@@ -117,12 +117,21 @@ class GreenhouseBoardClient:
             absolute_url = job.get("absolute_url")
             url_str = str(absolute_url) if absolute_url is not None else ""
 
+            # Resolve company URL from mapping using case-insensitive match
+            company_url = ""
+            if company_str:
+                lookup = company_str.strip()
+                for k, v in COMPANY_URL_MAPPING.items():
+                    if k.lower() == lookup.lower():
+                        company_url = v
+                        break
+
             results.append(
                 JobPosting(
                     source=self.api_url,
                     title=title_str,
                     company=company_str,
-                    company_url=COMPANY_URL_MAPPING.get(company_str, ""),
+                    company_url=company_url,
                     location=location_str,
                     url=url_str,
                 )

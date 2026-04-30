@@ -14,6 +14,7 @@ from .errors import (
     RampAPIError,
     StripeGreenhouseAPIError,
     TwilioGreenhouseAPIError,
+    SofiGreenhouseAPIError,
     RBCAPIError,
     SalesforceAPIError,
     TDAPIError,
@@ -60,12 +61,19 @@ from .greenhouse import (
     PinterestGreenhouseAPIClient,
     StripeGreenhouseAPIClient,
     TwilioGreenhouseAPIClient,
+    SofiGreenhouseAPIClient,
 )
 from .deloitte import DeloitteAPIClient
 from .phenom_people import PhenomPeopleClient, PaloAltoNetworksPhenomAPIClient
 from .databricks import DatabricksClient, DatabricksAPIClient
 from .datadog import DatadogClient, DatadogAPIClient
 from .amd import AMDAPIClient
+from .smartrecruiters import (
+    SmartRecruitersAPIError,
+    SmartRecruitersClient,
+    SandiskAPIClient,
+    WesternDigitalAPIClient,
+)
 
 __all__ = [
     "AshbyAPIClient",
@@ -113,6 +121,7 @@ __all__ = [
     "StripeGreenhouseAPIClient",
     "StripeGreenhouseAPIError",
     "TwilioGreenhouseAPIClient",
+    "SofiGreenhouseAPIClient",
     "TwilioGreenhouseAPIError",
     "RipplingAPIError",
     "DWaveAPIError",
@@ -129,6 +138,10 @@ __all__ = [
     "DatabricksAPIClient",
     "DatabricksAPIError",
     "AMDAPIClient",
+    "SmartRecruitersAPIError",
+    "SmartRecruitersClient",
+    "SandiskAPIClient",
+    "WesternDigitalAPIClient",
     "DatadogClient",
     "DatadogAPIClient",
     "DatadogAPIError",

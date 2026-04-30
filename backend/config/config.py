@@ -20,6 +20,12 @@ INTEL_COMPANY_URL = "https://intel.wd1.myworkdayjobs.com/en-US/External"
 INTEL_API_URL = "https://intel.wd1.myworkdayjobs.com/wday/cxs/intel/External/jobs"
 AMD_COMPANY_URL = "https://careers.amd.com"
 AMD_API_URL = "https://careers.amd.com/api/jobs?sortBy=relevance&internal=false"
+SANDISK_COMPANY_URL = "https://careers.sandisk.com"
+SANDISK_API_URL = "https://api.smartrecruiters.com/v1/companies/sandisk/postings"
+WESTERN_DIGITAL_COMPANY_URL = "https://careers.westerndigital.com"
+WESTERN_DIGITAL_API_URL = (
+    "https://api.smartrecruiters.com/v1/companies/westerndigital/postings"
+)
 SALESFORCE_COMPANY_URL = (
     "https://salesforce.wd12.myworkdayjobs.com/en-US/External_Career_Site"
 )
@@ -66,6 +72,7 @@ PINTEREST_GREENHOUSE_API_URL = (
     "https://boards-api.greenhouse.io/v1/boards/pinterest/jobs"
 )
 TWILIO_GREENHOUSE_API_URL = "https://boards-api.greenhouse.io/v1/boards/twilio/jobs"
+SOFI_GREENHOUSE_API_URL = "https://boards-api.greenhouse.io/v1/boards/sofi/jobs"
 
 RAPTOR_MAPS_API_URL = "https://ats.rippling.com/api/v2/board/raptor-maps-inc/jobs"
 
@@ -188,6 +195,7 @@ COMPANY_URL_MAPPING = {
     "Stripe": "stripe.com",
     "Pinterest": "pinterest.com",
     "Twilio": "twilio.com",
+    "Sofi": "sofi.com",
     # Rippling companies
     "D-Wave": "dwavesys.com",
     "Rippling": "rippling.com",
@@ -198,6 +206,8 @@ COMPANY_URL_MAPPING = {
     # Direct API companies
     "Databricks": "databricks.com",
     "Datadog": "datadog.com",
+    "Sandisk": "sandisk.com",
+    "Western Digital": "westerndigital.com",
     # Ashby companies
     "Cohere": "cohere.io",
     "Perplexity": "perplexity.ai",
