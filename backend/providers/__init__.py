@@ -65,6 +65,7 @@ from .deloitte import DeloitteAPIClient
 from .phenom_people import PhenomPeopleClient, PaloAltoNetworksPhenomAPIClient
 from .databricks import DatabricksClient, DatabricksAPIClient
 from .datadog import DatadogClient, DatadogAPIClient
+from .amd import AMDAPIClient
 
 __all__ = [
     "AshbyAPIClient",
@@ -127,6 +128,7 @@ __all__ = [
     "DatabricksClient",
     "DatabricksAPIClient",
     "DatabricksAPIError",
+    "AMDAPIClient",
     "DatadogClient",
     "DatadogAPIClient",
     "DatadogAPIError",

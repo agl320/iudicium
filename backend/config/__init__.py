@@ -46,6 +46,8 @@ from .config import (
     DELOITTE_API_URL,
     DELOITTE_PAYLOAD,
     COMPANY_URL_MAPPING,
+    AMD_API_URL,
+    AMD_COMPANY_URL,
 )
 
 __all__ = [
@@ -90,4 +92,6 @@ __all__ = [
     "TELUS_API_URL",
     "DELOITTE_API_URL",
     "DELOITTE_PAYLOAD",
+    "AMD_API_URL",
+    "AMD_COMPANY_URL",
 ]

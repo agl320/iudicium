@@ -80,14 +80,14 @@ function App() {
             <input
               id="job-search"
               type="search"
-              className="bg-gray-200 rounded px-4 py-2 mx-2 "
+              className="bg-gray-200 px-4 py-2 mx-2 "
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="e.g. engineer, manager, analyst"
             />
           </label>
           <button
-            className="bg-zinc-800 text-white px-4 py-2 rounded hover:bg-zinc-700 cursor-pointer"
+            className="bg-zinc-800 text-white px-4 py-2  hover:bg-zinc-700 cursor-pointer"
             type="submit"
             disabled={loading}
           >
@@ -109,7 +109,7 @@ function App() {
             >
               <img
                 src={`https://img.logo.dev/${job.company_url}?token=${LOGO_DEV_PUBLIC_KEY}`}
-                className="rounded w-12 h-12"
+                className=" w-12 h-12"
                 alt={`${job.company} logo`}
               />
               <div className="w-full space-y-8">
