@@ -172,6 +172,7 @@ DATADOG_PAYLOAD = {
 # Company URL mapping for logo.dev and careers pages
 COMPANY_URL_MAPPING = {
     # Workday companies
+    "AMD": "amd.com",
     "Autodesk": "autodesk.com",
     "CIBC": "cibc.com",
     "Capital One": "capitalone.com",

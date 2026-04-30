@@ -148,7 +148,7 @@ function App() {
                       rel="noreferrer"
                       title={job.url}
                     >
-                      {truncateText("View posting", 24)}
+                      {truncateText("View", 24)}
                     </a>
                   </div>
                 </div>
