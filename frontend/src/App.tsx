@@ -57,6 +57,11 @@ function App() {
     await fetchData(searchTerm);
   }
 
+  function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  }
+
   return (
     <section className="flex min-h-screen">
       <div className="w-1/6"></div>
@@ -80,7 +85,7 @@ function App() {
             type="submit"
             disabled={loading}
           >
-            {loading ? "Loading..." : "Search (max 100)"}
+            {loading ? "Loading..." : "Search"}
           </button>
         </form>
 
@@ -90,23 +95,28 @@ function App() {
           <p>Showing {jobs.length} jobs</p>
         </div>
 
-        <div className="text-left">
+        <div className="text-left space-y-8">
           {jobs.map((job) => (
-            <article key={job.id} className="">
-              <div className="">
-                <h3>{job.title}</h3>
-                <span>{job.company}</span>
-              </div>
-              <p>{job.location}</p>
+            <article key={job.id} className="flex gap-x-4">
               <img
                 src={`https://img.logo.dev/${job.company_url}?token=${LOGO_DEV_PUBLIC_KEY}`}
+                className="rounded w-12 h-12"
                 alt={`${job.company} logo`}
               />
-              <p>
-                <a href={job.url} target="_blank" rel="noreferrer">
-                  View posting
-                </a>
-              </p>
+              <div>
+                <div className="">
+                  <h3 className="font-medium">{job.title}</h3>
+                  <span>{job.company}</span>
+                </div>
+                <p>{job.location}</p>
+                <p>{job.company_url}</p>
+                <p>{formatDate(job.first_seen)}</p>
+                <p>
+                  <a href={job.url} target="_blank" rel="noreferrer">
+                    View posting
+                  </a>
+                </p>
+              </div>
             </article>
           ))}
 
