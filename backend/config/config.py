@@ -16,6 +16,10 @@ TELUS_COMPANY_URL = "https://lifeworks.wd3.myworkdayjobs.com/en-US/External"
 TELUS_API_URL = (
     "https://lifeworks.wd3.myworkdayjobs.com/wday/cxs/lifeworks/External/jobs"
 )
+INTEL_COMPANY_URL = "https://intel.wd1.myworkdayjobs.com/en-US/External"
+INTEL_API_URL = "https://intel.wd1.myworkdayjobs.com/wday/cxs/intel/External/jobs"
+AMD_COMPANY_URL = "https://careers.amd.com"
+AMD_API_URL = "https://careers.amd.com/api/jobs?sortBy=relevance&internal=false"
 SALESFORCE_COMPANY_URL = (
     "https://salesforce.wd12.myworkdayjobs.com/en-US/External_Career_Site"
 )
@@ -178,6 +182,7 @@ COMPANY_URL_MAPPING = {
     "Salesforce": "salesforce.com",
     "TD": "td.com",
     "Telus": "telus.com",
+    "Intel": "intel.com",
     # Greenhouse companies
     "Stripe": "stripe.com",
     "Pinterest": "pinterest.com",
