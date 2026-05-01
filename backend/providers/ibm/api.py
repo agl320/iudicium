@@ -5,7 +5,12 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from backend.config import COMPANY_URL_MAPPING, DEFAULT_HEADERS, IBM_COMPANY_URL, IBM_PAYLOAD
+from backend.config import (
+    COMPANY_URL_MAPPING,
+    DEFAULT_HEADERS,
+    IBM_COMPANY_URL,
+    IBM_PAYLOAD,
+)
 from backend.models import JobPosting
 from backend.providers.errors import IBMAPIError
 

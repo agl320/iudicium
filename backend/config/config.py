@@ -78,6 +78,9 @@ PINTEREST_GREENHOUSE_API_URL = (
 )
 TWILIO_GREENHOUSE_API_URL = "https://boards-api.greenhouse.io/v1/boards/twilio/jobs"
 SOFI_GREENHOUSE_API_URL = "https://boards-api.greenhouse.io/v1/boards/sofi/jobs"
+CLOUDFLARE_GREENHOUSE_API_URL = (
+    "https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs"
+)
 
 RAPTOR_MAPS_API_URL = "https://ats.rippling.com/api/v2/board/raptor-maps-inc/jobs"
 
@@ -215,6 +218,7 @@ COMPANY_URL_MAPPING = {
     "Pinterest": "pinterest.com",
     "Twilio": "twilio.com",
     "Sofi": "sofi.com",
+    "Cloudflare": "cloudflare.com",
     # Rippling companies
     "D-Wave": "dwavesys.com",
     "Rippling": "rippling.com",

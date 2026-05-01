@@ -3,6 +3,7 @@ from .pinterest import PinterestGreenhouseAPIClient
 from .stripe import StripeGreenhouseAPIClient
 from .twilio import TwilioGreenhouseAPIClient
 from .sofi import SofiGreenhouseAPIClient
+from .cloudflare import CloudflareGreenhouseAPIClient
 
 __all__ = [
     "GreenhouseBoardClient",
@@ -10,4 +11,5 @@ __all__ = [
     "StripeGreenhouseAPIClient",
     "TwilioGreenhouseAPIClient",
     "SofiGreenhouseAPIClient",
+    "CloudflareGreenhouseAPIClient",
 ]

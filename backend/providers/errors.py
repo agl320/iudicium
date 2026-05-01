@@ -105,6 +105,10 @@ class SofiGreenhouseAPIError(ProviderAPIError):
     pass
 
 
+class CloudflareGreenhouseAPIError(ProviderAPIError):
+    pass
+
+
 class AnacondaAPIError(ProviderAPIError):
     pass
 

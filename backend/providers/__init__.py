@@ -15,6 +15,7 @@ from .errors import (
     StripeGreenhouseAPIError,
     TwilioGreenhouseAPIError,
     SofiGreenhouseAPIError,
+    CloudflareGreenhouseAPIError,
     RBCAPIError,
     SalesforceAPIError,
     TDAPIError,
@@ -63,6 +64,7 @@ from .greenhouse import (
     StripeGreenhouseAPIClient,
     TwilioGreenhouseAPIClient,
     SofiGreenhouseAPIClient,
+    CloudflareGreenhouseAPIClient,
 )
 from .deloitte import DeloitteAPIClient
 from .phenom_people import PhenomPeopleClient, PaloAltoNetworksPhenomAPIClient
@@ -125,7 +127,9 @@ __all__ = [
     "StripeGreenhouseAPIError",
     "TwilioGreenhouseAPIClient",
     "SofiGreenhouseAPIClient",
+    "CloudflareGreenhouseAPIClient",
     "TwilioGreenhouseAPIError",
+    "CloudflareGreenhouseAPIError",
     "RipplingAPIError",
     "DWaveAPIError",
     "RipplingBoardClient",

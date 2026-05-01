@@ -9,6 +9,7 @@ from backend.providers.amd import AMDAPIClient
 from backend.providers.smartrecruiters import SandiskAPIClient, WesternDigitalAPIClient
 from backend.providers.oraclecloud import TexasInstrumentsAPIClient
 from backend.providers.ibm import IBMAPIClient
+from backend.providers.greenhouse import CloudflareGreenhouseAPIClient
 from backend.services.job_store import JobPostingStore
 
 
@@ -16,6 +17,7 @@ def build_default_api_clients() -> list[object]:
     return [
         AMDAPIClient(),
         IBMAPIClient(),
+        CloudflareGreenhouseAPIClient(),
         SandiskAPIClient(),
         WesternDigitalAPIClient(),
         TexasInstrumentsAPIClient(),
