@@ -28,6 +28,7 @@ from .errors import (
     PaloAltoNetworksPhenomAPIError,
     DatabricksAPIError,
     DatadogAPIError,
+    IBMAPIError,
     CapitalOneAPIError,
 )
 from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
@@ -67,6 +68,7 @@ from .deloitte import DeloitteAPIClient
 from .phenom_people import PhenomPeopleClient, PaloAltoNetworksPhenomAPIClient
 from .databricks import DatabricksClient, DatabricksAPIClient
 from .datadog import DatadogClient, DatadogAPIClient
+from .ibm import IBMClient, IBMAPIClient
 from .amd import AMDAPIClient
 from .smartrecruiters import (
     SmartRecruitersAPIError,
@@ -139,6 +141,9 @@ __all__ = [
     "DatabricksAPIClient",
     "DatabricksAPIError",
     "AMDAPIClient",
+    "IBMClient",
+    "IBMAPIClient",
+    "IBMAPIError",
     "SmartRecruitersAPIError",
     "SmartRecruitersClient",
     "SandiskAPIClient",

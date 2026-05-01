@@ -19,10 +19,10 @@ export function SearchForm({
         <input
           id="job-search"
           type="search"
-          className="bg-gray-200 px-4 py-2 mx-2 "
+          className="bg-gray-200 px-4 py-2 mx-2 w-60"
           value={searchTerm}
           onChange={(event) => onSearchTermChange(event.target.value)}
-          placeholder="e.g. engineer, manager, analyst"
+          placeholder="e.g. Software Engineer"
         />
       </label>
       <button

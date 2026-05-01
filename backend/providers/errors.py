@@ -137,6 +137,10 @@ class DatadogAPIError(ProviderAPIError):
     pass
 
 
+class IBMAPIError(ProviderAPIError):
+    pass
+
+
 class SmartRecruitersAPIError(ProviderAPIError):
     pass
 

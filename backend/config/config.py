@@ -181,6 +181,20 @@ DATADOG_PAYLOAD = {
     ]
 }
 
+IBM_API_URL = "https://www-api.ibm.com/search/api/v2"
+IBM_COMPANY_URL = "https://careers.ibm.com"
+IBM_PAYLOAD = {
+    "appId": "careers",
+    "scopes": ["careers2"],
+    "query": {
+        "bool": {
+            "must": [],
+        }
+    },
+    "size": 100,
+    "_source": ["title", "url", "description", "field_keyword_17"],
+}
+
 # Company URL mapping for logo.dev and careers pages
 COMPANY_URL_MAPPING = {
     # Workday companies
@@ -211,6 +225,7 @@ COMPANY_URL_MAPPING = {
     # Direct API companies
     "Databricks": "databricks.com",
     "Datadog": "datadog.com",
+    "IBM": "ibm.com",
     "Sandisk": "sandisk.com",
     "Western Digital": "westerndigital.com",
     "Texas Instruments": "ti.com",
