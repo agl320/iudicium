@@ -16,3 +16,9 @@ class CohereAPIClient(AshbyAPIClient):
 
     def search_raw(self):
         return super().search_raw(organization_hosted_jobs_page_name="cohere")
+
+    def search_job_postings(self):
+        decoded = self.search_raw()
+        return self._parse_job_postings(
+            decoded, company="Cohere", company_url="https://cohere.io"
+        )

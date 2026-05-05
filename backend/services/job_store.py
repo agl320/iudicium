@@ -125,10 +125,20 @@ class JobPostingStore:
         query_tokens = self._tokenize_query(normalized_query)
 
         if query_tokens:
-            where_clause = " AND ".join(["LOWER(title) LIKE ?" for _ in query_tokens])
-            query_params: tuple[str | int, ...] = tuple(
-                f"%{token}%" for token in query_tokens
-            ) + (capped_limit,)
+            where_clause = " OR ".join(["LOWER(title) LIKE ?" for _ in query_tokens])
+            # Build a CASE statement to count how many tokens match (for ranking)
+            match_count_expr = " + ".join(
+                [
+                    f"(CASE WHEN LOWER(title) LIKE ? THEN 1 ELSE 0 END)"
+                    for _ in query_tokens
+                ]
+            )
+            # Parameters: token patterns for WHERE, then token patterns again for ranking, then limit
+            query_params: tuple[str | int, ...] = (
+                tuple(f"%{token}%" for token in query_tokens)
+                + tuple(f"%{token}%" for token in query_tokens)
+                + (capped_limit,)
+            )
             cursor = self.connection.execute(
                 f"""
                 SELECT
@@ -143,7 +153,7 @@ class JobPostingStore:
                     last_seen
                 FROM job_postings
                 WHERE {where_clause}
-                ORDER BY last_seen DESC
+                ORDER BY {match_count_expr} DESC, last_seen DESC
                 LIMIT ?
                 """,
                 query_params,

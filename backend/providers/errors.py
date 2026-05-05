@@ -109,6 +109,10 @@ class CloudflareGreenhouseAPIError(ProviderAPIError):
     pass
 
 
+class MongoDBGreenhouseAPIError(ProviderAPIError):
+    pass
+
+
 class AnacondaAPIError(ProviderAPIError):
     pass
 

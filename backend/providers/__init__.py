@@ -65,6 +65,7 @@ from .greenhouse import (
     TwilioGreenhouseAPIClient,
     SofiGreenhouseAPIClient,
     CloudflareGreenhouseAPIClient,
+    MongoDBGreenhouseAPIClient,
 )
 from .deloitte import DeloitteAPIClient
 from .phenom_people import PhenomPeopleClient, PaloAltoNetworksPhenomAPIClient
@@ -128,8 +129,10 @@ __all__ = [
     "TwilioGreenhouseAPIClient",
     "SofiGreenhouseAPIClient",
     "CloudflareGreenhouseAPIClient",
+    "MongoDBGreenhouseAPIClient",
     "TwilioGreenhouseAPIError",
     "CloudflareGreenhouseAPIError",
+    "MongoDBGreenhouseAPIError",
     "RipplingAPIError",
     "DWaveAPIError",
     "RipplingBoardClient",

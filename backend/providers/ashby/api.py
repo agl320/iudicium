@@ -6,8 +6,8 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from backend.providers.errors import AshbyAPIError
-from backend.config import ASHBY_API_URL, DEFAULT_HEADERS
-
+from backend.config import ASHBY_API_URL, DEFAULT_HEADERS, COMPANY_URL_MAPPING
+from backend.models import JobPosting
 
 # GraphQL query for Ashby's API to fetch job board data with teams.
 API_JOB_BOARD_WITH_TEAMS_QUERY = """query ApiJobBoardWithTeams($organizationHostedJobsPageName: String!) {
@@ -110,3 +110,48 @@ class AshbyAPIClient:
             )
 
         return decoded
+
+    def search_job_postings(self) -> list[JobPosting]:
+        """Must be overridden by subclasses to provide organization_hosted_jobs_page_name."""
+        raise NotImplementedError(
+            "search_job_postings() must be implemented by subclasses"
+        )
+
+    def _parse_job_postings(
+        self, decoded: dict[str, Any], company: str, company_url: str
+    ) -> list[JobPosting]:
+        """Parse Ashby GraphQL response into JobPosting objects."""
+        postings: list[JobPosting] = []
+        seen_ids: set[str] = set()
+
+        data = decoded.get("data", {})
+        job_board = data.get("jobBoard", {})
+        job_postings = job_board.get("jobPostings", [])
+
+        if not isinstance(job_postings, list):
+            return []
+
+        for job in job_postings:
+            if not isinstance(job, dict):
+                continue
+
+            job_id = str(job.get("id") or "")
+            title = str(job.get("title") or "")
+            location = str(job.get("locationName") or "")
+
+            if not title or not job_id or job_id in seen_ids:
+                continue
+
+            seen_ids.add(job_id)
+            postings.append(
+                JobPosting(
+                    source=self.api_url,
+                    title=title,
+                    company=company,
+                    company_url=COMPANY_URL_MAPPING.get(company, company_url),
+                    location=location,
+                    url="",
+                )
+            )
+
+        return postings

@@ -6,10 +6,19 @@ from time import monotonic
 
 from backend.providers.errors import ProviderAPIError
 from backend.providers.amd import AMDAPIClient
+from backend.providers.ashby import (
+    AshbyHQAPIClient,
+    CohereAPIClient,
+    PerplexityAPIClient,
+    RampAPIClient,
+    SnowflakeAPIClient,
+    WealthsimpleAPIClient,
+)
 from backend.providers.smartrecruiters import SandiskAPIClient, WesternDigitalAPIClient
 from backend.providers.oraclecloud import TexasInstrumentsAPIClient
 from backend.providers.ibm import IBMAPIClient
 from backend.providers.greenhouse import CloudflareGreenhouseAPIClient
+from backend.providers.greenhouse import MongoDBGreenhouseAPIClient
 from backend.services.job_store import JobPostingStore
 
 
@@ -17,7 +26,14 @@ def build_default_api_clients() -> list[object]:
     return [
         AMDAPIClient(),
         IBMAPIClient(),
+        AshbyHQAPIClient(),
+        CohereAPIClient(),
+        PerplexityAPIClient(),
+        RampAPIClient(),
+        SnowflakeAPIClient(),
+        WealthsimpleAPIClient(),
         CloudflareGreenhouseAPIClient(),
+        MongoDBGreenhouseAPIClient(),
         SandiskAPIClient(),
         WesternDigitalAPIClient(),
         TexasInstrumentsAPIClient(),

@@ -18,3 +18,9 @@ class WealthsimpleAPIClient(AshbyAPIClient):
 
     def search_raw(self):
         return super().search_raw(organization_hosted_jobs_page_name="wealthsimple")
+
+    def search_job_postings(self):
+        decoded = self.search_raw()
+        return self._parse_job_postings(
+            decoded, company="WealthSimple", company_url="https://wealthsimple.com"
+        )

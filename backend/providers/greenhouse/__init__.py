@@ -4,6 +4,7 @@ from .stripe import StripeGreenhouseAPIClient
 from .twilio import TwilioGreenhouseAPIClient
 from .sofi import SofiGreenhouseAPIClient
 from .cloudflare import CloudflareGreenhouseAPIClient
+from .mongodb import MongoDBGreenhouseAPIClient
 
 __all__ = [
     "GreenhouseBoardClient",
@@ -12,4 +13,5 @@ __all__ = [
     "TwilioGreenhouseAPIClient",
     "SofiGreenhouseAPIClient",
     "CloudflareGreenhouseAPIClient",
+    "MongoDBGreenhouseAPIClient",
 ]
