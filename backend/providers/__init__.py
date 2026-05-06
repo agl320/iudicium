@@ -45,6 +45,7 @@ from .workday import (
     TelusAPIClient,
     WorkdayCxsClient,
     CiscoAPIClient,
+    MastercardAPIClient,
 )
 from .ashby import (
     AshbyAPIClient,
@@ -109,6 +110,7 @@ __all__ = [
     "WealthsimpleAPIClient",
     "WealthsimpleAPIError",
     "CiscoAPIClient",
+    "MastercardAPIClient",
     "CohereAPIError",
     "PerplexityAPIClient",
     "PerplexityAPIError",

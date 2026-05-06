@@ -60,6 +60,8 @@ from .config import (
     COMPANY_URL_MAPPING,
     AMD_API_URL,
     AMD_COMPANY_URL,
+    MASTERCARD_API_URL,
+    MASTERCARD_COMPANY_URL,
 )
 
 __all__ = [
@@ -118,4 +120,6 @@ __all__ = [
     "TEXAS_INSTRUMENTS_COMPANY_URL",
     "AMD_API_URL",
     "AMD_COMPANY_URL",
+    "MASTERCARD_API_URL",
+    "MASTERCARD_COMPANY_URL",
 ]

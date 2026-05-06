@@ -9,6 +9,7 @@ from .salesforce import SalesforceAPIClient
 from .telus import TelusAPIClient
 from .td import TDAPIClient, TD_JOB_TYPE_FACET_IDS
 from .cisco import CiscoAPIClient
+from .mastercard import MastercardAPIClient
 
 __all__ = [
     "CapitalOneAPIClient",
@@ -24,4 +25,5 @@ __all__ = [
     "TD_JOB_TYPE_FACET_IDS",
     "WorkdayCxsClient",
     "CiscoAPIClient",
+    "MastercardAPIClient",
 ]

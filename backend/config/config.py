@@ -20,6 +20,12 @@ INTEL_COMPANY_URL = "https://intel.wd1.myworkdayjobs.com/en-US/External"
 INTEL_API_URL = "https://intel.wd1.myworkdayjobs.com/wday/cxs/intel/External/jobs"
 AMD_COMPANY_URL = "https://careers.amd.com"
 AMD_API_URL = "https://careers.amd.com/api/jobs?sortBy=relevance&internal=false"
+MASTERCARD_COMPANY_URL = (
+    "https://mastercard.wd1.myworkdayjobs.com/en-US/CorporateCareers"
+)
+MASTERCARD_API_URL = (
+    "https://mastercard.wd1.myworkdayjobs.com/wday/cxs/mastercard/CorporateCareers/jobs"
+)
 SANDISK_COMPANY_URL = "https://careers.sandisk.com"
 SANDISK_API_URL = "https://api.smartrecruiters.com/v1/companies/sandisk/postings"
 WESTERN_DIGITAL_COMPANY_URL = "https://careers.westerndigital.com"
@@ -214,6 +220,7 @@ COMPANY_URL_MAPPING = {
     "TD": "td.com",
     "Telus": "telus.com",
     "Intel": "intel.com",
+    "Mastercard": "mastercard.com",
     # Greenhouse companies
     "Stripe": "stripe.com",
     "Pinterest": "pinterest.com",
