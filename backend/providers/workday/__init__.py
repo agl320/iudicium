@@ -10,6 +10,8 @@ from .telus import TelusAPIClient
 from .td import TDAPIClient, TD_JOB_TYPE_FACET_IDS
 from .cisco import CiscoAPIClient
 from .mastercard import MastercardAPIClient
+from .logitech import LogitechAPIClient
+from .hp import HPAPIClient
 
 __all__ = [
     "CapitalOneAPIClient",
@@ -26,4 +28,6 @@ __all__ = [
     "WorkdayCxsClient",
     "CiscoAPIClient",
     "MastercardAPIClient",
+    "LogitechAPIClient",
+    "HPAPIClient",
 ]

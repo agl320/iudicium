@@ -16,6 +16,8 @@ from backend.providers.workday.salesforce import SalesforceAPIClient
 from backend.providers.workday.td import TDAPIClient
 from backend.providers.workday.telus import TelusAPIClient
 from backend.providers.workday.mastercard import MastercardAPIClient
+from backend.providers.workday.logitech import LogitechAPIClient
+from backend.providers.workday.hp import HPAPIClient
 from backend.services.job_store import JobPostingStore
 from backend.config.config import INTEL_API_URL, INTEL_COMPANY_URL
 
@@ -32,6 +34,8 @@ def build_default_workday_clients() -> list[object]:
         TDAPIClient(),
         TelusAPIClient(),
         MastercardAPIClient(),
+        LogitechAPIClient(),
+        HPAPIClient(),
         WorkdayCxsClient(
             api_url=INTEL_API_URL, company="Intel", company_url=INTEL_COMPANY_URL
         ),

@@ -9,6 +9,7 @@ from backend.providers.greenhouse.pinterest import PinterestGreenhouseAPIClient
 from backend.providers.greenhouse.stripe import StripeGreenhouseAPIClient
 from backend.providers.greenhouse.twilio import TwilioGreenhouseAPIClient
 from backend.providers.greenhouse.sofi import SofiGreenhouseAPIClient
+from backend.providers.greenhouse.gitlab import GitLabGreenhouseAPIClient
 from backend.services.job_store import JobPostingStore
 
 
@@ -18,6 +19,7 @@ def build_default_greenhouse_clients() -> list[object]:
         StripeGreenhouseAPIClient(),
         TwilioGreenhouseAPIClient(),
         SofiGreenhouseAPIClient(),
+        GitLabGreenhouseAPIClient(),
     ]
 
 

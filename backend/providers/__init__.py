@@ -31,6 +31,7 @@ from .errors import (
     DatadogAPIError,
     IBMAPIError,
     CapitalOneAPIError,
+    MicrosoftAPIError,
 )
 from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
 from .workday import (
@@ -46,6 +47,8 @@ from .workday import (
     WorkdayCxsClient,
     CiscoAPIClient,
     MastercardAPIClient,
+    LogitechAPIClient,
+    HPAPIClient,
 )
 from .ashby import (
     AshbyAPIClient,
@@ -67,6 +70,7 @@ from .greenhouse import (
     SofiGreenhouseAPIClient,
     CloudflareGreenhouseAPIClient,
     MongoDBGreenhouseAPIClient,
+    GitLabGreenhouseAPIClient,
 )
 from .deloitte import DeloitteAPIClient
 from .phenom_people import PhenomPeopleClient, PaloAltoNetworksPhenomAPIClient
@@ -74,6 +78,7 @@ from .databricks import DatabricksClient, DatabricksAPIClient
 from .datadog import DatadogClient, DatadogAPIClient
 from .ibm import IBMClient, IBMAPIClient
 from .amd import AMDAPIClient
+from .microsoft import MicrosoftAPIClient
 from .smartrecruiters import (
     SmartRecruitersAPIError,
     SmartRecruitersClient,
@@ -132,6 +137,7 @@ __all__ = [
     "SofiGreenhouseAPIClient",
     "CloudflareGreenhouseAPIClient",
     "MongoDBGreenhouseAPIClient",
+    "GitLabGreenhouseAPIClient",
     "TwilioGreenhouseAPIError",
     "CloudflareGreenhouseAPIError",
     "MongoDBGreenhouseAPIError",
@@ -150,6 +156,10 @@ __all__ = [
     "DatabricksAPIClient",
     "DatabricksAPIError",
     "AMDAPIClient",
+    "MicrosoftAPIClient",
+    "MicrosoftAPIError",
+    "LogitechAPIClient",
+    "HPAPIClient",
     "IBMClient",
     "IBMAPIClient",
     "IBMAPIError",

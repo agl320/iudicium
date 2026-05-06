@@ -19,6 +19,10 @@ class JobPostingResponse(BaseModel):
     last_seen: str
 
 
+class BackendStatusResponse(BaseModel):
+    last_updated_at: str | None
+
+
 app = FastAPI()
 
 app.add_middleware(
@@ -33,6 +37,15 @@ app.add_middleware(
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/jobs/status", response_model=BackendStatusResponse)
+def jobs_status() -> BackendStatusResponse:
+    store = JobPostingStore()
+    try:
+        return BackendStatusResponse(last_updated_at=store.get_last_updated_at())
+    finally:
+        store.close()
 
 
 @app.get("/jobs/recent", response_model=list[JobPostingResponse])

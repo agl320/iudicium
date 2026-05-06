@@ -5,6 +5,7 @@ from .twilio import TwilioGreenhouseAPIClient
 from .sofi import SofiGreenhouseAPIClient
 from .cloudflare import CloudflareGreenhouseAPIClient
 from .mongodb import MongoDBGreenhouseAPIClient
+from .gitlab import GitLabGreenhouseAPIClient
 
 __all__ = [
     "GreenhouseBoardClient",
@@ -14,4 +15,5 @@ __all__ = [
     "SofiGreenhouseAPIClient",
     "CloudflareGreenhouseAPIClient",
     "MongoDBGreenhouseAPIClient",
+    "GitLabGreenhouseAPIClient",
 ]

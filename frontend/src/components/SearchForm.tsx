@@ -19,14 +19,14 @@ export function SearchForm({
         <input
           id="job-search"
           type="search"
-          className="bg-gray-200 px-4 py-2 mx-2 w-60"
+          className="bg-gray-200 px-4 py-2 mr-2 w-60 rounded-sm"
           value={searchTerm}
           onChange={(event) => onSearchTermChange(event.target.value)}
           placeholder="e.g. Software Engineer"
         />
       </label>
       <button
-        className="bg-zinc-800 text-white px-4 py-2 hover:bg-zinc-700 cursor-pointer"
+        className="bg-zinc-800 text-white px-4 py-2 hover:bg-zinc-700 cursor-pointer rounded-sm"
         type="submit"
         disabled={loading}
       >

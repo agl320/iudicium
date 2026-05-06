@@ -159,3 +159,7 @@ class OracleCloudAPIError(ProviderAPIError):
 
 class TexasInstrumentsOracleCloudAPIError(ProviderAPIError):
     pass
+
+
+class MicrosoftAPIError(ProviderAPIError):
+    pass

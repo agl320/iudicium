@@ -20,6 +20,17 @@ INTEL_COMPANY_URL = "https://intel.wd1.myworkdayjobs.com/en-US/External"
 INTEL_API_URL = "https://intel.wd1.myworkdayjobs.com/wday/cxs/intel/External/jobs"
 AMD_COMPANY_URL = "https://careers.amd.com"
 AMD_API_URL = "https://careers.amd.com/api/jobs?sortBy=relevance&internal=false"
+MICROSOFT_COMPANY_URL = "https://careers.microsoft.com"
+MICROSOFT_API_URL = (
+    "https://apply.careers.microsoft.com/api/pcsx/search?domain=microsoft.com"
+    "&query=&location=&start=0&sort_by=timestamp&&hl=en"
+)
+LOGITECH_COMPANY_URL = "https://logitech.wd5.myworkdayjobs.com/en-US/Logitech/"
+LOGITECH_API_URL = (
+    "https://logitech.wd5.myworkdayjobs.com/wday/cxs/logitech/Logitech/jobs"
+)
+HP_COMPANY_URL = "https://hp.wd5.myworkdayjobs.com/en-US/ExternalCareerSite"
+HP_API_URL = "https://hp.wd5.myworkdayjobs.com/wday/cxs/hp/ExternalCareerSite/jobs"
 MASTERCARD_COMPANY_URL = (
     "https://mastercard.wd1.myworkdayjobs.com/en-US/CorporateCareers"
 )
@@ -87,6 +98,7 @@ SOFI_GREENHOUSE_API_URL = "https://boards-api.greenhouse.io/v1/boards/sofi/jobs"
 CLOUDFLARE_GREENHOUSE_API_URL = (
     "https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs"
 )
+GITLAB_GREENHOUSE_API_URL = "https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs"
 MONGODB_GREENHOUSE_API_URL = "https://boards-api.greenhouse.io/v1/boards/mongodb/jobs"
 
 RAPTOR_MAPS_API_URL = "https://ats.rippling.com/api/v2/board/raptor-maps-inc/jobs"
@@ -221,6 +233,8 @@ COMPANY_URL_MAPPING = {
     "Telus": "telus.com",
     "Intel": "intel.com",
     "Mastercard": "mastercard.com",
+    "Logitech": "logitech.com",
+    "HP": "hp.com",
     # Greenhouse companies
     "Stripe": "stripe.com",
     "Pinterest": "pinterest.com",
@@ -229,6 +243,7 @@ COMPANY_URL_MAPPING = {
     "Cloudflare": "cloudflare.com",
     "MongoDB": "mongodb.com",
     "Cloudflare": "cloudflare.com",
+    "GitLab": "gitlab.com",
     # Rippling companies
     "D-Wave": "dwavesys.com",
     "Rippling": "rippling.com",
@@ -240,6 +255,7 @@ COMPANY_URL_MAPPING = {
     "Databricks": "databricks.com",
     "Datadog": "datadog.com",
     "IBM": "ibm.com",
+    "Microsoft": "microsoft.com",
     "Sandisk": "sandisk.com",
     "Western Digital": "westerndigital.com",
     "Texas Instruments": "ti.com",

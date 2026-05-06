@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
 @import "./fonts/style.css";
 
@@ -9,7 +9,7 @@
 }
 
 :root {
-  --font-ibm-plex-sans: 'IBM Plex Sans', sans-serif;
+  --font-ibm-plex-sans: 'Inter', sans-serif;
   --font-helvetica: 'Helvetica', sans-serif;
   --font-rubber-biscuit: 'Rubber Biscuit', sans-serif;
   font-family: var(--font-ibm-plex-sans);

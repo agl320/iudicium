@@ -125,20 +125,10 @@ class JobPostingStore:
         query_tokens = self._tokenize_query(normalized_query)
 
         if query_tokens:
-            where_clause = " OR ".join(["LOWER(title) LIKE ?" for _ in query_tokens])
-            # Build a CASE statement to count how many tokens match (for ranking)
-            match_count_expr = " + ".join(
-                [
-                    f"(CASE WHEN LOWER(title) LIKE ? THEN 1 ELSE 0 END)"
-                    for _ in query_tokens
-                ]
-            )
-            # Parameters: token patterns for WHERE, then token patterns again for ranking, then limit
-            query_params: tuple[str | int, ...] = (
-                tuple(f"%{token}%" for token in query_tokens)
-                + tuple(f"%{token}%" for token in query_tokens)
-                + (capped_limit,)
-            )
+            where_clause = " AND ".join(["LOWER(title) LIKE ?" for _ in query_tokens])
+            query_params: tuple[str | int, ...] = tuple(
+                f"%{token}%" for token in query_tokens
+            ) + (capped_limit,)
             cursor = self.connection.execute(
                 f"""
                 SELECT
@@ -153,7 +143,7 @@ class JobPostingStore:
                     last_seen
                 FROM job_postings
                 WHERE {where_clause}
-                ORDER BY {match_count_expr} DESC, last_seen DESC
+                ORDER BY last_seen DESC
                 LIMIT ?
                 """,
                 query_params,
@@ -181,6 +171,15 @@ class JobPostingStore:
         columns = [description[0] for description in cursor.description or ()]
         rows = cursor.fetchall()
         return [dict(zip(columns, row, strict=False)) for row in rows]
+
+    def get_last_updated_at(self) -> str | None:
+        cursor = self.connection.execute("SELECT MAX(last_seen) FROM job_postings")
+        row = cursor.fetchone()
+        if not row:
+            return None
+
+        last_updated_at = row[0]
+        return str(last_updated_at) if last_updated_at is not None else None
 
     def close(self) -> None:
         self.connection.close()
