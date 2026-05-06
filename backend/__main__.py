@@ -28,13 +28,5 @@ async def run_pollers_once(*, max_jobs_per_client: int = 100) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--workday-max-jobs-per-client",
-        type=int,
-        default=100,
-        help="Maximum number of Workday postings to fetch per client",
-    )
-    args = parser.parse_args()
 
-    asyncio.run(run_pollers_once(max_jobs_per_client=args.workday_max_jobs_per_client))
+    asyncio.run(run_pollers_once(max_jobs_per_client=1000))
