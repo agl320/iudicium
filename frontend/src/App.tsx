@@ -68,9 +68,33 @@ function App() {
           <div className="w-1/5 border-r border-dashed border-zinc-300">
             <header className="h-12 w-full border-b border-zinc-300"></header>
             <div className="space-y-4 py-8 text-sm text-zinc-500">
-              <p>Github</p>
-              <p>Linkedin</p>
-              <p>Contact</p>
+              <p>
+                <a
+                  href="https://github.com/agl320"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub
+                </a>
+              </p>
+              <p>
+                <a
+                  href="https://www.linkedin.com/in/the-andrew-lai/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  LinkedIn
+                </a>
+              </p>
+              <p>
+                <a
+                  href="https://andrewlai.ca/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Contact
+                </a>
+              </p>
             </div>
           </div>
           <div className="w-4/5">
