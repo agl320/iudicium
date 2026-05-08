@@ -29,4 +29,4 @@ async def run_pollers_once(*, max_jobs_per_client: int = 100) -> None:
 
 if __name__ == "__main__":
 
-    asyncio.run(run_pollers_once(max_jobs_per_client=1000))
+    asyncio.run(run_pollers_once(max_jobs_per_client=2000))

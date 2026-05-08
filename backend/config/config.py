@@ -18,6 +18,10 @@ TELUS_API_URL = (
 )
 INTEL_COMPANY_URL = "https://intel.wd1.myworkdayjobs.com/en-US/External"
 INTEL_API_URL = "https://intel.wd1.myworkdayjobs.com/wday/cxs/intel/External/jobs"
+ADOBE_COMPANY_URL = "https://adobe.wd5.myworkdayjobs.com/en-US/external_experienced/"
+ADOBE_API_URL = (
+    "https://adobe.wd5.myworkdayjobs.com/wday/cxs/adobe/external_experienced/jobs"
+)
 AMD_COMPANY_URL = "https://careers.amd.com"
 AMD_API_URL = "https://careers.amd.com/api/jobs?sortBy=relevance&internal=false"
 MICROSOFT_COMPANY_URL = "https://careers.microsoft.com"
@@ -232,6 +236,7 @@ COMPANY_URL_MAPPING = {
     "TD": "td.com",
     "Telus": "telus.com",
     "Intel": "intel.com",
+    "Adobe": "adobe.com",
     "Mastercard": "mastercard.com",
     "Logitech": "logitech.com",
     "HP": "hp.com",

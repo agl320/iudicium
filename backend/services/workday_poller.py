@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from time import monotonic
 
 from backend.providers.errors import WorkdayAPIError
+from backend.providers.workday.adobe import AdobeAPIClient
 from backend.providers.workday.cxs import WorkdayCxsClient
 from backend.providers.workday.capitalone import CapitalOneAPIClient
 from backend.providers.workday.autodesk import AutodeskAPIClient
@@ -24,6 +25,7 @@ from backend.config.config import INTEL_API_URL, INTEL_COMPANY_URL
 
 def build_default_workday_clients() -> list[object]:
     return [
+        AdobeAPIClient(),
         CapitalOneAPIClient(),
         AutodeskAPIClient(),
         CIBCAPIClient(),

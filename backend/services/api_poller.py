@@ -6,6 +6,7 @@ from time import monotonic
 
 from backend.providers.errors import ProviderAPIError
 from backend.providers.amd import AMDAPIClient
+from backend.providers.databricks import DatabricksAPIClient
 from backend.providers.microsoft import MicrosoftAPIClient
 from backend.providers.ashby import (
     AshbyHQAPIClient,
@@ -26,6 +27,7 @@ from backend.services.job_store import JobPostingStore
 def build_default_api_clients() -> list[object]:
     return [
         AMDAPIClient(),
+        DatabricksAPIClient(),
         MicrosoftAPIClient(),
         IBMAPIClient(),
         AshbyHQAPIClient(),

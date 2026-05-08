@@ -35,6 +35,7 @@ from .errors import (
 )
 from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
 from .workday import (
+    AdobeAPIClient,
     CapitalOneAPIClient,
     AutodeskAPIClient,
     CIBCAPIClient,
@@ -88,6 +89,7 @@ from .smartrecruiters import (
 from .oraclecloud import OracleCloudClient, TexasInstrumentsAPIClient
 
 __all__ = [
+    "AdobeAPIClient",
     "AshbyAPIClient",
     "AshbyAPIError",
     "AshbyHQAPIClient",

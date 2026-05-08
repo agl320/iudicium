@@ -1,4 +1,5 @@
 from .cxs import WorkdayCxsClient
+from .adobe import AdobeAPIClient
 from .capitalone import CapitalOneAPIClient
 from .autodesk import AutodeskAPIClient
 from .cibc import CIBCAPIClient
@@ -14,6 +15,7 @@ from .logitech import LogitechAPIClient
 from .hp import HPAPIClient
 
 __all__ = [
+    "AdobeAPIClient",
     "CapitalOneAPIClient",
     "AutodeskAPIClient",
     "CIBCAPIClient",
