@@ -49,11 +49,10 @@ class APIPoller:
         self,
         *,
         interval_minutes: float = 5.0,
-        db_path: str = "data/iudicium.db",
     ) -> None:
         self.clients = build_default_api_clients()
         self.interval_seconds = max(1.0, interval_minutes * 60.0)
-        self.store = JobPostingStore(db_path=db_path)
+        self.store = JobPostingStore()
 
     async def _run_client(self, client: object) -> None:
         try:

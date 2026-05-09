@@ -50,12 +50,11 @@ class WorkdayPoller:
         *,
         interval_minutes: float = 5.0,
         max_jobs_per_client: int = 500,
-        db_path: str = "data/iudicium.db",
     ) -> None:
         self.clients = build_default_workday_clients()
         self.interval_seconds = max(1.0, interval_minutes * 60.0)
         self.max_jobs_per_client = max(1, max_jobs_per_client)
-        self.store = JobPostingStore(db_path=db_path)
+        self.store = JobPostingStore()
 
     """Polls Workday job postings for multiple clients and stores them in a local database."""
 

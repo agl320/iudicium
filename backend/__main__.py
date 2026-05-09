@@ -2,10 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import argparse
+import os
+
+from dotenv import load_dotenv
 
 from backend.services.workday_poller import WorkdayPoller
 from backend.services.greenhouse_poller import GreenhousePoller
 from backend.services.api_poller import APIPoller
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 async def run_pollers_once(*, max_jobs_per_client: int = 100) -> None:

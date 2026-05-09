@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import os
 from fastapi import FastAPI, Query
 from pydantic import BaseModel
+from dotenv import load_dotenv
 
 from backend.services.job_store import JobPostingStore
 from fastapi.middleware.cors import CORSMiddleware
+
+load_dotenv()
 
 
 class JobPostingResponse(BaseModel):
@@ -25,9 +29,14 @@ class BackendStatusResponse(BaseModel):
 
 app = FastAPI()
 
+# Local development CORS
+cors_origins = os.getenv(
+    "CORS_ORIGINS", "http://127.0.0.1:5173,http://localhost:5173"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
