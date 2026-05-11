@@ -20,7 +20,7 @@ export async function fetchRecentJobs(query: string): Promise<JobPosting[]> {
   let q = supabase
     .from("job_postings")
     .select("*")
-    .order("last_seen", { ascending: false })
+    .order("first_seen", { ascending: false })
     .limit(100);
 
   if (query.trim().length > 0) {
