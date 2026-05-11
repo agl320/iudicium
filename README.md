@@ -1,10 +1,12 @@
 [![Netlify Status](https://api.netlify.com/api/v1/badges/db111ce5-16eb-41b2-9ac4-d47fb8be7742/deploy-status)](https://app.netlify.com/projects/iudicium/deploys)
 # iudicium
 
+https://iudicium.netlify.app/
+
 Technical overview
 ------------------
 
-Iudicium aggregates job postings from multiple provider adapters, stores them in a Postgres table, and serves a lightweight React frontend.
+Iudicium aggregates job postings from multiple provider adapters, stores them in a Postgres table, and serves a lightweight React frontend. Updated every 12 hours.
 
 Architecture
 - Backend: Python service under `backend/`.
