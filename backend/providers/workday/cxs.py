@@ -1,5 +1,8 @@
 import json
 import re
+import random
+import asyncio
+import logging
 from typing import Any
 from urllib.parse import urljoin, urlsplit
 
@@ -65,24 +68,67 @@ class WorkdayCxsClient:
         request_headers.setdefault("Accept", "application/json")
         request_headers.setdefault("User-Agent", "iudicium/0.1")
 
-        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
-        try:
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.post(
+        logger = logging.getLogger(__name__)
+        # Retry with exponential backoff and jitter for transient network/timeouts
+        max_attempts = 3
+        base_backoff = 0.5
+        body = None
+        for attempt in range(1, max_attempts + 1):
+            timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+            try:
+                logger.debug(
+                    "Workday request attempt %d/%d to %s (limit=%s offset=%s)",
+                    attempt,
+                    max_attempts,
                     self.api_url,
-                    json=payload,
-                    headers=request_headers,
-                ) as response:
-                    body = await response.text()
-                    if response.status >= 400:
-                        detail = f"HTTP {response.status} {response.reason}"
-                        if body:
-                            detail += f": {body}"
-                        raise self.error_cls(f"Workday API request failed: {detail}")
-        except aiohttp.ClientError as exc:
-            raise self.error_cls(f"Workday API request failed: {exc}") from exc
-        except TimeoutError as exc:
-            raise self.error_cls(f"Workday API request timed out: {exc}") from exc
+                    limit,
+                    offset,
+                )
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    async with session.post(
+                        self.api_url,
+                        json=payload,
+                        headers=request_headers,
+                    ) as response:
+                        body = await response.text()
+                        if response.status >= 400:
+                            detail = f"HTTP {response.status} {response.reason}"
+                            if body:
+                                detail += f": {body}"
+                            raise self.error_cls(
+                                f"Workday API request failed: {detail}"
+                            )
+                logger.debug(
+                    "Workday request to %s succeeded on attempt %d",
+                    self.api_url,
+                    attempt,
+                )
+                break
+            except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
+                if attempt >= max_attempts:
+                    logger.error(
+                        "Workday request to %s failed after %d attempts: %s",
+                        self.api_url,
+                        attempt,
+                        exc,
+                    )
+                    # Surface last error after retries
+                    raise self.error_cls(
+                        f"Workday API request failed after {attempt} attempts: {exc}"
+                    ) from exc
+                # backoff with jitter
+                jitter = random.uniform(0, base_backoff)
+                backoff = base_backoff * (2 ** (attempt - 1)) + jitter
+                logger.warning(
+                    "Workday request attempt %d/%d to %s failed: %s; backing off %.2fs",
+                    attempt,
+                    max_attempts,
+                    self.api_url,
+                    exc,
+                    backoff,
+                )
+                await asyncio.sleep(backoff)
+                continue
 
         try:
             decoded = json.loads(body)

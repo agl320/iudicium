@@ -1,36 +1,59 @@
 import type { JobPosting } from "../types/jobs";
+import { createClient } from "@supabase/supabase-js";
 
-const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error(
+    "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in environment",
+  );
+}
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 type BackendStatus = {
   last_updated_at: string | null;
 };
 
 export async function fetchRecentJobs(query: string): Promise<JobPosting[]> {
-  const params = new URLSearchParams({
-    limit: "100",
-  });
+  let q = supabase
+    .from("job_postings")
+    .select("*")
+    .order("last_seen", { ascending: false })
+    .limit(100);
 
-  const normalizedQuery = query.trim();
-  if (normalizedQuery.length > 0) {
-    params.set("query", normalizedQuery);
+  if (query.trim().length > 0) {
+    const tokens = query
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((t) => t.length > 0);
+
+    // Case-insensitive pattern matching
+    for (const token of tokens) {
+      q = q.ilike("title", `%${token}%`);
+    }
   }
 
-  const response = await fetch(
-    `${BACKEND_API_URL}/jobs/recent?${params.toString()}`,
-  );
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+  const { data, error } = await q;
+  if (error) {
+    throw new Error(`Failed to fetch jobs: ${error.message}`);
   }
 
-  return (await response.json()) as JobPosting[];
+  return (data || []) as JobPosting[];
 }
 
 export async function fetchBackendStatus(): Promise<BackendStatus> {
-  const response = await fetch(`${BACKEND_API_URL}/jobs/status`);
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+  const { data, error } = await supabase
+    .from("job_postings")
+    .select("last_seen", { count: "exact" })
+    .order("last_seen", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    throw new Error(`Failed to fetch status: ${error.message}`);
   }
 
-  return (await response.json()) as BackendStatus;
+  const last_updated_at = data?.[0]?.last_seen || null;
+  return { last_updated_at };
 }

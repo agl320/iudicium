@@ -4,9 +4,10 @@ import { formatDate, truncateText } from "../utils/jobs";
 type JobCardProps = {
   job: JobPosting;
   logoDevPublicKey: string;
+  index: number;
 };
 
-export function JobCard({ job, logoDevPublicKey }: JobCardProps) {
+export function JobCard({ job, logoDevPublicKey, index }: JobCardProps) {
   const formattedDate = formatDate(job.first_seen);
 
   return (
@@ -22,7 +23,11 @@ export function JobCard({ job, logoDevPublicKey }: JobCardProps) {
           alt={`${job.company} logo`}
         />
         <div className="w-full space-y-8">
-          <h3 className="font-medium text-lg max-w-120">{job.title}</h3>
+          <div className="flex justify-between">
+            <h3 className="font-medium text-lg max-w-120">{job.title}</h3>
+            <p className="text-xs text-zinc-400 mr-4">{index + 1}</p>
+          </div>
+
           <div className="grid grid-cols-[1fr_1fr_2fr_1fr_1fr] gap-4 uppercase text-sm">
             <div className="min-w-0 w-full">
               <p>COMPANY</p>

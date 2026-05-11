@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from datetime import UTC, datetime
 from time import monotonic
 
@@ -50,21 +51,43 @@ class WorkdayPoller:
         *,
         interval_minutes: float = 5.0,
         max_jobs_per_client: int = 500,
+        pagination_delay_seconds: float = 0.5,
+        client_delay_seconds: float = 0.5,
     ) -> None:
         self.clients = build_default_workday_clients()
         self.interval_seconds = max(1.0, interval_minutes * 60.0)
         self.max_jobs_per_client = max(1, max_jobs_per_client)
+        self.pagination_delay_seconds = max(0.0, pagination_delay_seconds)
+        self.client_delay_seconds = max(0.0, client_delay_seconds)
         self.store = JobPostingStore()
 
     """Polls Workday job postings for multiple clients and stores them in a local database."""
 
     async def _run_client(self, client: object) -> None:
+        logger = logging.getLogger(__name__)
+        client_name = getattr(client, "company", client.__class__.__name__)
+        logger.info("Starting Workday client: %s", client_name)
+        start = monotonic()
         try:
             postings = await self._collect_postings(client)
             self.store.upsert_postings(postings)
+            duration = monotonic() - start
+            logger.info(
+                "Completed Workday client %s: fetched %d postings in %.2fs",
+                client_name,
+                len(postings),
+                duration,
+            )
             first = postings[:1]
             print(first, end="\n")
         except WorkdayAPIError as exc:
+            duration = monotonic() - start
+            logger.warning(
+                "Workday client %s failed after %.2fs: %s",
+                client_name,
+                duration,
+                exc,
+            )
             print(f"[{client.__class__.__name__}] error: {exc}\n")
 
     async def _collect_postings(self, client: object) -> list[object]:
@@ -98,11 +121,16 @@ class WorkdayPoller:
             if len(page) < request_limit:
                 break
 
+            if self.pagination_delay_seconds > 0:
+                await asyncio.sleep(self.pagination_delay_seconds)
+
         return collected
 
     async def run(self) -> None:
-        tasks = [self._run_client(client) for client in self.clients]
-        await asyncio.gather(*tasks)
+        for client in self.clients:
+            await self._run_client(client)
+            if self.client_delay_seconds > 0:
+                await asyncio.sleep(self.client_delay_seconds)
 
     async def run_poll(self) -> None:
         while True:

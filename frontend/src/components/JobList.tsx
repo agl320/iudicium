@@ -9,8 +9,13 @@ type JobListProps = {
 export function JobList({ jobs, logoDevPublicKey }: JobListProps) {
   return (
     <div className="text-left space-y-8">
-      {jobs.map((job) => (
-        <JobCard key={job.id} job={job} logoDevPublicKey={logoDevPublicKey} />
+      {jobs.map((job, index) => (
+        <JobCard
+          key={job.id}
+          job={job}
+          logoDevPublicKey={logoDevPublicKey}
+          index={index}
+        />
       ))}
     </div>
   );

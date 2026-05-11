@@ -17,12 +17,10 @@ class JobPostingStore:
 
     def __init__(self, database_url: str | None = None) -> None:
         if database_url is None:
-            database_url = os.getenv("DATABASE_SESSION_POOLER_URL") or os.getenv(
-                "DATABASE_URL"
-            )
+            database_url = os.getenv("DATABASE_SESSION_POOLER_URL")
             if not database_url:
                 raise ValueError(
-                    "DATABASE_SESSION_POOLER_URL or DATABASE_URL not set in environment or passed as argument"
+                    "DATABASE_SESSION_POOLER_URL not set in environment or passed as argument"
                 )
         self.database_url = database_url
         # create pool if needed

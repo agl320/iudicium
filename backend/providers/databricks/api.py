@@ -5,7 +5,7 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from backend.config import DATABRICKS_COMPANY_URL, DEFAULT_HEADERS, COMPANY_URL_MAPPING
+from backend.config import DEFAULT_HEADERS, COMPANY_URL_MAPPING
 from backend.models import JobPosting
 from backend.providers.errors import DatabricksAPIError
 
@@ -16,14 +16,14 @@ class DatabricksClient:
         api_url: str,
         *,
         company: str = "Databricks",
-        company_url: str = DATABRICKS_COMPANY_URL,
+        company_url: str | None = None,
         timeout_s: float = 30.0,
         headers: dict[str, str] | None = None,
         error_cls: type[RuntimeError] = DatabricksAPIError,
     ) -> None:
         self.api_url = api_url
         self.company = company
-        self.company_url = company_url
+        self.company_url = company_url or COMPANY_URL_MAPPING.get(company, "")
         self.timeout_s = timeout_s
         self.headers = dict(headers or DEFAULT_HEADERS)
         self.error_cls = error_cls
