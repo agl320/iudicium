@@ -64,8 +64,8 @@ class JobPostingStore:
                 """)
 
                 cursor.execute("""
-                    CREATE INDEX IF NOT EXISTS idx_job_postings_last_seen
-                    ON job_postings(last_seen DESC)
+                    CREATE INDEX IF NOT EXISTS idx_job_postings_first_seen
+                    ON job_postings(first_seen DESC)
                 """)
                 conn.commit()
         finally:
@@ -162,7 +162,7 @@ class JobPostingStore:
                             last_seen
                         FROM job_postings
                         WHERE {where_clause}
-                        ORDER BY last_seen DESC
+                        ORDER BY first_seen DESC
                         LIMIT %s
                         """,
                         query_params + (capped_limit,),
@@ -181,7 +181,7 @@ class JobPostingStore:
                             first_seen,
                             last_seen
                         FROM job_postings
-                        ORDER BY last_seen DESC
+                        ORDER BY first_seen DESC
                         LIMIT %s
                         """,
                         (capped_limit,),
