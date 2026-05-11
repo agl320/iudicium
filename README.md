@@ -4,7 +4,7 @@
 Technical overview
 ------------------
 
-Brief: iudicium aggregates job postings from multiple provider adapters, stores them in a Postgres table, and serves a lightweight React frontend. Supabase is used as the hosted Postgres instance for the frontend client.
+Iudicium aggregates job postings from multiple provider adapters, stores them in a Postgres table, and serves a lightweight React frontend.
 
 Architecture
 - Backend: Python service under `backend/`.
