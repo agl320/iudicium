@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import argparse
 import os
+import logging
 
 from dotenv import load_dotenv
 
@@ -12,6 +13,12 @@ from backend.services.api_poller import APIPoller
 
 # Load environment variables from .env file
 load_dotenv()
+
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=getattr(logging, log_level, logging.INFO),
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 
 
 async def run_pollers_once(*, max_jobs_per_client: int = 100) -> None:
