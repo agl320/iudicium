@@ -267,7 +267,7 @@ COMPANY_URL_MAPPING = {
     # Ashby companies
     "Cohere": "cohere.io",
     "Perplexity": "perplexity.ai",
-    "RAMP": "ramppro.com",
+    "RAMP": "ramp.com",
     "Snowflake": "snowflake.com",
     "WealthSimple": "wealthsimple.com",
     # Other

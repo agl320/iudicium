@@ -32,8 +32,6 @@ async def run_pollers_once(*, max_jobs_per_client: int = 100) -> None:
             greenhouse_poller.run(),
             api_poller.run(),
         )
-        rows = workday_poller.store.get_recent_postings(limit=20)
-        print(rows[:3])
     finally:
         workday_poller.close()
         greenhouse_poller.close()
