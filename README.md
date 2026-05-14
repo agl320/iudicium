@@ -6,7 +6,7 @@ https://iudicium.netlify.app/
 Technical overview
 ------------------
 
-Iudicium aggregates job postings from multiple provider adapters, stores them in a Postgres table, and serves a lightweight React frontend. Updated every 12 hours.
+Iudicium aggregates job postings from multiple provider adapters, stores them in a Postgres table, and serves a lightweight React frontend. Updated every 12 hours. Built because I'm lazy when it comes to searching for jobs.
 
 Architecture
 - Backend: Python service under `backend/`.
