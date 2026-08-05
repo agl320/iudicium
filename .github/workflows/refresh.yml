@@ -3,7 +3,7 @@ name: Refresh Job Postings
 on:
   schedule:
     # Run every hour, at minute 1
-    - cron: '1 * * * *'
+    - cron: '17 * * * *'
   # Allow manual trigger from Actions tab
   workflow_dispatch:
 
