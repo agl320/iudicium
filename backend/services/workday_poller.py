@@ -22,31 +22,64 @@ from backend.providers.workday.mastercard import MastercardAPIClient
 from backend.providers.workday.logitech import LogitechAPIClient
 from backend.providers.workday.hp import HPAPIClient
 from backend.services.job_store import JobPostingStore
-from backend.config.config import INTEL_API_URL, INTEL_COMPANY_URL
+from backend.config.config import (
+    DEFAULT_WORKDAY_PAYLOAD,
+    INTEL_API_URL,
+    INTEL_COMPANY_URL,
+)
 
 
 def build_default_workday_clients() -> list[object]:
     return [
-        AdobeAPIClient(payload={"workerSubType": ["3ba4ecdf4893100b2f8d08d56d8d6c8e"]}),
+        AdobeAPIClient(
+            payload={
+                **DEFAULT_WORKDAY_PAYLOAD,
+                "appliedFacets": {
+                    "workerSubType": ["3ba4ecdf4893100b2f8d08d56d8d6c8e"]
+                },
+            }
+        ),
         # CapitalOneAPIClient(),
         AutodeskAPIClient(
-            payload={"workerSubType": ["39f5af07b0c54bc588b1a47788da7f81"]}
+            payload={
+                **DEFAULT_WORKDAY_PAYLOAD,
+                "appliedFacets": {
+                    "workerSubType": ["39f5af07b0c54bc588b1a47788da7f81"]
+                },
+            }
         ),
         # CIBCAPIClient(),
         # MotorolaAPIClient(),
         NvidiaAPIClient(
-            payload={"workerSubType": ["0c40f6bd1d8f10adf6dae42e46d44a17"]}
+            payload={
+                **DEFAULT_WORKDAY_PAYLOAD,
+                "appliedFacets": {
+                    "workerSubType": ["0c40f6bd1d8f10adf6dae42e46d44a17"]
+                },
+            }
         ),
         # RBCAPIClient(),
         # SalesforceAPIClient(),
         # TDAPIClient(),
         # TelusAPIClient(),
         MastercardAPIClient(
-            payload={"workerSubType": ["cfba33fac07f49c9b6d3d53336c6a291"]}
+            payload={
+                **DEFAULT_WORKDAY_PAYLOAD,
+                "appliedFacets": {
+                    "workerSubType": ["cfba33fac07f49c9b6d3d53336c6a291"]
+                },
+            }
         ),
         # LogitechAPIClient(),
         # HPAPIClient(),
-        IntelAPIClient(payload={"workerSubType": ["dc8bf79476611087dfde99931439ae75"]}),
+        IntelAPIClient(
+            payload={
+                **DEFAULT_WORKDAY_PAYLOAD,
+                "appliedFacets": {
+                    "workerSubType": ["dc8bf79476611087dfde99931439ae75"]
+                },
+            }
+        ),
     ]
 
 
