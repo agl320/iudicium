@@ -11,6 +11,7 @@ from backend.providers.workday.cxs import WorkdayCxsClient
 from backend.providers.workday.capitalone import CapitalOneAPIClient
 from backend.providers.workday.autodesk import AutodeskAPIClient
 from backend.providers.workday.cibc import CIBCAPIClient
+from backend.providers.workday.intel import IntelAPIClient
 from backend.providers.workday.motorola import MotorolaAPIClient
 from backend.providers.workday.nvidia import NvidiaAPIClient
 from backend.providers.workday.rbc import RBCAPIClient
@@ -26,22 +27,26 @@ from backend.config.config import INTEL_API_URL, INTEL_COMPANY_URL
 
 def build_default_workday_clients() -> list[object]:
     return [
-        AdobeAPIClient(),
-        CapitalOneAPIClient(),
-        AutodeskAPIClient(),
-        CIBCAPIClient(),
-        MotorolaAPIClient(),
-        NvidiaAPIClient(),
-        RBCAPIClient(),
-        SalesforceAPIClient(),
-        TDAPIClient(),
-        TelusAPIClient(),
-        MastercardAPIClient(),
-        LogitechAPIClient(),
-        HPAPIClient(),
-        WorkdayCxsClient(
-            api_url=INTEL_API_URL, company="Intel", company_url=INTEL_COMPANY_URL
+        AdobeAPIClient(payload={"workerSubType": ["3ba4ecdf4893100b2f8d08d56d8d6c8e"]}),
+        # CapitalOneAPIClient(),
+        AutodeskAPIClient(
+            payload={"workerSubType": ["39f5af07b0c54bc588b1a47788da7f81"]}
         ),
+        # CIBCAPIClient(),
+        # MotorolaAPIClient(),
+        NvidiaAPIClient(
+            payload={"workerSubType": ["0c40f6bd1d8f10adf6dae42e46d44a17"]}
+        ),
+        # RBCAPIClient(),
+        # SalesforceAPIClient(),
+        # TDAPIClient(),
+        # TelusAPIClient(),
+        MastercardAPIClient(
+            payload={"workerSubType": ["cfba33fac07f49c9b6d3d53336c6a291"]}
+        ),
+        # LogitechAPIClient(),
+        # HPAPIClient(),
+        IntelAPIClient(payload={"workerSubType": ["dc8bf79476611087dfde99931439ae75"]}),
     ]
 
 

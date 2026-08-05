@@ -71,6 +71,8 @@ from .config import (
     HP_COMPANY_URL,
     MASTERCARD_API_URL,
     MASTERCARD_COMPANY_URL,
+    INTEL_COMPANY_URL,
+    INTEL_API_URL,
 )
 
 __all__ = [
@@ -140,4 +142,6 @@ __all__ = [
     "HP_COMPANY_URL",
     "MASTERCARD_API_URL",
     "MASTERCARD_COMPANY_URL",
+    "INTEL_COMPANY_URL",
+    "INTEL_API_URL",
 ]

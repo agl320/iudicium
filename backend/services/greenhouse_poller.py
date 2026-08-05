@@ -15,10 +15,10 @@ from backend.services.job_store import JobPostingStore
 
 def build_default_greenhouse_clients() -> list[object]:
     return [
-        PinterestGreenhouseAPIClient(),
+        # PinterestGreenhouseAPIClient(),
         StripeGreenhouseAPIClient(),
-        TwilioGreenhouseAPIClient(),
-        SofiGreenhouseAPIClient(),
+        # TwilioGreenhouseAPIClient(),
+        # SofiGreenhouseAPIClient(),
         GitLabGreenhouseAPIClient(),
     ]
 

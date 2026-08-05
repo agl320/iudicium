@@ -32,6 +32,7 @@ from .errors import (
     IBMAPIError,
     CapitalOneAPIError,
     MicrosoftAPIError,
+    IntelAPIError,
 )
 from .workday import MOTOROLA_REGION_FACET_IDS, TD_JOB_TYPE_FACET_IDS
 from .workday import (
@@ -50,6 +51,7 @@ from .workday import (
     MastercardAPIClient,
     LogitechAPIClient,
     HPAPIClient,
+    IntelAPIClient,
 )
 from .ashby import (
     AshbyAPIClient,
@@ -174,4 +176,6 @@ __all__ = [
     "DatadogClient",
     "DatadogAPIClient",
     "DatadogAPIError",
+    "IntelAPIClient",
+    "IntelAPIError",
 ]

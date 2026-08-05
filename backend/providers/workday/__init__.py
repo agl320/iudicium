@@ -13,6 +13,7 @@ from .cisco import CiscoAPIClient
 from .mastercard import MastercardAPIClient
 from .logitech import LogitechAPIClient
 from .hp import HPAPIClient
+from .intel import IntelAPIClient
 
 __all__ = [
     "AdobeAPIClient",
@@ -32,4 +33,6 @@ __all__ = [
     "MastercardAPIClient",
     "LogitechAPIClient",
     "HPAPIClient",
+    "IntelAPIClient",
+    "IntelAPIError",
 ]
