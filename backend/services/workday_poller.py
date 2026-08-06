@@ -26,11 +26,7 @@ from backend.services.job_store import JobPostingStore
 from backend.services.discord import (
     send_discord_notification,
 )
-from backend.config.config import (
-    DEFAULT_WORKDAY_PAYLOAD,
-    INTEL_API_URL,
-    INTEL_COMPANY_URL,
-)
+from backend.config.config import DEFAULT_WORKDAY_PAYLOAD
 
 
 def build_default_workday_clients() -> list[object]:
