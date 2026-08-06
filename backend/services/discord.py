@@ -69,17 +69,14 @@ def get_company_logo_url(company_url: str | None) -> str | None:
     return f"https://img.logo.dev/{company_domain}?token={logo_dev_key}"
 
 
-def send_discord_notification(
-    posting: JobPosting,
-    webhook_url: str | None = None,
-) -> None:
+def send_discord_notification(posting: JobPosting) -> None:
     """Sends a Discord embed notification for a new job posting."""
 
     if not is_student_role(posting.title):
         print(f"Skipping non-student role: {posting.title}")
         return
 
-    url = webhook_url or os.getenv("DISCORD_WEBHOOK_URL")
+    url = os.getenv("DISCORD_WEBHOOK_URL")
 
     if not url:
         raise ValueError(

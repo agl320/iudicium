@@ -109,7 +109,7 @@ class WorkdayPoller:
         try:
             postings = await self._collect_postings(client)
             new_postings = self.store.upsert_postings(postings)
-            await self._notify_new_postings(client_name, new_postings)
+            await self._notify_new_postings(new_postings)
             duration = monotonic() - start
             logger.info(
                 "Completed Workday client %s: fetched %d postings in %.2fs",
@@ -131,11 +131,10 @@ class WorkdayPoller:
 
     async def _notify_new_postings(
         self,
-        client_name: str,
         postings: list[JobPosting],
     ) -> None:
         for posting in postings:
-            await asyncio.to_thread(send_discord_notification, posting, client_name)
+            await asyncio.to_thread(send_discord_notification, posting)
 
     async def _collect_postings(self, client: object) -> list[object]:
         if not isinstance(client, WorkdayCxsClient):
