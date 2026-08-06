@@ -10,7 +10,11 @@ from backend.providers.greenhouse.stripe import StripeGreenhouseAPIClient
 from backend.providers.greenhouse.twilio import TwilioGreenhouseAPIClient
 from backend.providers.greenhouse.sofi import SofiGreenhouseAPIClient
 from backend.providers.greenhouse.gitlab import GitLabGreenhouseAPIClient
+from backend.models import JobPosting
 from backend.services.job_store import JobPostingStore
+from backend.services.discord import (
+    send_discord_notification,
+)
 
 
 def build_default_greenhouse_clients() -> list[object]:
@@ -36,11 +40,20 @@ class GreenhousePoller:
     async def _run_client(self, client: object) -> None:
         try:
             postings = await asyncio.to_thread(client.search_job_postings)
-            self.store.upsert_postings(postings)
+            new_postings = self.store.upsert_postings(postings)
+            await self._notify_new_postings(client.__class__.__name__, new_postings)
             first = postings[:1]
             print(first, end="\n")
         except GreenhouseAPIError as exc:
             print(f"[{client.__class__.__name__}] error: {exc}\n")
+
+    async def _notify_new_postings(
+        self,
+        source_name: str,
+        postings: list[JobPosting],
+    ) -> None:
+        for posting in postings:
+            await asyncio.to_thread(send_discord_notification, posting)
 
     async def run(self) -> None:
         tasks = [self._run_client(client) for client in self.clients]

@@ -84,20 +84,65 @@ class JobPostingStore:
         # Keep alphanumeric chunks so punctuation and extra spaces do not block matches.
         return [token for token in re.split(r"\W+", query.lower().strip()) if token]
 
-    def upsert_postings(self, postings: list[JobPosting]) -> tuple[int, int]:
-        now = datetime.now(UTC).isoformat()
+    @staticmethod
+    def _unique_postings(postings: list[JobPosting]) -> list[JobPosting]:
+        seen_hashes: set[str] = set()
+        unique_postings: list[JobPosting] = []
+
+        for posting in postings:
+            entry_hash = JobPostingStore.build_entry_hash(
+                company=posting.company,
+                title=posting.title,
+                url=posting.url,
+            )
+            if entry_hash in seen_hashes:
+                continue
+
+            seen_hashes.add(entry_hash)
+            unique_postings.append(posting)
+
+        return unique_postings
+
+    def upsert_postings(self, postings: list[JobPosting]) -> list[JobPosting]:
+        unique_postings = self._unique_postings(postings)
+        if not unique_postings:
+            return []
+
+        rows = [
+            (
+                self.build_entry_hash(
+                    company=posting.company,
+                    title=posting.title,
+                    url=posting.url,
+                ),
+                posting.company,
+                posting.company_url,
+                posting.title,
+                posting.url,
+                posting.source,
+                posting.location,
+            )
+            for posting in unique_postings
+        ]
+
         conn = self.__class__._get_conn()
         try:
             with conn.cursor() as cursor:
-                for posting in postings:
-                    entry_hash = self.build_entry_hash(
-                        company=posting.company,
-                        title=posting.title,
-                        url=posting.url,
-                    )
-
-                    cursor.execute(
-                        """
+                inserted_rows = psycopg2.extras.execute_values(
+                    cursor,
+                    """
+                    WITH incoming (
+                        entry_hash,
+                        company,
+                        company_url,
+                        title,
+                        url,
+                        source,
+                        location
+                    ) AS (
+                        VALUES %s
+                    ),
+                    inserted AS (
                         INSERT INTO job_postings (
                             entry_hash,
                             company,
@@ -109,25 +154,83 @@ class JobPostingStore:
                             first_seen,
                             last_seen
                         )
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        ON CONFLICT(entry_hash) DO UPDATE SET
-                            source = EXCLUDED.source,
-                            location = EXCLUDED.location,
-                            last_seen = EXCLUDED.last_seen
-                        """,
-                        (
+                        SELECT
                             entry_hash,
-                            posting.company,
-                            posting.company_url,
-                            posting.title,
-                            posting.url,
-                            posting.source,
-                            posting.location,
-                            now,
-                            now,
-                        ),
+                            company,
+                            company_url,
+                            title,
+                            url,
+                            source,
+                            location,
+                            to_char(
+                                timezone('UTC', CURRENT_TIMESTAMP),
+                                'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"'
+                            ),
+                            to_char(
+                                timezone('UTC', CURRENT_TIMESTAMP),
+                                'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"'
+                            )
+                        FROM incoming
+                        ON CONFLICT(entry_hash) DO NOTHING
+                        RETURNING
+                            entry_hash,
+                            company,
+                            company_url,
+                            title,
+                            url,
+                            source,
+                            location,
+                            first_seen,
+                            last_seen
+                    ),
+                    refreshed AS (
+                        UPDATE job_postings AS job
+                        SET
+                            company = incoming.company,
+                            company_url = incoming.company_url,
+                            title = incoming.title,
+                            url = incoming.url,
+                            source = incoming.source,
+                            location = incoming.location,
+                            last_seen = to_char(
+                                timezone('UTC', CURRENT_TIMESTAMP),
+                                'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"'
+                            )
+                        FROM incoming
+                        WHERE job.entry_hash = incoming.entry_hash
+                        RETURNING job.entry_hash
                     )
+                    SELECT
+                        entry_hash,
+                        company,
+                        company_url,
+                        title,
+                        url,
+                        source,
+                        location,
+                        first_seen,
+                        last_seen
+                    FROM inserted
+                    ORDER BY first_seen DESC
+                    """,
+                    rows,
+                    template="(%s, %s, %s, %s, %s, %s, %s)",
+                    page_size=len(rows),
+                    fetch=True,
+                )
                 conn.commit()
+
+                return [
+                    JobPosting(
+                        source=row[5],
+                        title=row[3],
+                        company=row[1],
+                        company_url=row[2] or "",
+                        location=row[6],
+                        url=row[4],
+                    )
+                    for row in inserted_rows
+                ]
         finally:
             self.__class__._put_conn(conn)
 

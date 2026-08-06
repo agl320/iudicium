@@ -21,7 +21,11 @@ from backend.providers.workday.telus import TelusAPIClient
 from backend.providers.workday.mastercard import MastercardAPIClient
 from backend.providers.workday.logitech import LogitechAPIClient
 from backend.providers.workday.hp import HPAPIClient
+from backend.models import JobPosting
 from backend.services.job_store import JobPostingStore
+from backend.services.discord import (
+    send_discord_notification,
+)
 from backend.config.config import (
     DEFAULT_WORKDAY_PAYLOAD,
     INTEL_API_URL,
@@ -108,7 +112,8 @@ class WorkdayPoller:
         start = monotonic()
         try:
             postings = await self._collect_postings(client)
-            self.store.upsert_postings(postings)
+            new_postings = self.store.upsert_postings(postings)
+            await self._notify_new_postings(client_name, new_postings)
             duration = monotonic() - start
             logger.info(
                 "Completed Workday client %s: fetched %d postings in %.2fs",
@@ -127,6 +132,14 @@ class WorkdayPoller:
                 exc,
             )
             print(f"[{client.__class__.__name__}] error: {exc}\n")
+
+    async def _notify_new_postings(
+        self,
+        client_name: str,
+        postings: list[JobPosting],
+    ) -> None:
+        for posting in postings:
+            await asyncio.to_thread(send_discord_notification, posting, client_name)
 
     async def _collect_postings(self, client: object) -> list[object]:
         if not isinstance(client, WorkdayCxsClient):
