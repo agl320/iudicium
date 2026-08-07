@@ -4,6 +4,7 @@ import { fetchBackendStatus, fetchRecentJobs } from "./api/jobs";
 import { JobList } from "./components/JobList";
 import { SearchForm } from "./components/SearchForm";
 import type { JobPosting } from "./types/jobs";
+import Canvas from "./components/Canvas";
 
 const LOGO_DEV_PUBLIC_KEY = import.meta.env.VITE_LOGO_DEV_PUBLIC_KEY;
 
@@ -101,6 +102,7 @@ function App() {
             <header className="h-12 w-full border-b border-zinc-300"></header>
 
             <div className="space-y-8 py-8">
+              <Canvas></Canvas>
               <h1 className="text-6xl font-medium text-zinc-800">Iudicium</h1>
               <SearchForm
                 searchTerm={searchTerm}

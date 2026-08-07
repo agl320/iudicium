@@ -2,7 +2,7 @@ name: Refresh Job Postings
 
 on:
   schedule:
-    - cron: '1 0,4,8,9,10,11,12,13,14,15,16,17,18,20,22 * * *'
+    - cron: '1 0,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,20,22 * * *'
   # Allow manual trigger from Actions tab
   workflow_dispatch:
 
@@ -28,6 +28,8 @@ jobs:
       - name: Run pollers
         env:
           DATABASE_SESSION_POOLER_URL: ${{ secrets.DATABASE_SESSION_POOLER_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          LOGO_DEV_PUBLIC_KEY: ${{ secrets.LOGO_DEV_PUBLIC_KEY }}
         run: |
           python -m backend
 
