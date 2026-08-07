@@ -11,10 +11,11 @@ class AMDAPIClient(AMDClient):
         *,
         timeout_s: float = 30.0,
         headers: dict[str, str] | None = None,
+        company: str = "AMD",
     ) -> None:
         super().__init__(
             api_url=api_url,
-            company="AMD",
+            company=company,
             company_url=AMD_COMPANY_URL,
             timeout_s=timeout_s,
             headers=headers,

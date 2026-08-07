@@ -111,8 +111,7 @@ class AMDClient:
                     source=self.api_url,
                     title=title,
                     company=self.company,
-                    company_url=self.company_url
-                    or COMPANY_URL_MAPPING.get(self.company, ""),
+                    company_url=COMPANY_URL_MAPPING.get(self.company, ""),
                     location=location,
                     url=url,
                 )
