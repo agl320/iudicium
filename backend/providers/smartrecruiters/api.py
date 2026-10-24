@@ -3,11 +3,15 @@ from __future__ import annotations
 import json
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from backend.config import COMPANY_URL_MAPPING, DEFAULT_HEADERS
 from backend.models import JobPosting
-from backend.providers.errors import ProviderAPIError, SmartRecruitersAPIError
+from backend.providers.errors import SmartRecruitersAPIError
+from backend.services.classifier import normalize_employment_type
+
+PAGE_SIZE = 100
 
 
 class SmartRecruitersClient:
@@ -28,12 +32,13 @@ class SmartRecruitersClient:
         self.headers = dict(headers or DEFAULT_HEADERS)
         self.error_cls = error_cls
 
-    def search_raw(self) -> dict[str, Any]:
+    def search_raw(self, *, offset: int = 0, limit: int = PAGE_SIZE) -> dict[str, Any]:
         request_headers = dict(self.headers)
         request_headers.setdefault("Accept", "application/json")
         request_headers.setdefault("User-Agent", "iudicium/0.1")
 
-        request = Request(self.api_url, headers=request_headers, method="GET")
+        request_url = f"{self.api_url}?{urlencode({'offset': offset, 'limit': limit})}"
+        request = Request(request_url, headers=request_headers, method="GET")
 
         try:
             with urlopen(request, timeout=self.timeout_s) as response:
@@ -65,11 +70,26 @@ class SmartRecruitersClient:
 
         return decoded
 
-    def search_job_postings(self) -> list[JobPosting]:
-        decoded = self.search_raw()
+    def search_job_postings(self, *, max_jobs: int = 1000) -> list[JobPosting]:
+        postings: list[JobPosting] = []
+        offset = 0
+        while offset < max_jobs:
+            page, total = self.search_job_postings_page(offset=offset)
+            postings.extend(page)
+            offset += PAGE_SIZE
+            if not page or total is None or offset >= total:
+                break
+        return postings
+
+    def search_job_postings_page(
+        self, *, offset: int = 0
+    ) -> tuple[list[JobPosting], int | None]:
+        decoded = self.search_raw(offset=offset)
+        total = decoded.get("totalFound")
+        total = total if isinstance(total, int) else None
         content = decoded.get("content")
         if not isinstance(content, list):
-            return []
+            return [], total
 
         postings: list[JobPosting] = []
         seen_urls: set[str] = set()
@@ -79,7 +99,25 @@ class SmartRecruitersClient:
                 continue
 
             title = str(item.get("name") or "")
-            url = str(item.get("ref") or "")
+            # "ref" is the API resource; link to the public posting instead.
+            company_info = item.get("company")
+            identifier = (
+                company_info.get("identifier")
+                if isinstance(company_info, dict)
+                else None
+            )
+            posting_id = item.get("id")
+            url = (
+                f"https://jobs.smartrecruiters.com/{identifier}/{posting_id}"
+                if identifier and posting_id
+                else str(item.get("ref") or "")
+            )
+            employment = item.get("typeOfEmployment")
+            employment_label = (
+                employment.get("label") or employment.get("id")
+                if isinstance(employment, dict)
+                else None
+            )
 
             location_value = item.get("location")
             location = ""
@@ -106,7 +144,8 @@ class SmartRecruitersClient:
                     company_url=COMPANY_URL_MAPPING.get(self.company, self.company_url),
                     location=location,
                     url=url,
+                    employment_type=normalize_employment_type(employment_label),
                 )
             )
 
-        return postings
+        return postings, total

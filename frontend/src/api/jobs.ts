@@ -16,12 +16,19 @@ type BackendStatus = {
   last_updated_at: string | null;
 };
 
-export async function fetchRecentJobs(query: string): Promise<JobPosting[]> {
+export async function fetchRecentJobs(
+  query: string,
+  category: string | null = null,
+): Promise<JobPosting[]> {
   let q = supabase
     .from("job_postings")
     .select("*")
     .order("first_seen", { ascending: false })
     .limit(100);
+
+  if (category) {
+    q = q.eq("category", category);
+  }
 
   if (query.trim().length > 0) {
     const tokens = query

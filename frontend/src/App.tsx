@@ -1,12 +1,23 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { fetchBackendStatus, fetchRecentJobs } from "./api/jobs";
+import { CategoryFilter } from "./components/CategoryFilter";
 import { JobList } from "./components/JobList";
 import { SearchForm } from "./components/SearchForm";
 import type { JobPosting } from "./types/jobs";
-import Canvas from "./components/Canvas";
 
 const LOGO_DEV_PUBLIC_KEY = import.meta.env.VITE_LOGO_DEV_PUBLIC_KEY;
+
+const LINKS = [
+  { label: "GitHub", href: "https://github.com/agl320" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/the-andrew-lai/" },
+  { label: "Contact", href: "https://andrewlai.ca/" },
+];
+
+type JobsRequest = {
+  query: string;
+  category: string | null;
+};
 
 function formatBackendLastUpdatedAt(value: string): string {
   const parsed = new Date(value);
@@ -23,111 +34,146 @@ function formatBackendLastUpdatedAt(value: string): string {
 function App() {
   const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  // A new object on every search/filter so re-running the same search refetches.
+  const [request, setRequest] = useState<JobsRequest>({
+    query: "",
+    category: null,
+  });
   const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [backendLastUpdatedAt, setBackendLastUpdatedAt] = useState<string>("");
 
   useEffect(() => {
-    async function loadBackendStatus() {
-      try {
-        const status = await fetchBackendStatus();
-        setBackendLastUpdatedAt(status.last_updated_at ?? "");
-      } catch {
-        setBackendLastUpdatedAt("");
-      }
-    }
-
-    void loadBackendStatus();
+    fetchBackendStatus()
+      .then((status) => setBackendLastUpdatedAt(status.last_updated_at ?? ""))
+      .catch(() => setBackendLastUpdatedAt(""));
   }, []);
 
-  async function fetchData(query: string) {
-    setLoading(true);
-    setError("");
+  useEffect(() => {
+    let cancelled = false;
 
-    try {
-      const data = await fetchRecentJobs(query);
-      setJobs(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-      setJobs([]);
-    } finally {
-      setLoading(false);
-    }
+    fetchRecentJobs(request.query, request.category)
+      .then((data) => {
+        if (!cancelled) {
+          setJobs(data);
+          setError("");
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Unknown error");
+          setJobs([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [request]);
+
+  function updateRequest(next: Partial<JobsRequest>) {
+    setLoading(true);
+    setRequest((current) => ({ ...current, ...next }));
   }
 
-  async function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await fetchData(searchTerm);
+    updateRequest({ query: searchTerm });
   }
 
   return (
-    <div>
-      <section className="flex min-h-screen">
-        <div className="w-1/5"></div>
-        <div className="w-3/5 border-l border-r border-zinc-300  text-zinc-800 flex">
-          <div className="w-8 h-full border-r border-dashed border-zinc-300"></div>
-          <div className="w-1/5 border-r border-dashed border-zinc-300">
-            <header className="h-12 w-full border-b border-zinc-300"></header>
-            <div className="space-y-4 py-8 text-sm text-zinc-500">
-              <p>
-                <a
-                  href="https://github.com/agl320"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  GitHub
-                </a>
+    <div className="min-h-screen bg-white text-zinc-900">
+      <section className="mx-auto flex min-h-screen max-w-6xl border-x border-zinc-200">
+        <div className="hidden w-8 shrink-0 border-r border-dashed border-zinc-200 sm:block" />
+
+        <aside className="hidden w-48 shrink-0 border-r border-dashed border-zinc-200 md:block">
+          <header className="flex h-12 items-center border-b border-zinc-200 px-4">
+            <span className="font-mono text-xs uppercase tracking-widest text-zinc-400">
+              Links
+            </span>
+          </header>
+          <nav className="space-y-1 p-2 text-sm">
+            {LINKS.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-md px-2 py-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+        </aside>
+
+        <main className="min-w-0 flex-1">
+          <header className="flex h-12 items-center justify-between border-b border-zinc-200 px-6">
+            <span className="text-sm font-semibold tracking-tight">Iudicium</span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-2.5 py-0.5 text-xs text-zinc-500">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+              </span>
+              Updated{" "}
+              {backendLastUpdatedAt
+                ? formatBackendLastUpdatedAt(backendLastUpdatedAt)
+                : "—"}
+            </span>
+          </header>
+
+          <div className="space-y-6 border-b border-zinc-200 px-6 py-10">
+            <div className="space-y-2">
+              <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
+                Job board
               </p>
-              <p>
-                <a
-                  href="https://www.linkedin.com/in/the-andrew-lai/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  LinkedIn
-                </a>
-              </p>
-              <p>
-                <a
-                  href="https://andrewlai.ca/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Contact
-                </a>
+              <h1 className="text-5xl font-semibold tracking-tight text-zinc-900">
+                Iudicium
+              </h1>
+              <p className="max-w-xl text-sm text-zinc-500">
+                New tech internships and full-time HR, HRIS and payroll roles,
+                pulled from company career sites every 30 minutes.
               </p>
             </div>
-          </div>
-          <div className="w-4/5">
-            <header className="h-12 w-full border-b border-zinc-300"></header>
 
-            <div className="space-y-8 py-8">
-              <Canvas></Canvas>
-              <h1 className="text-6xl font-medium text-zinc-800">Iudicium</h1>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <SearchForm
                 searchTerm={searchTerm}
                 loading={loading}
                 onSearchTermChange={setSearchTerm}
                 onSubmit={handleSearchSubmit}
               />
-              {error ? <p>{error}</p> : null}
-
-              <div className="text-sm text-zinc-500 space-y-4">
-                <p>
-                  Backend last updated:{" "}
-                  {backendLastUpdatedAt
-                    ? formatBackendLastUpdatedAt(backendLastUpdatedAt)
-                    : "unknown"}
-                </p>
-                <p>Showing {jobs.length} jobs</p>
-              </div>
+              <CategoryFilter
+                value={request.category}
+                onChange={(category) => updateRequest({ category })}
+              />
             </div>
 
-            <JobList jobs={jobs} logoDevPublicKey={LOGO_DEV_PUBLIC_KEY} />
+            {error ? (
+              <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {error}
+              </p>
+            ) : null}
           </div>
-          <div className="w-8 h-full border-l border-dashed border-zinc-300"></div>
-        </div>
-        <div className="w-1/5"></div>
+
+          <div className="space-y-4 px-6 py-6">
+            <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
+              {loading ? "Loading…" : `Showing ${jobs.length} jobs`}
+            </p>
+            <JobList
+              jobs={jobs}
+              logoDevPublicKey={LOGO_DEV_PUBLIC_KEY}
+              loading={loading}
+            />
+          </div>
+        </main>
+
+        <div className="hidden w-8 shrink-0 border-l border-dashed border-zinc-200 sm:block" />
       </section>
     </div>
   );

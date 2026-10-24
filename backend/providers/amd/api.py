@@ -8,6 +8,7 @@ from urllib.request import Request, urlopen
 from backend.config import DEFAULT_HEADERS, COMPANY_URL_MAPPING
 from backend.models import JobPosting
 from backend.providers.errors import ProviderAPIError
+from backend.services.classifier import normalize_employment_type
 
 
 class AMDAPIError(ProviderAPIError):
@@ -32,12 +33,14 @@ class AMDClient:
         self.headers = dict(headers or DEFAULT_HEADERS)
         self.error_cls = error_cls
 
-    def search_raw(self) -> dict[str, Any]:
+    def search_raw(self, api_url: str | None = None) -> dict[str, Any]:
         request_headers = dict(self.headers)
         request_headers.setdefault("Accept", "application/json")
         request_headers.setdefault("User-Agent", "iudicium/0.1")
 
-        request = Request(self.api_url, headers=request_headers, method="GET")
+        request = Request(
+            api_url or self.api_url, headers=request_headers, method="GET"
+        )
 
         try:
             with urlopen(request, timeout=self.timeout_s) as response:
@@ -65,8 +68,8 @@ class AMDClient:
 
         return decoded
 
-    def search_job_postings(self) -> list[JobPosting]:
-        decoded = self.search_raw()
+    def search_job_postings(self, api_url: str | None = None) -> list[JobPosting]:
+        decoded = self.search_raw(api_url)
 
         # Response shape may be {"jobs": [...]} or {"data": {"jobs": [...]}}
         jobs = decoded.get("jobs")
@@ -105,6 +108,13 @@ class AMDClient:
             if not title or not url or url in seen_urls:
                 continue
 
+            categories = data.get("categories")
+            category_names = (
+                " ".join(str(c.get("name") or "") for c in categories if isinstance(c, dict))
+                if isinstance(categories, list)
+                else ""
+            )
+
             seen_urls.add(url)
             postings.append(
                 JobPosting(
@@ -114,6 +124,7 @@ class AMDClient:
                     company_url=COMPANY_URL_MAPPING.get(self.company, ""),
                     location=location,
                     url=url,
+                    employment_type=normalize_employment_type(category_names),
                 )
             )
 

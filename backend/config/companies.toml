@@ -1,0 +1,454 @@
+# Iudicium source configuration.
+#
+# Toggle a company with `enabled`, toggle a whole job category with the
+# track's `enabled`. Nothing here is secret; secrets stay in the environment.
+#
+# Run `python -m backend --list` to see what is enabled, and
+# `python -m backend --dry-run --company "NVIDIA"` to test a single company
+# without touching the database or Discord.
+
+[settings]
+# Only postings that match an enabled track are stored / notified.
+store_uncategorized = false
+# Upper bound on postings fetched per (company, query) pair.
+max_jobs_per_query = 200
+# How many companies are polled at the same time.
+concurrency = 6
+# When a company/track pair has never been stored before (new company, new
+# track), store its current postings without sending Discord notifications.
+seed_silently = true
+# Safety net against notification floods from a single company in one run.
+max_notifications_per_company = 10
+
+
+# ---------------------------------------------------------------------------
+# Tracks: the job categories we care about. A posting is assigned to the first
+# enabled track it matches (in file order).
+#
+#   employment     "intern"    -> title/provider must indicate a student role
+#                  "full_time" -> must not be intern/part-time/contract/temp
+#                  "any"       -> no employment requirement
+#   include_titles regexes (case-insensitive); empty = any title
+#   exclude_titles regexes (case-insensitive)
+#   search_terms   used by providers that only return keyword-search results
+#                  (Workday, Eightfold, AMD, Oracle). Keep them specific: many
+#                  boards also search descriptions.
+#   color          Discord embed colour (and frontend badge colour)
+# ---------------------------------------------------------------------------
+
+[tracks.hr]
+enabled = true
+label = "HR / HRIS / Payroll"
+color = "#EC4899"
+employment = "full_time"
+include_titles = [
+  '\bhr\b',
+  '\bhris\b',
+  '\bhrbp\b',
+  '\bhcm\b',
+  'human resources?',
+  'human capital',
+  '\bpayroll\b',
+  'people (operations|ops|partner|business partner|analytics|systems|technology|programs?|services|experience)',
+  'people (&|and) culture',
+  'compensation',
+  'total rewards',
+  '\bbenefits\b',
+  'employee relations',
+  'talent (acquisition|management)',
+  '\brecruit(er|ing)\b',
+]
+exclude_titles = []
+search_terms = ["HR", "human resources", "HRIS", "payroll", "talent acquisition"]
+
+[tracks.tech_intern]
+enabled = true
+label = "Tech intern"
+color = "#0BBEFE"
+employment = "intern"
+include_titles = []
+# HR internships are not wanted (HR is full-time only).
+exclude_titles = ['\bhr\b', '\bhris\b', 'human resources?', '\bpayroll\b']
+search_terms = ["intern", "co-op"]
+
+
+# ---------------------------------------------------------------------------
+# Companies
+#
+# Common keys: name, enabled, provider, domain (used for logos)
+#
+# provider = "workday"          host, site
+# provider = "greenhouse"       board
+# provider = "ashby"            board
+# provider = "smartrecruiters"  board
+# provider = "oraclecloud"      host, site
+# provider = "eightfold"        host, domain_param, job_url_template
+# provider = "amd"              (careers.amd.com)
+# provider = "custom"           client = "module.path:ClassName" exposing
+#                               search_job_postings() -> list[JobPosting]
+#
+# Workday facets (intern / full-time) are resolved by label at runtime, so no
+# per-company facet ids are needed. Override with
+#   facets.<track> = { workerSubType = ["<id>"] }
+# if a company's labels are unusual.
+# ---------------------------------------------------------------------------
+
+# --- Semiconductors --------------------------------------------------------
+
+[[companies]]
+name = "NVIDIA"
+enabled = true
+provider = "workday"
+domain = "nvidia.com"
+host = "nvidia.wd5"
+site = "NVIDIAExternalCareerSite"
+
+[[companies]]
+name = "Intel"
+enabled = true
+provider = "workday"
+domain = "intel.com"
+host = "intel.wd1"
+site = "External"
+
+[[companies]]
+name = "AMD"
+enabled = true
+provider = "amd"
+domain = "amd.com"
+
+[[companies]]
+name = "Qualcomm"
+enabled = true
+provider = "eightfold"
+domain = "qualcomm.com"
+host = "careers.qualcomm.com"
+domain_param = "qualcomm.com"
+job_url_template = "https://careers.qualcomm.com/careers/job/{id}"
+
+[[companies]]
+name = "Broadcom"
+enabled = true
+provider = "workday"
+domain = "broadcom.com"
+host = "broadcom.wd1"
+site = "External_Career"
+
+[[companies]]
+name = "Marvell"
+enabled = true
+provider = "workday"
+domain = "marvell.com"
+host = "marvell.wd1"
+site = "MarvellCareers"
+
+[[companies]]
+name = "Micron"
+enabled = true
+provider = "workday"
+domain = "micron.com"
+host = "micron.wd1"
+site = "External"
+
+[[companies]]
+name = "Analog Devices"
+enabled = true
+provider = "workday"
+domain = "analog.com"
+host = "analogdevices.wd1"
+site = "External"
+
+[[companies]]
+name = "Applied Materials"
+enabled = true
+provider = "workday"
+domain = "appliedmaterials.com"
+host = "amat.wd1"
+site = "External"
+
+[[companies]]
+name = "KLA"
+enabled = true
+provider = "workday"
+domain = "kla.com"
+host = "kla.wd1"
+site = "Search"
+
+[[companies]]
+name = "NXP"
+enabled = true
+provider = "workday"
+domain = "nxp.com"
+host = "nxp.wd3"
+site = "careers"
+
+[[companies]]
+name = "Cadence"
+enabled = true
+provider = "workday"
+domain = "cadence.com"
+host = "cadence.wd1"
+site = "External_Careers"
+
+[[companies]]
+name = "Microchip"
+enabled = true
+provider = "workday"
+domain = "microchip.com"
+host = "microchiphr.wd5"
+site = "External"
+
+[[companies]]
+name = "GlobalFoundries"
+enabled = true
+provider = "workday"
+domain = "gf.com"
+host = "globalfoundries.wd1"
+site = "External"
+
+[[companies]]
+name = "Samsung"
+enabled = true
+provider = "workday"
+domain = "samsung.com"
+host = "sec.wd3"
+site = "Samsung_Careers"
+
+[[companies]]
+name = "Texas Instruments"
+enabled = true
+provider = "oraclecloud"
+domain = "ti.com"
+host = "edbz.fa.us2"
+site = "CX"
+job_url_template = "https://careers.ti.com/en/sites/CX/job/{id}"
+
+[[companies]]
+# Sandisk moved off SmartRecruiters (careers now on Avature, no adapter yet).
+name = "Sandisk"
+enabled = false
+provider = "smartrecruiters"
+domain = "sandisk.com"
+board = "sandisk"
+
+[[companies]]
+name = "Western Digital"
+enabled = true
+provider = "smartrecruiters"
+domain = "westerndigital.com"
+board = "westerndigital"
+
+# --- Software / hardware ---------------------------------------------------
+
+[[companies]]
+name = "Microsoft"
+enabled = true
+provider = "eightfold"
+domain = "microsoft.com"
+host = "apply.careers.microsoft.com"
+domain_param = "microsoft.com"
+job_url_template = "https://apply.careers.microsoft.com/careers?pid={id}"
+
+[[companies]]
+name = "Adobe"
+enabled = true
+provider = "workday"
+domain = "adobe.com"
+host = "adobe.wd5"
+site = "external_experienced"
+
+[[companies]]
+name = "Autodesk"
+enabled = true
+provider = "workday"
+domain = "autodesk.com"
+host = "autodesk.wd1"
+site = "Ext"
+
+[[companies]]
+name = "Mastercard"
+enabled = true
+provider = "workday"
+domain = "mastercard.com"
+host = "mastercard.wd1"
+site = "CorporateCareers"
+
+[[companies]]
+name = "Cisco"
+enabled = false
+provider = "workday"
+domain = "cisco.com"
+host = "cisco.wd5"
+site = "Cisco_Careers"
+
+[[companies]]
+name = "Salesforce"
+enabled = false
+provider = "workday"
+domain = "salesforce.com"
+host = "salesforce.wd12"
+site = "External_Career_Site"
+
+[[companies]]
+name = "Logitech"
+enabled = false
+provider = "workday"
+domain = "logitech.com"
+host = "logitech.wd5"
+site = "Logitech"
+
+[[companies]]
+name = "HP"
+enabled = false
+provider = "workday"
+domain = "hp.com"
+host = "hp.wd5"
+site = "ExternalCareerSite"
+
+[[companies]]
+name = "Motorola"
+enabled = false
+provider = "workday"
+domain = "motorolasolutions.com"
+host = "motorolasolutions.wd5"
+site = "Careers"
+
+[[companies]]
+name = "Telus"
+enabled = false
+provider = "workday"
+domain = "telus.com"
+host = "lifeworks.wd3"
+site = "External"
+
+[[companies]]
+name = "Databricks"
+enabled = true
+provider = "custom"
+domain = "databricks.com"
+client = "backend.providers.databricks:DatabricksAPIClient"
+
+[[companies]]
+name = "IBM"
+enabled = false
+provider = "custom"
+domain = "ibm.com"
+client = "backend.providers.ibm:IBMAPIClient"
+
+[[companies]]
+name = "Stripe"
+enabled = true
+provider = "greenhouse"
+domain = "stripe.com"
+board = "stripe"
+
+[[companies]]
+name = "GitLab"
+enabled = true
+provider = "greenhouse"
+domain = "gitlab.com"
+board = "gitlab"
+
+[[companies]]
+name = "Cloudflare"
+enabled = false
+provider = "greenhouse"
+domain = "cloudflare.com"
+board = "cloudflare"
+
+[[companies]]
+name = "MongoDB"
+enabled = false
+provider = "greenhouse"
+domain = "mongodb.com"
+board = "mongodb"
+
+[[companies]]
+name = "Pinterest"
+enabled = false
+provider = "greenhouse"
+domain = "pinterest.com"
+board = "pinterest"
+
+[[companies]]
+name = "Twilio"
+enabled = false
+provider = "greenhouse"
+domain = "twilio.com"
+board = "twilio"
+
+[[companies]]
+name = "Sofi"
+enabled = false
+provider = "greenhouse"
+domain = "sofi.com"
+board = "sofi"
+
+[[companies]]
+name = "RAMP"
+enabled = true
+provider = "ashby"
+domain = "ramp.com"
+board = "ramp"
+
+[[companies]]
+name = "Snowflake"
+enabled = true
+provider = "ashby"
+domain = "snowflake.com"
+board = "snowflake"
+
+[[companies]]
+name = "WealthSimple"
+enabled = true
+provider = "ashby"
+domain = "wealthsimple.com"
+board = "wealthsimple"
+
+[[companies]]
+name = "Cohere"
+enabled = false
+provider = "ashby"
+domain = "cohere.com"
+board = "cohere"
+
+[[companies]]
+name = "Perplexity"
+enabled = false
+provider = "ashby"
+domain = "perplexity.ai"
+board = "perplexity"
+
+# --- Banks -----------------------------------------------------------------
+
+[[companies]]
+name = "Capital One"
+enabled = false
+provider = "workday"
+domain = "capitalone.com"
+host = "capitalone.wd12"
+site = "Capital_One"
+
+[[companies]]
+name = "RBC"
+enabled = false
+provider = "workday"
+domain = "rbc.com"
+host = "rbc.wd3"
+site = "RBCGLOBAL1"
+
+[[companies]]
+name = "TD"
+enabled = false
+provider = "workday"
+domain = "td.com"
+host = "td.wd3"
+site = "TD_Bank_Careers"
+
+[[companies]]
+name = "CIBC"
+enabled = false
+provider = "workday"
+domain = "cibc.com"
+host = "cibc.wd3"
+site = "search"

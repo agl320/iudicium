@@ -2,58 +2,19 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import logging
 import os
+import time
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from backend.config.loader import Track
 from backend.models import JobPosting
 
-import re
+logger = logging.getLogger(__name__)
 
-STUDENT_ROLE_PATTERNS = [
-    # Intern variations
-    r"\bintern(ship)?\b",
-    r"\binterns\b",
-    r"\bintern[-\s]?co[-\s]?op\b",
-    # Co-op variations
-    r"\bco[-\s]?op\b",
-    r"\bcoop\b",
-    r"\bcooperative education\b",
-    r"\bwork[-\s]?term\b",
-    r"\bplacement\b",
-    # Student roles
-    r"\bstudent\b",
-    r"\bundergraduate\b",
-    r"\bgraduate student\b",
-    r"\bcampus\b",
-    r"\buniversity\b",
-    r"\bcollege\b",
-    # New grad / entry programs
-    r"\bnew grad\b",
-    r"\bnew graduate\b",
-    r"\brecent graduate\b",
-    r"\bentry[-\s]?level\b",
-    r"\bearly career\b",
-    r"\bearly[-\s]?career\b",
-    r"\bassociate\b",
-    # Explicit program naming
-    r"\bapprentice(ship)?\b",
-    r"\btrainee\b",
-    r"\brotation(al)? program\b",
-    r"\bgraduate program\b",
-    r"\bgraduate scheme\b",
-    # Common year-based postings
-    r"\b20\d{2}\b.*\b(intern|graduate|student|co[-\s]?op)\b",
-    r"\b(intern|graduate|student|co[-\s]?op)\b.*\b20\d{2}\b",
-]
-
-
-def is_student_role(title: str) -> bool:
-    """Returns True if a job title appears to be a student/new grad role."""
-    normalized = title.lower()
-
-    return any(re.search(pattern, normalized) for pattern in STUDENT_ROLE_PATTERNS)
+MAX_ATTEMPTS = 4
 
 
 def get_company_logo_url(company_url: str | None) -> str | None:
@@ -69,34 +30,26 @@ def get_company_logo_url(company_url: str | None) -> str | None:
     return f"https://img.logo.dev/{company_domain}?token={logo_dev_key}"
 
 
-def send_discord_notification(posting: JobPosting) -> None:
-    """Sends a Discord embed notification for a new job posting."""
-
-    if not is_student_role(posting.title):
-        print(f"Skipping non-student role: {posting.title}")
-        return
-
-    url = os.getenv("DISCORD_WEBHOOK_URL")
-
-    if not url:
-        raise ValueError(
-            "Discord webhook URL is missing. Set DISCORD_WEBHOOK_URL in your environment."
-        )
-
+def build_embed(posting: JobPosting, track: Track) -> dict[str, Any]:
     embed: dict[str, Any] = {
-        "title": posting.title,
+        "title": posting.title[:256],
         "url": posting.url,
         "description": f"**{posting.company}**",
-        "color": 0x0BBEFE,
+        "color": track.color,
         "fields": [
             {
                 "name": "Company",
-                "value": posting.company,
+                "value": posting.company or "—",
                 "inline": True,
             },
             {
                 "name": "Location",
-                "value": posting.location,
+                "value": (posting.location or "—")[:1024],
+                "inline": True,
+            },
+            {
+                "name": "Type",
+                "value": track.label,
                 "inline": True,
             },
         ],
@@ -110,8 +63,23 @@ def send_discord_notification(posting: JobPosting) -> None:
             "url": logo_url,
         }
 
+    return embed
+
+
+def send_discord_notification(posting: JobPosting, track: Track) -> bool:
+    """Sends a Discord embed notification for a new job posting.
+
+    Returns True when Discord accepted the message.
+    """
+
+    url = os.getenv("DISCORD_WEBHOOK_URL")
+
+    if not url:
+        logger.warning("DISCORD_WEBHOOK_URL not set; skipping %s", posting.title)
+        return False
+
     payload: dict[str, Any] = {
-        "embeds": [embed],
+        "embeds": [build_embed(posting, track)],
     }
 
     data = json.dumps(payload).encode("utf-8")
@@ -126,21 +94,29 @@ def send_discord_notification(posting: JobPosting) -> None:
         method="POST",
     )
 
-    try:
-        with urlopen(req) as response:
-            if response.status == 204:
-                print("Discord notification sent successfully.")
-            else:
-                print(f"Webhook responded with status code: {response.status}")
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        try:
+            with urlopen(req) as response:
+                if response.status in (200, 204):
+                    return True
+                logger.warning("Webhook responded with status %s", response.status)
+                return False
 
-    except HTTPError as e:
-        error_body = e.read().decode("utf-8", errors="ignore")
-        print(f"HTTPError: {e.code} - {e.reason}")
-        print(f"Details: {error_body}")
+        except HTTPError as e:
+            error_body = e.read().decode("utf-8", errors="ignore")
+            if e.code == 429 and attempt < MAX_ATTEMPTS:
+                # Discord tells us how long to back off for.
+                try:
+                    retry_after = float(json.loads(error_body).get("retry_after", 1))
+                except (ValueError, AttributeError):
+                    retry_after = 1.0
+                time.sleep(min(retry_after, 30.0) + 0.25)
+                continue
+            logger.error("Discord HTTPError %s %s: %s", e.code, e.reason, error_body)
+            return False
 
-    except URLError as e:
-        print(f"URLError: Failed to reach Discord. Reason: {e.reason}")
+        except URLError as e:
+            logger.error("Failed to reach Discord: %s", e.reason)
+            return False
 
-
-if __name__ == "__main__":
-    pass
+    return False

@@ -1,4 +1,5 @@
 import type { JobPosting } from "../types/jobs";
+import { getCategory } from "../utils/categories";
 import { formatDate, truncateText } from "../utils/jobs";
 
 type JobCardProps = {
@@ -9,67 +10,60 @@ type JobCardProps = {
 
 export function JobCard({ job, logoDevPublicKey, index }: JobCardProps) {
   const formattedDate = formatDate(job.first_seen);
+  const category = getCategory(job.category);
 
   return (
-    <article
-      key={job.id}
-      className="flex border-t border-b border-dashed border-zinc-300"
-    >
-      <div className="self-stretch w-4 border-r border-dashed border-zinc-300"></div>
-      <div className="flex flex-1 gap-x-4 py-4">
-        <img
-          src={`https://img.logo.dev/${job.company_url}?token=${logoDevPublicKey}`}
-          className=" w-12 h-12"
-          alt={`${job.company} logo`}
-        />
-        <div className="w-full space-y-8">
-          <div className="flex justify-between">
-            <h3 className="font-medium text-lg max-w-120">{job.title}</h3>
-            <p className="text-xs text-zinc-400 mr-4">{index + 1}</p>
+    <article className="group flex gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50/60">
+      <img
+        src={`https://img.logo.dev/${job.company_url}?token=${logoDevPublicKey}`}
+        className="size-10 shrink-0 overflow-hidden rounded-md border border-zinc-200 bg-zinc-50 object-contain"
+        alt=""
+        loading="lazy"
+      />
+      <div className="min-w-0 flex-1 space-y-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0 space-y-1">
+            <h3 className="font-medium leading-snug text-zinc-900">
+              {job.title}
+            </h3>
+            <p className="truncate text-sm text-zinc-500" title={job.location}>
+              <span className="font-medium text-zinc-700">{job.company}</span>
+              {job.location ? ` · ${truncateText(job.location, 60)}` : null}
+            </p>
           </div>
+          <span className="shrink-0 font-mono text-xs text-zinc-400">
+            #{index + 1}
+          </span>
+        </div>
 
-          <div className="grid grid-cols-[1fr_1fr_2fr_1fr_1fr] gap-4 uppercase text-sm">
-            <div className="min-w-0 w-full">
-              <p>COMPANY</p>
-              <p className="font-medium truncate" title={job.company}>
-                {truncateText(job.company, 24)}
-              </p>
-            </div>
-            <div className="min-w-0 w-full">
-              <p>DATE</p>
-              <p className="font-medium truncate" title={formattedDate}>
-                {truncateText(formattedDate, 24)}
-              </p>
-            </div>
-            <div className="min-w-0 w-full">
-              <p>LOCATION</p>
-              <p className="font-medium truncate" title={job.location}>
-                {truncateText(job.location, 24)}
-              </p>
-            </div>
-            <div className="min-w-0 w-full">
-              <p>ID</p> <p className="font-medium">{job.id}</p>
-            </div>
-            <div className="min-w-0 w-full">
-              <p>LINK</p>
-              {job.url !== "" ? (
-                <a
-                  className="font-medium truncate block"
-                  href={job.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  title={job.url}
-                >
-                  {truncateText("View", 24)}
-                </a>
-              ) : (
-                <p className="font-medium text-zinc-400">View</p>
-              )}
-            </div>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          {category ? (
+            <span
+              className={`inline-flex items-center rounded-md border px-2 py-0.5 font-medium ${category.badgeClassName}`}
+            >
+              {category.label}
+            </span>
+          ) : null}
+          <span className="inline-flex items-center rounded-md border border-zinc-200 px-2 py-0.5 font-medium text-zinc-600">
+            {formattedDate}
+          </span>
+          <span className="font-mono text-zinc-400">ID {job.id}</span>
+          {job.url !== "" ? (
+            <a
+              className="ml-auto inline-flex h-7 items-center gap-1 rounded-md border border-zinc-200 bg-white px-2.5 text-xs font-medium text-zinc-900 shadow-xs transition-colors hover:bg-zinc-100"
+              href={job.url}
+              target="_blank"
+              rel="noreferrer"
+              title={job.url}
+            >
+              View
+              <span aria-hidden="true">↗</span>
+            </a>
+          ) : (
+            <span className="ml-auto text-zinc-400">No link</span>
+          )}
         </div>
       </div>
-      <div className="self-stretch w-4 border-l border-dashed border-zinc-300"></div>
     </article>
   );
 }

@@ -8,6 +8,7 @@ from urllib.request import Request, urlopen
 from backend.providers.errors import AshbyAPIError
 from backend.config import ASHBY_API_URL, DEFAULT_HEADERS, COMPANY_URL_MAPPING
 from backend.models import JobPosting
+from backend.services.classifier import normalize_employment_type
 
 # GraphQL query for Ashby's API to fetch job board data with teams.
 API_JOB_BOARD_WITH_TEAMS_QUERY = """query ApiJobBoardWithTeams($organizationHostedJobsPageName: String!) {
@@ -118,7 +119,11 @@ class AshbyAPIClient:
         )
 
     def _parse_job_postings(
-        self, decoded: dict[str, Any], company: str, company_url: str
+        self,
+        decoded: dict[str, Any],
+        company: str,
+        company_url: str,
+        board: str = "",
     ) -> list[JobPosting]:
         """Parse Ashby GraphQL response into JobPosting objects."""
         postings: list[JobPosting] = []
@@ -150,7 +155,10 @@ class AshbyAPIClient:
                     company=company,
                     company_url=COMPANY_URL_MAPPING.get(company, company_url),
                     location=location,
-                    url="",
+                    url=f"https://jobs.ashbyhq.com/{board}/{job_id}" if board else "",
+                    employment_type=normalize_employment_type(
+                        job.get("employmentType")
+                    ),
                 )
             )
 

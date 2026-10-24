@@ -19,6 +19,7 @@ class JobPostingResponse(BaseModel):
     url: str
     source: str
     location: str
+    category: str = ""
     first_seen: str
     last_seen: str
 
@@ -61,10 +62,13 @@ def jobs_status() -> BackendStatusResponse:
 def jobs_recent(
     limit: int = Query(default=50, ge=1, le=100),
     query: str = Query(default="", min_length=0, max_length=120),
+    category: str = Query(default="", max_length=40),
 ) -> list[JobPostingResponse]:
     store = JobPostingStore()
     try:
-        rows = store.get_recent_postings(limit=limit, title_query=query)
+        rows = store.get_recent_postings(
+            limit=limit, title_query=query, category=category or None
+        )
         return [JobPostingResponse(**row) for row in rows]
     finally:
         store.close()

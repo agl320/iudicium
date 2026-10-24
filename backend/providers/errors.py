@@ -167,3 +167,7 @@ class MicrosoftAPIError(ProviderAPIError):
 
 class IntelAPIError(ProviderAPIError):
     pass
+
+
+class EightfoldAPIError(ProviderAPIError):
+    pass
