@@ -132,8 +132,8 @@ function App() {
                 Iudicium
               </h1>
               <p className="max-w-xl text-sm text-zinc-500">
-                New tech internships and full-time HR, HRIS and payroll roles,
-                pulled from company career sites every 30 minutes.
+                Job postings collected from company career sites. Updated every
+                30 minutes.
               </p>
             </div>
 
