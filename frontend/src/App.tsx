@@ -115,11 +115,7 @@ function App() {
         <main className="min-w-0 flex-1">
           <header className="flex h-12 items-center justify-between border-b border-zinc-200 px-6">
             <span className="text-sm font-semibold tracking-tight">Iudicium</span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-2.5 py-0.5 text-xs text-zinc-500">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-              </span>
+            <span className="inline-flex items-center rounded-full border border-zinc-200 px-2.5 py-0.5 text-xs text-zinc-500">
               Updated{" "}
               {backendLastUpdatedAt
                 ? formatBackendLastUpdatedAt(backendLastUpdatedAt)
