@@ -171,3 +171,27 @@ class IntelAPIError(ProviderAPIError):
 
 class EightfoldAPIError(ProviderAPIError):
     pass
+
+
+class AmazonAPIError(ProviderAPIError):
+    pass
+
+
+class AppleAPIError(ProviderAPIError):
+    pass
+
+
+class GoogleCareersAPIError(ProviderAPIError):
+    pass
+
+
+class SAPCareersAPIError(ProviderAPIError):
+    pass
+
+
+class SuccessFactorsAPIError(ProviderAPIError):
+    pass
+
+
+class AvatureAPIError(ProviderAPIError):
+    pass

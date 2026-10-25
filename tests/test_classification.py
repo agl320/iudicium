@@ -42,10 +42,17 @@ class ConfigTests(unittest.TestCase):
         for company in CONFIG.companies:
             self.assertTrue(company.domain, company.name)
 
-    def test_semiconductors_enabled(self):
+    def test_enabled_companies(self):
         enabled = {c.name for c in CONFIG.enabled_companies}
-        for name in ("Qualcomm", "Broadcom", "Marvell", "Micron", "Analog Devices"):
+        for name in (
+            "NVIDIA", "AMD", "Intel", "Qualcomm", "Broadcom",
+            "Microsoft", "Amazon", "Apple", "Google", "Stripe", "Mastercard",
+            "SAP", "Workday", "Electronic Arts", "TELUS", "lululemon", "Fortinet",
+        ):
             self.assertIn(name, enabled)
+        # Smaller companies stay configured but switched off.
+        for name in ("Marvell", "Micron", "RAMP", "WealthSimple"):
+            self.assertNotIn(name, enabled)
 
 
 class ClassifierTests(unittest.TestCase):
@@ -127,6 +134,14 @@ class ClassifierTests(unittest.TestCase):
         self.assertEqual(category("HR Coordinator - Part Time"), "")
         self.assertEqual(category("Payroll Specialist", "contract"), "")
         self.assertEqual(category("Payroll Specialist", "part_time"), "")
+        for title in (
+            "Payroll Analyst - Italy (12 months contract)",
+            "Payroll Supervisor | Contract Until January 2028",
+            "Payroll Business Analyst - Intel Contract Employee",
+        ):
+            self.assertEqual(category(title, "full_time"), "", title)
+        # Contract-management jobs are not contract jobs.
+        self.assertEqual(category("HR Contract Manager", "full_time"), "hr")
 
     def test_hr_lookalikes_are_excluded(self):
         for title in (
@@ -135,6 +150,10 @@ class ClassifierTests(unittest.TestCase):
             "Technical Consultant, Workday Financials",
             "Engineering Manager (People Manager)",
             "Senior Lead, Partnerships (Perks & Rewards)",
+            "Director, Finance - G&A/HR/Government Affairs",
+            "Software Development Engineer, Payroll Tech",
+            "Senior HCM Solution Consultant",
+            "Customer Marketing Specialist - [People with disabilities]",
         ):
             self.assertEqual(category(title, "full_time"), "", title)
 

@@ -40,7 +40,7 @@ STUDENT_ROLE_PATTERNS = [
     r"\bearly[-\s]?career\b",
     # "Associate Software Engineer" is entry level; "Senior Associate" or
     # "Associate Director" are not.
-    r"(?<!senior )(?<!sr\. )\bassociate\b(?! (director|vice|partner|principal|general))",
+    r"(?<!senior )(?<!sr\. )(?<!sr )\bassociate\b(?! (director|vice|partner|principal|general))",
     # Explicit program naming
     r"\bapprentice(ship)?\b",
     r"\btrainee\b",
@@ -61,6 +61,7 @@ DEFINITELY_STUDENT_PATTERNS = [
     r"\bstudent\b",
     r"\bwerkstudent\b",
     r"\bapprentice(ship)?\b",
+    r"\baprendiz\b",
     r"\btrainee\b",
     r"\bwork[-\s]?term\b",
 ]
@@ -69,8 +70,9 @@ NOT_FULL_TIME_PATTERNS = [
     r"\bpart[-\s]?time\b",
     r"\btemp(orary)?\b",
     r"\bcontractor\b",
-    r"\(contract\)",
-    r"\bcontract (role|position|assignment)\b",
+    # "12 months contract", "Contract Until 2028", "(Contract)" -- but not
+    # contract-management jobs like "Contract Manager".
+    r"\bcontract\b(?![-\s]+(manag|specialist|administrat|analyst|negotiat|review|lawyer|counsel|attorney|lifecycle))",
     r"\bfixed[-\s]?term\b",
     r"\bseasonal\b",
     r"\bcasual\b",

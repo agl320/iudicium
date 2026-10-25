@@ -19,7 +19,17 @@ from urllib.parse import urlencode
 from backend.config import DEFAULT_HEADERS, DEFAULT_WORKDAY_PAYLOAD
 from backend.config.loader import Company, ConfigError, Settings, Track
 from backend.models import JobPosting
+from backend.providers.amazon import AmazonClient
+from backend.providers.amazon.api import PAGE_SIZE as AMAZON_PAGE_SIZE
 from backend.providers.amd.api import AMDClient
+from backend.providers.apple import AppleClient
+from backend.providers.apple.api import PAGE_SIZE as APPLE_PAGE_SIZE
+from backend.providers.avature import AvatureClient
+from backend.providers.avature.api import PAGE_SIZE as AVATURE_PAGE_SIZE
+from backend.providers.google import GoogleCareersClient
+from backend.providers.google.api import PAGE_SIZE as GOOGLE_PAGE_SIZE
+from backend.providers.sap import SAPCareersClient
+from backend.providers.successfactors import SuccessFactorsRSSClient
 from backend.providers.ashby.api import AshbyAPIClient
 from backend.providers.eightfold import EightfoldClient
 from backend.providers.eightfold.api import PAGE_SIZE as EIGHTFOLD_PAGE_SIZE
@@ -235,6 +245,107 @@ def _fetch_oraclecloud(
     return postings
 
 
+def _paged_search(
+    search_page: Callable[[str, int], list[JobPosting]],
+    queries: list[str],
+    *,
+    page_size: int,
+    max_pages: int,
+    delay_seconds: float = 0.5,
+) -> list[JobPosting]:
+    """Runs `search_page(query, page_index)` for each query until a short page
+    or `max_pages`. Used by newest-first boards where the first pages hold
+    everything new since the last run."""
+    postings: list[JobPosting] = []
+    for query in queries:
+        for page in range(max_pages):
+            results = search_page(query, page)
+            postings.extend(results)
+            if len(results) < page_size:
+                break
+            time.sleep(delay_seconds)
+    return postings
+
+
+def _fetch_amazon(
+    company: Company, tracks: tuple[Track, ...], settings: Settings
+) -> list[JobPosting]:
+    client = AmazonClient(company=company.name, company_url=company.domain)
+    return _paged_search(
+        lambda query, page: client.search_page(
+            query=query, offset=page * AMAZON_PAGE_SIZE
+        )[0],
+        _queries_for(tracks),
+        page_size=AMAZON_PAGE_SIZE,
+        max_pages=int(company.options.get("max_pages", 2)),
+    )
+
+
+def _fetch_apple(
+    company: Company, tracks: tuple[Track, ...], settings: Settings
+) -> list[JobPosting]:
+    client = AppleClient(company=company.name, company_url=company.domain)
+    return _paged_search(
+        lambda query, page: client.search_page(query=query, page=page + 1)[0],
+        _queries_for(tracks),
+        page_size=APPLE_PAGE_SIZE,
+        max_pages=int(company.options.get("max_pages", 3)),
+    )
+
+
+def _fetch_google(
+    company: Company, tracks: tuple[Track, ...], settings: Settings
+) -> list[JobPosting]:
+    client = GoogleCareersClient(company=company.name, company_url=company.domain)
+    return _paged_search(
+        lambda query, page: client.search_page(query=query, page=page + 1),
+        _queries_for(tracks),
+        page_size=GOOGLE_PAGE_SIZE,
+        max_pages=int(company.options.get("max_pages", 3)),
+        delay_seconds=1.0,
+    )
+
+
+def _fetch_avature(
+    company: Company, tracks: tuple[Track, ...], settings: Settings
+) -> list[JobPosting]:
+    client = AvatureClient(
+        company.option("search_url"), company=company.name, company_url=company.domain
+    )
+    return _paged_search(
+        lambda query, page: client.search_page(
+            query=query, offset=page * AVATURE_PAGE_SIZE
+        ),
+        _queries_for(tracks),
+        page_size=AVATURE_PAGE_SIZE,
+        max_pages=int(company.options.get("max_pages", 3)),
+    )
+
+
+def _fetch_sap(
+    company: Company, tracks: tuple[Track, ...], settings: Settings
+) -> list[JobPosting]:
+    client = SAPCareersClient(company=company.name, company_url=company.domain)
+    postings: list[JobPosting] = []
+    for query in _queries_for(tracks):
+        postings.extend(client.search(query=query))
+        time.sleep(0.5)
+    return postings
+
+
+def _fetch_successfactors(
+    company: Company, tracks: tuple[Track, ...], settings: Settings
+) -> list[JobPosting]:
+    client = SuccessFactorsRSSClient(
+        company.option("host"), company=company.name, company_url=company.domain
+    )
+    postings: list[JobPosting] = []
+    for query in _queries_for(tracks):
+        postings.extend(client.search(query=query))
+        time.sleep(0.5)
+    return postings
+
+
 # --- Full-listing providers: fetch everything, classify locally -----------
 
 
@@ -300,6 +411,12 @@ FETCHERS: dict[
     "eightfold": _threaded(_fetch_eightfold),
     "amd": _threaded(_fetch_amd),
     "oraclecloud": _threaded(_fetch_oraclecloud),
+    "amazon": _threaded(_fetch_amazon),
+    "apple": _threaded(_fetch_apple),
+    "google": _threaded(_fetch_google),
+    "avature": _threaded(_fetch_avature),
+    "sap": _threaded(_fetch_sap),
+    "successfactors": _threaded(_fetch_successfactors),
     "greenhouse": _threaded(_fetch_greenhouse),
     "ashby": _threaded(_fetch_ashby),
     "smartrecruiters": _threaded(_fetch_smartrecruiters),

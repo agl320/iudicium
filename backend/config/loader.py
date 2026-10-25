@@ -22,6 +22,12 @@ PROVIDERS = {
     "oraclecloud",
     "eightfold",
     "amd",
+    "amazon",
+    "apple",
+    "google",
+    "sap",
+    "successfactors",
+    "avature",
     "custom",
 }
 

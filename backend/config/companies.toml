@@ -52,7 +52,7 @@ include_titles = [
   '\bhrbp\b',
   'human resources?',
   'human capital',
-  '\bpeople\b(?! (manager|leader))',
+  '\bpeople\b(?! (manager|leader|with))',
   '\bpersonnel\b',
   'employee (relations|experience|services|lifecycle|engagement|communications|success|benefits|listening)',
   'labou?r relations',
@@ -60,8 +60,8 @@ include_titles = [
   'diversity',
   # HRIS / HR tech
   '\bhris\b',
-  '\bhcm\b',
-  '\bworkday\b(?!.*financ)',
+  'hcm (analyst|specialist|administrator|systems?|lead|manager)',
+  'workday (hcm|hris|analyst|payroll|integrations?|administrator|specialist|systems?)',
   'successfactors',
   '\bukg\b',
   'kronos',
@@ -90,6 +90,16 @@ include_titles = [
 exclude_titles = [
   # Employment lawyers are legal, not HR.
   '\b(counsel|attorney|lawyer|paralegal)\b',
+  # Finance roles that merely mention HR (e.g. "Director, Finance - G&A/HR");
+  # payroll roles often sit in finance, so those still count.
+  '^(?!.*payroll).*financ',
+  # Building HR software is engineering, not HR.
+  'software', 'machine learning', 'scientist', 'developer', 'full[- ]?stack',
+  '\barchitect\b', 'technical (program|director)', 'customer support',
+  # Selling HR software (Workday, SAP, Oracle HCM) is sales, not HR.
+  'solutions? (consultant|engineer|architect|specialist)', 'pre-?sales',
+  '(functional|implementation|technical) consultant', 'product (instructor|trainer)',
+  'account (executive|manager)', '\bproduct (manager|marketing)',
 ]
 search_terms = [
   "HR",
@@ -173,7 +183,7 @@ exclude_titles = [
 # HR internships are not wanted (HR is full-time only), even "HR Analytics".
 block_titles = [
   '\bhr\b', '\bhris\b', 'human resources?', '\bpayroll\b', 'recruit', 'talent',
-  'physical security',
+  'physical\W*security', '\bdc security\b', 'campus security', 'business develop',
 ]
 search_terms = ["intern", "internship", "student"]
 
@@ -190,6 +200,13 @@ search_terms = ["intern", "internship", "student"]
 # provider = "oraclecloud"      host, site
 # provider = "eightfold"        host, domain_param, job_url_template
 # provider = "amd"              (careers.amd.com)
+# provider = "amazon"           (amazon.jobs)
+# provider = "apple"            (jobs.apple.com)
+# provider = "google"           (Google Careers)
+# provider = "sap"              (jobs.sap.com)
+# provider = "successfactors"   host (SAP SuccessFactors career site RSS)
+# provider = "avature"          search_url (Avature career site search page)
+#   amazon/apple/google/avature also accept max_pages (newest-first paging)
 # provider = "custom"           client = "module.path:ClassName" exposing
 #                               search_job_postings() -> list[JobPosting]
 #
@@ -199,7 +216,7 @@ search_terms = ["intern", "internship", "student"]
 # if a company's labels are unusual.
 # ---------------------------------------------------------------------------
 
-# --- Semiconductors --------------------------------------------------------
+# --- Semiconductors (AMD tier and up are enabled) ---------------------------
 
 [[companies]]
 name = "NVIDIA"
@@ -242,7 +259,7 @@ site = "External_Career"
 
 [[companies]]
 name = "Marvell"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "marvell.com"
 host = "marvell.wd1"
@@ -250,7 +267,7 @@ site = "MarvellCareers"
 
 [[companies]]
 name = "Micron"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "micron.com"
 host = "micron.wd1"
@@ -258,7 +275,7 @@ site = "External"
 
 [[companies]]
 name = "Analog Devices"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "analog.com"
 host = "analogdevices.wd1"
@@ -266,7 +283,7 @@ site = "External"
 
 [[companies]]
 name = "Applied Materials"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "appliedmaterials.com"
 host = "amat.wd1"
@@ -274,7 +291,7 @@ site = "External"
 
 [[companies]]
 name = "KLA"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "kla.com"
 host = "kla.wd1"
@@ -282,7 +299,7 @@ site = "Search"
 
 [[companies]]
 name = "NXP"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "nxp.com"
 host = "nxp.wd3"
@@ -290,7 +307,7 @@ site = "careers"
 
 [[companies]]
 name = "Cadence"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "cadence.com"
 host = "cadence.wd1"
@@ -298,7 +315,7 @@ site = "External_Careers"
 
 [[companies]]
 name = "Microchip"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "microchip.com"
 host = "microchiphr.wd5"
@@ -306,7 +323,7 @@ site = "External"
 
 [[companies]]
 name = "GlobalFoundries"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "gf.com"
 host = "globalfoundries.wd1"
@@ -314,7 +331,7 @@ site = "External"
 
 [[companies]]
 name = "Samsung"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "samsung.com"
 host = "sec.wd3"
@@ -322,7 +339,7 @@ site = "Samsung_Careers"
 
 [[companies]]
 name = "Texas Instruments"
-enabled = true
+enabled = false
 provider = "oraclecloud"
 domain = "ti.com"
 host = "edbz.fa.us2"
@@ -339,7 +356,7 @@ board = "sandisk"
 
 [[companies]]
 name = "Western Digital"
-enabled = true
+enabled = false
 provider = "smartrecruiters"
 domain = "westerndigital.com"
 board = "westerndigital"
@@ -365,7 +382,7 @@ site = "external_experienced"
 
 [[companies]]
 name = "Autodesk"
-enabled = true
+enabled = false
 provider = "workday"
 domain = "autodesk.com"
 host = "autodesk.wd1"
@@ -381,7 +398,7 @@ site = "CorporateCareers"
 
 [[companies]]
 name = "Cisco"
-enabled = false
+enabled = true
 provider = "workday"
 domain = "cisco.com"
 host = "cisco.wd5"
@@ -389,7 +406,7 @@ site = "Cisco_Careers"
 
 [[companies]]
 name = "Salesforce"
-enabled = false
+enabled = true
 provider = "workday"
 domain = "salesforce.com"
 host = "salesforce.wd12"
@@ -420,10 +437,10 @@ host = "motorolasolutions.wd5"
 site = "Careers"
 
 [[companies]]
-name = "Telus"
+name = "TELUS Health"
 enabled = false
 provider = "workday"
-domain = "telus.com"
+domain = "telushealth.com"
 host = "lifeworks.wd3"
 site = "External"
 
@@ -450,7 +467,7 @@ board = "stripe"
 
 [[companies]]
 name = "GitLab"
-enabled = true
+enabled = false
 provider = "greenhouse"
 domain = "gitlab.com"
 board = "gitlab"
@@ -492,21 +509,21 @@ board = "sofi"
 
 [[companies]]
 name = "RAMP"
-enabled = true
+enabled = false
 provider = "ashby"
 domain = "ramp.com"
 board = "ramp"
 
 [[companies]]
 name = "Snowflake"
-enabled = true
+enabled = false
 provider = "ashby"
 domain = "snowflake.com"
 board = "snowflake"
 
 [[companies]]
 name = "WealthSimple"
-enabled = true
+enabled = false
 provider = "ashby"
 domain = "wealthsimple.com"
 board = "wealthsimple"
@@ -558,3 +575,76 @@ provider = "workday"
 domain = "cibc.com"
 host = "cibc.wd3"
 site = "search"
+
+# --- Big tech ----------------------------------------------------------------
+
+[[companies]]
+name = "Amazon"
+enabled = true
+provider = "amazon"
+domain = "amazon.com"
+
+[[companies]]
+name = "Apple"
+enabled = true
+provider = "apple"
+domain = "apple.com"
+
+[[companies]]
+name = "Google"
+enabled = true
+provider = "google"
+domain = "google.com"
+
+[[companies]]
+name = "Oracle"
+enabled = true
+provider = "oraclecloud"
+domain = "oracle.com"
+host = "eeho.fa.us2"
+site = "CX_45001"
+
+# --- Large Vancouver employers (HR) ------------------------------------------
+
+[[companies]]
+name = "SAP"
+enabled = true
+provider = "sap"
+domain = "sap.com"
+
+[[companies]]
+name = "Workday"
+enabled = true
+provider = "workday"
+domain = "workday.com"
+host = "workday.wd5"
+site = "Workday"
+
+[[companies]]
+name = "Electronic Arts"
+enabled = true
+provider = "avature"
+domain = "ea.com"
+search_url = "https://jobs.ea.com/en_US/careers/SearchJobs"
+
+[[companies]]
+name = "TELUS"
+enabled = true
+provider = "successfactors"
+domain = "telus.com"
+host = "careers.telus.com"
+
+[[companies]]
+name = "lululemon"
+enabled = true
+provider = "avature"
+domain = "lululemon.com"
+search_url = "https://careers.lululemon.com/en_US/careers/SearchCareer"
+
+[[companies]]
+name = "Fortinet"
+enabled = true
+provider = "oraclecloud"
+domain = "fortinet.com"
+host = "edel.fa.us2"
+site = "CX_2001"

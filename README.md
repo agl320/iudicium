@@ -10,7 +10,7 @@ Iudicium aggregates job postings from company career sites, stores them in a Pos
 
 Configuration
 - Everything lives in `backend/config/companies.toml` (no env vars needed):
-	- `[[companies]]` — one entry per company; flip `enabled` to turn it on/off. Each names a `provider` (`workday`, `greenhouse`, `ashby`, `smartrecruiters`, `oraclecloud`, `eightfold`, `amd`, `custom`) plus the board details.
+	- `[[companies]]` — one entry per company; flip `enabled` to turn it on/off. Each names a `provider` (`workday`, `greenhouse`, `ashby`, `smartrecruiters`, `oraclecloud`, `eightfold`, `amd`, `amazon`, `apple`, `google`, `sap`, `successfactors`, `avature`, `custom`) plus the board details. Enabled: semiconductors at AMD tier and up, big tech, and large Vancouver employers; smaller companies stay configured but switched off.
 	- `[tracks.*]` — the job categories to collect. Currently `tech_intern` (blue Discord cards) and `hr` (HR / HRIS / payroll, full-time only, pink cards). Each track has title regexes (`priority_titles` always match, `include_titles`/`exclude_titles` for generic words, `block_titles` never match), an employment requirement (`intern` / `full_time` / `any`), keyword `search_terms` and a `color`.
 	- `[settings]` — paging limits, concurrency, and notification flood protection.
 - Boards disagree on job types, so `backend/services/classifier.py` normalizes provider hints (Workday facets, Ashby `employmentType`, SmartRecruiters `typeOfEmployment`, …) and job titles into one employment type, then assigns each posting a `category` (track key).
