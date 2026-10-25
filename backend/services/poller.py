@@ -8,7 +8,7 @@ from time import monotonic
 
 from backend.config.loader import AppConfig, Company, Track
 from backend.models import JobPosting
-from backend.services.classifier import categorize, classify
+from backend.services.classifier import categorize, classify, rules_fingerprint
 from backend.services.discord import send_discord_notification
 from backend.services.job_store import JobPostingStore
 from backend.services.sources import fetch_company
@@ -117,9 +117,11 @@ class Poller:
             )
             return classify(posting, self.tracks)
 
-        updated = self.store.backfill_categories(classify_title)
+        updated = self.store.backfill_categories(
+            classify_title, rules_fingerprint(self.tracks)
+        )
         if updated:
-            logger.info("Backfilled categories for %d existing postings", updated)
+            logger.info("Updated categories for %d existing postings", updated)
 
     async def notify(self, postings: list[JobPosting]) -> int:
         sent = 0

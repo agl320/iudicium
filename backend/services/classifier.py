@@ -6,6 +6,8 @@ combine whatever hint the provider gives with title heuristics.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from dataclasses import replace
 
@@ -36,7 +38,9 @@ STUDENT_ROLE_PATTERNS = [
     r"\brecent graduate\b",
     r"\bentry[-\s]?level\b",
     r"\bearly[-\s]?career\b",
-    r"\bassociate\b",
+    # "Associate Software Engineer" is entry level; "Senior Associate" or
+    # "Associate Director" are not.
+    r"(?<!senior )(?<!sr\. )\bassociate\b(?! (director|vice|partner|principal|general))",
     # Explicit program naming
     r"\bapprentice(ship)?\b",
     r"\btrainee\b",
@@ -119,11 +123,18 @@ def is_intern_role(posting: JobPosting) -> bool:
     return posting.employment_type == "intern" or is_student_role(posting.title)
 
 
-def matches_track(posting: JobPosting, track: Track) -> bool:
-    title = posting.title
+def title_matches_track(title: str, track: Track) -> bool:
+    if any(p.search(title) for p in track.block_titles):
+        return False
+    if any(p.search(title) for p in track.priority_titles):
+        return True
     if track.include_titles and not any(p.search(title) for p in track.include_titles):
         return False
-    if any(p.search(title) for p in track.exclude_titles):
+    return not any(p.search(title) for p in track.exclude_titles)
+
+
+def matches_track(posting: JobPosting, track: Track) -> bool:
+    if not title_matches_track(posting.title, track):
         return False
     if track.employment == "intern":
         return is_intern_role(posting)
@@ -138,6 +149,33 @@ def classify(posting: JobPosting, tracks: tuple[Track, ...]) -> str:
         if matches_track(posting, track):
             return track.key
     return ""
+
+
+def rules_fingerprint(tracks: tuple[Track, ...]) -> str:
+    """Changes whenever the classification rules change, so stored postings
+    can be re-classified."""
+    rules = {
+        "student": STUDENT_ROLE_PATTERNS,
+        "definitely_student": DEFINITELY_STUDENT_PATTERNS,
+        "not_full_time": NOT_FULL_TIME_PATTERNS,
+        "tracks": [
+            {
+                "key": track.key,
+                "employment": track.employment,
+                **{
+                    name: [p.pattern for p in getattr(track, name)]
+                    for name in (
+                        "priority_titles",
+                        "include_titles",
+                        "exclude_titles",
+                        "block_titles",
+                    )
+                },
+            }
+            for track in tracks
+        ],
+    }
+    return hashlib.sha256(json.dumps(rules, sort_keys=True).encode()).hexdigest()
 
 
 def categorize(postings: list[JobPosting], tracks: tuple[Track, ...]) -> list[JobPosting]:

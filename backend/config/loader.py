@@ -47,6 +47,10 @@ class Track:
     employment: str
     include_titles: tuple[re.Pattern[str], ...]
     exclude_titles: tuple[re.Pattern[str], ...]
+    # Titles matching these are in the track even if they hit exclude_titles.
+    priority_titles: tuple[re.Pattern[str], ...]
+    # Titles matching these are never in the track, not even priority ones.
+    block_titles: tuple[re.Pattern[str], ...]
     search_terms: tuple[str, ...]
 
     @property
@@ -125,6 +129,10 @@ def _parse_tracks(raw: dict[str, Any]) -> tuple[Track, ...]:
                 exclude_titles=_compile(
                     data.get("exclude_titles", []), f"tracks.{key}"
                 ),
+                priority_titles=_compile(
+                    data.get("priority_titles", []), f"tracks.{key}"
+                ),
+                block_titles=_compile(data.get("block_titles", []), f"tracks.{key}"),
                 search_terms=tuple(data.get("search_terms", [])),
             )
         )

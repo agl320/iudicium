@@ -297,18 +297,37 @@ class JobPostingStore:
         finally:
             self.__class__._put_conn(conn)
 
-    def backfill_categories(self, classify_title: Callable[[str], str]) -> int:
-        """Classifies rows stored before the category column existed."""
+    def backfill_categories(
+        self, classify_title: Callable[[str], str], rules_fingerprint: str
+    ) -> int:
+        """Classifies unclassified rows, or every row when the track rules
+        changed since the last run (so old categories don't go stale)."""
         conn = self.__class__._get_conn()
         try:
             with conn.cursor() as cursor:
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS iudicium_meta (
+                        key TEXT PRIMARY KEY,
+                        value TEXT NOT NULL
+                    )
+                """)
                 cursor.execute(
-                    "SELECT id, title FROM job_postings WHERE category IS NULL"
+                    "SELECT value FROM iudicium_meta WHERE key = 'tracks_fingerprint'"
                 )
-                updates = [
-                    (classify_title(title), row_id)
-                    for row_id, title in cursor.fetchall()
-                ]
+                row = cursor.fetchone()
+                rules_changed = row is None or row[0] != rules_fingerprint
+
+                if rules_changed:
+                    cursor.execute("SELECT id, title, category FROM job_postings")
+                else:
+                    cursor.execute(
+                        "SELECT id, title, category FROM job_postings WHERE category IS NULL"
+                    )
+                updates = []
+                for row_id, title, current in cursor.fetchall():
+                    category = classify_title(title)
+                    if category != current:
+                        updates.append((category, row_id))
                 if updates:
                     psycopg2.extras.execute_batch(
                         cursor,
@@ -316,6 +335,14 @@ class JobPostingStore:
                         updates,
                         page_size=500,
                     )
+                cursor.execute(
+                    """
+                    INSERT INTO iudicium_meta (key, value)
+                    VALUES ('tracks_fingerprint', %s)
+                    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+                    """,
+                    (rules_fingerprint,),
+                )
                 conn.commit()
                 return len(updates)
         finally:

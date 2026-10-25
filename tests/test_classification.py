@@ -58,6 +58,44 @@ class ClassifierTests(unittest.TestCase):
         ):
             self.assertEqual(category(title), "tech_intern", title)
 
+    def test_tech_intern_variants(self):
+        for title in (
+            "DevOps Intern",
+            "Infrastructure Engineering Intern",
+            "Site Reliability Engineering Intern",
+            "Systems Engineering Intern",
+            "Cloud Platform Intern",
+            "Data Analyst Intern",
+            "Machine Learning Research Intern",
+            "Firmware Co-op",
+            "Design for Test Intern",
+            "Product Management Intern",
+            "Security Engineering Intern",
+            "Manufacturing Software Intern",
+            "Intern, Facilities AI Engineering",
+            "Associate Software Engineer",
+        ):
+            self.assertEqual(category(title), "tech_intern", title)
+
+    def test_non_tech_interns_are_excluded(self):
+        for title in (
+            "Finance Intern",
+            "Sales Engineering Intern",
+            "Marketing Intern",
+            "Supply Chain Intern",
+            "Process Engineer Intern",
+            "Intern - F10 Process & Equipment Engineer",
+            "Mechanical Engineering Intern",
+            "Facilities Electrical Internship program",
+            "Facilities Civil, Structural, Architectural Internship",
+            "Corporate Strategy Intern",
+            "Human Resources Intern, HR Analytics",
+            "Operations Associate",
+            "Associate Director, Retail",
+            "Senior Associate, Strategic Finance",
+        ):
+            self.assertEqual(category(title), "", title)
+
     def test_provider_intern_hint(self):
         self.assertEqual(category("ASIC Design Engineer", "intern"), "tech_intern")
 
@@ -69,6 +107,17 @@ class ClassifierTests(unittest.TestCase):
             "Human Resources Generalist",
             "People Operations Associate",
             "Talent Acquisition Partner",
+            "Global Mobility Specialist",
+            "Immigration Specialist",
+            "Talent Development Business Partner",
+            "Technical Sourcer",
+            "Workday Analyst",
+            "People Consultant",
+            "Head of People Austria & Switzerland",
+            "Sr. Learning & Development Program Specialist",
+            "Workforce Development Specialist",
+            "Senior Rewards Specialist",
+            "Employee Relations Manager",
         ):
             self.assertEqual(category(title, "full_time"), "hr", title)
             self.assertEqual(category(title), "hr", title)
@@ -78,6 +127,16 @@ class ClassifierTests(unittest.TestCase):
         self.assertEqual(category("HR Coordinator - Part Time"), "")
         self.assertEqual(category("Payroll Specialist", "contract"), "")
         self.assertEqual(category("Payroll Specialist", "part_time"), "")
+
+    def test_hr_lookalikes_are_excluded(self):
+        for title in (
+            "Compensation and Benefits Attorney",
+            "Strategic Sourcing Manager",
+            "Technical Consultant, Workday Financials",
+            "Engineering Manager (People Manager)",
+            "Senior Lead, Partnerships (Perks & Rewards)",
+        ):
+            self.assertEqual(category(title, "full_time"), "", title)
 
     def test_hr_interns_are_not_tech_interns(self):
         self.assertEqual(category("HR Intern"), "")

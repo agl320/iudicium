@@ -25,15 +25,20 @@ max_notifications_per_company = 10
 # Tracks: the job categories we care about. A posting is assigned to the first
 # enabled track it matches (in file order).
 #
-#   employment     "intern"    -> title/provider must indicate a student role
-#                  "full_time" -> must not be intern/part-time/contract/temp
-#                  "any"       -> no employment requirement
-#   include_titles regexes (case-insensitive); empty = any title
-#   exclude_titles regexes (case-insensitive)
-#   search_terms   used by providers that only return keyword-search results
-#                  (Workday, Eightfold, AMD, Oracle). Keep them specific: many
-#                  boards also search descriptions.
-#   color          Discord embed colour (and frontend badge colour)
+#   employment      "intern"    -> title/provider must indicate a student role
+#                   "full_time" -> must not be intern/part-time/contract/temp
+#                   "any"       -> no employment requirement
+#   priority_titles regexes; a match always puts the title in the track
+#   include_titles  regexes; otherwise the title must match one (empty = any)
+#   exclude_titles  regexes; ...and must not match any of these
+#   block_titles    regexes; a match always keeps the title out of the track
+#                   (all regexes are case-insensitive; wrap in (?-i:...) for
+#                   case-sensitive parts)
+#   search_terms    used by providers that only return keyword-search results
+#                   (Workday, Eightfold, AMD, Oracle). Keep them specific:
+#                   Workday ORs the words and also searches descriptions, so
+#                   e.g. "people" or "co-op" match nearly every posting.
+#   color           Discord embed colour (and frontend badge colour)
 # ---------------------------------------------------------------------------
 
 [tracks.hr]
@@ -42,34 +47,135 @@ label = "HR / HRIS / Payroll"
 color = "#EC4899"
 employment = "full_time"
 include_titles = [
+  # Core HR
   '\bhr\b',
-  '\bhris\b',
   '\bhrbp\b',
-  '\bhcm\b',
   'human resources?',
   'human capital',
+  '\bpeople\b(?! (manager|leader))',
+  '\bpersonnel\b',
+  'employee (relations|experience|services|lifecycle|engagement|communications|success|benefits|listening)',
+  'labou?r relations',
+  '\bdei\b',
+  'diversity',
+  # HRIS / HR tech
+  '\bhris\b',
+  '\bhcm\b',
+  '\bworkday\b(?!.*financ)',
+  'successfactors',
+  '\bukg\b',
+  'kronos',
+  'dayforce',
+  'ceridian',
+  # Payroll, comp & benefits
   '\bpayroll\b',
-  'people (operations|ops|partner|business partner|analytics|systems|technology|programs?|services|experience)',
-  'people (&|and) culture',
   'compensation',
-  'total rewards',
+  '(total|global|people) rewards',
+  'rewards (specialist|partner|analyst|manager|program|lead)',
   '\bbenefits\b',
-  'employee relations',
-  'talent (acquisition|management)',
-  '\brecruit(er|ing)\b',
+  'leaves? of absence',
+  '\bloa\b',
+  'global mobility',
+  'immigration',
+  # Talent
+  'talent (acquisition|management|development|operations|ops|brand|sourc\w*|partner|programs?|manager|insights|attraction|advisor|specialist|lead|strategy)',
+  'head of talent',
+  '\brecruit(er|ers|ing|ment)\b',
+  '\bsourcer\b',
+  'learning (&|and) development',
+  '\bl&d\b',
+  'workforce (development|planning|management|analytics)',
+  'organi[sz]ational (development|effectiveness|design)',
 ]
-exclude_titles = []
-search_terms = ["HR", "human resources", "HRIS", "payroll", "talent acquisition"]
+exclude_titles = [
+  # Employment lawyers are legal, not HR.
+  '\b(counsel|attorney|lawyer|paralegal)\b',
+]
+search_terms = [
+  "HR",
+  "human resources",
+  "HRIS",
+  "HRBP",
+  "payroll",
+  "talent acquisition",
+  "sourcer",
+  "total rewards",
+  "global mobility",
+  "workforce development",
+  "workday",
+]
 
 [tracks.tech_intern]
 enabled = true
 label = "Tech intern"
 color = "#0BBEFE"
 employment = "intern"
-include_titles = []
-# HR internships are not wanted (HR is full-time only).
-exclude_titles = ['\bhr\b', '\bhris\b', 'human resources?', '\bpayroll\b']
-search_terms = ["intern", "co-op"]
+# Unmistakably technical: counts even if an exclude below also matches
+# (e.g. "Manufacturing Software Intern").
+priority_titles = [
+  # Software & infrastructure
+  'software', '\bsw\b', 'developer', '\bdev\b', 'devops', 'devsecops', 'mlops',
+  '\bsre\b', 'site reliability', 'reliability engineer', '\binfra(structure)?\b',
+  '\bcloud\b', 'platform',
+  'full[- ]?stack', '\bmobile\b', '\bios\b', 'android', '\bweb\b', '\bapis?\b',
+  '\bsdk\b', 'compiler', 'kernel', '\blinux\b', 'operating systems?',
+  'distributed', 'database', 'automation', '\bqa\b', 'quality assurance',
+  '\btest (engineer|automation|development)', 'release engineer', 'tooling',
+  'programm(er|ing)', 'coding', 'computer', 'computing',
+  # Data & AI
+  '\bdata\b', 'machine learning', 'deep learning', '\bml\b',
+  '\bai\b', 'genai', 'artificial intelligence', '\bllms?\b', 'large language',
+  'computer vision', '\bnlp\b', 'robot', 'autonomous', 'algorithm',
+  # Security, networking & IT
+  'security', 'cyber', 'network', '(?-i:\bIT\b)', 'information (technology|systems|security)',
+  # Hardware, silicon & embedded
+  'hardware', 'firmware', 'embedded', '\bfpga\b', '\basic\b', '\brtl\b',
+  '\bsoc\b', '\bgpu\b', '\bcpu\b', '\bnpu\b', '\beda\b', '\bdft\b', '\bvlsi\b',
+  'verification', 'validation', 'physical design', 'silicon', '\bchip\b',
+  'circuit', 'analog', 'mixed[- ]signal', '\bserdes\b', 'signal (integrity|processing)',
+  '\bdsp\b', '\brf\b', 'photonic', 'electronic',
+  '(ic|layout|memory|logic|digital|chip|asic|soc) design', 'design (engineer|verification)',
+  'functional safety',
+  '\besd\b', '\bams\b', '\btcad\b', 'design for test',
+  'device model', 'error correction', 'sensor fusion', 'sensing', '\bserver',
+  'digital twin', 'characteri[sz]ation', '\bcamera\b', '\blogic\b',
+  'power (analysis|optimi[sz]ation|management|integrity|modell?ing)', 'low[- ]power',
+  '\barchitect(ures?)?\b', 'performance (engineer|model|analysis|architect)', 'quantum',
+  'librar(y|ies)', 'linear algebra', 'simulation',
+  # Product & design
+  'product manag', 'product design', 'technical program', '\bux\b', '\bui\b',
+  'user experience',
+  # Non-English postings (stage / estágio = internship)
+  'logiciel', 'embarqu', 'informatique', 'intelligence artificielle', '\bia\b',
+  'donn[ée]es', 'dados',
+]
+# Generic engineering/research titles count unless they look non-technical.
+include_titles = [
+  'engineer', 'ingénieur', 'technical', '\btech\b', 'technolog', 'research',
+  'scientist', 'science', 'product development', 'modell?ing',
+  '\bsystems?\b', 'analytics', 'back[- ]?end', 'front[- ]?end', 'electrical',
+  '\bdram\b', '\bnand\b', '\bsram\b', '\bnvm\b', '\bhbm\b', '\bssd\b',
+]
+exclude_titles = [
+  # Business functions
+  'non[- ]technical', 'financ', 'treasury', 'accounting', 'accountant', 'audit', '\btax\b', 'sales', '\bbdr\b',
+  'marketing', 'legal', 'counsel', 'strategy', 'business development',
+  'procurement', 'supplier', 'sourcing', 'supply chain', 'purchasing',
+  '\bcomms\b', 'corporate communications', 'customer experience', 'operations associate',
+  # Fab, facilities and non-electronic engineering
+  'facilit', '\bbuildings?\b', 'real estate', 'mechanic', 'mechatronic', 'chemi', 'civil',
+  'structural', 'industrial engineer', 'environmental', '\behs\b',
+  'process (engineer|integration|development|technician|control|safety)',
+  'equipment', 'manufacturing', '\bfab\b', 'technician', 'module engineer',
+  'etch', '\bcvd\b', '\bpvd\b', '\bcmp\b', 'lithograph', 'photomask',
+  'diffusion', 'implant', 'thin films?', 'yield',
+]
+# HR internships are not wanted (HR is full-time only), even "HR Analytics".
+block_titles = [
+  '\bhr\b', '\bhris\b', 'human resources?', '\bpayroll\b', 'recruit', 'talent',
+  'physical security',
+]
+search_terms = ["intern", "internship", "student"]
 
 
 # ---------------------------------------------------------------------------

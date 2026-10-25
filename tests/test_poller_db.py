@@ -129,7 +129,7 @@ class PollerDatabaseTests(unittest.TestCase):
                 ],
                 # Same job as before, now with a real URL -> new hash.
                 "RAMP": [job("RAMP", "Software Engineer Intern", "https://ramp/1")],
-                "Qualcomm": [job("Qualcomm", "Modem Intern", "https://q/1")],
+                "Qualcomm": [job("Qualcomm", "Modem Software Intern", "https://q/1")],
             }
         )
 
@@ -157,7 +157,7 @@ class PollerDatabaseTests(unittest.TestCase):
         results, sent, store = self.run_poller(
             {
                 "Qualcomm": [
-                    job("Qualcomm", f"Modem Intern {i}", f"https://q/{i + 10}")
+                    job("Qualcomm", f"Modem Software Intern {i}", f"https://q/{i + 10}")
                     for i in range(4)
                 ]
                 + [job("Qualcomm", "Payroll Specialist", "https://q/99")],
@@ -167,6 +167,21 @@ class PollerDatabaseTests(unittest.TestCase):
         self.assertEqual(results["Qualcomm"].new, 5)
         # HR is still new for Qualcomm, so it was seeded rather than queued.
         self.assertEqual(results["Qualcomm"].seeded, 1)
+        store.close()
+
+        # A row classified under older rules is corrected once the rules
+        # fingerprint changes, without re-notifying anything.
+        with psycopg2.connect(self.uri) as conn, conn.cursor() as cur:
+            cur.execute(
+                "UPDATE job_postings SET category = 'tech_intern' "
+                "WHERE title = 'Senior Software Engineer'"
+            )
+            cur.execute("UPDATE iudicium_meta SET value = 'old-rules'")
+        results, sent, store = self.run_poller({})
+        rows = {r["title"]: r for r in store.get_recent_postings(limit=100)}
+        self.assertEqual(rows["Senior Software Engineer"]["category"], "")
+        self.assertEqual(rows["Hardware Intern - 2027"]["category"], "tech_intern")
+        self.assertEqual(sent, [])
         store.close()
 
 
