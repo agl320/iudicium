@@ -864,7 +864,7 @@ board = "dropbox"
 
 [[companies]]
 name = "Discord"
-enabled = false
+enabled = true
 provider = "greenhouse"
 domain = "discord.com"
 board = "discord"
@@ -894,7 +894,7 @@ site = "Workday"
 
 [[companies]]
 name = "Electronic Arts"
-enabled = true
+enabled = false
 provider = "avature"
 domain = "ea.com"
 search_url = "https://jobs.ea.com/en_US/careers/SearchJobs"
@@ -920,3 +920,131 @@ provider = "oraclecloud"
 domain = "fortinet.com"
 host = "edel.fa.us2"
 site = "CX_2001"
+
+# --- Games (EA and its studios intentionally excluded) ----------------------
+
+[[companies]]
+name = "Riot Games"
+enabled = true
+provider = "greenhouse"
+domain = "riotgames.com"
+board = "riotgames"
+
+[[companies]]
+name = "CD PROJEKT RED"
+enabled = true
+provider = "smartrecruiters"
+domain = "cdprojektred.com"
+board = "CDPROJEKTRED"
+
+[[companies]]
+name = "Epic Games"
+enabled = true
+provider = "greenhouse"
+domain = "epicgames.com"
+board = "epicgames"
+
+[[companies]]
+name = "PlayStation"
+enabled = true
+provider = "greenhouse"
+domain = "playstation.com"
+board = "sonyinteractiveentertainmentglobal"
+
+[[companies]]
+name = "Naughty Dog"
+enabled = true
+provider = "greenhouse"
+domain = "naughtydog.com"
+board = "naughtydog"
+
+[[companies]]
+name = "Bungie"
+enabled = true
+provider = "greenhouse"
+domain = "bungie.net"
+board = "bungie"
+
+[[companies]]
+name = "Nintendo"
+enabled = true
+provider = "greenhouse"
+domain = "nintendo.com"
+board = "nintendo"
+
+[[companies]]
+name = "Rockstar Games"
+enabled = true
+provider = "greenhouse"
+domain = "rockstargames.com"
+board = "rockstargames"
+
+[[companies]]
+name = "2K"
+enabled = true
+provider = "greenhouse"
+domain = "2k.com"
+board = "2k"
+
+[[companies]]
+name = "Ubisoft"
+enabled = true
+provider = "smartrecruiters"
+domain = "ubisoft.com"
+board = "Ubisoft2"
+
+[[companies]]
+name = "Twitch"
+enabled = true
+provider = "greenhouse"
+domain = "twitch.tv"
+board = "twitch"
+
+[[companies]]
+name = "HoYoverse"
+enabled = true
+provider = "smartrecruiters"
+domain = "hoyoverse.com"
+board = "Hoyoverse"
+
+[[companies]]
+name = "Supercell"
+enabled = true
+provider = "ashby"
+domain = "supercell.com"
+board = "supercell"
+
+[[companies]]
+name = "Larian Studios"
+enabled = true
+provider = "lever"
+domain = "larian.com"
+board = "larian"
+
+[[companies]]
+name = "KRAFTON"
+enabled = true
+provider = "greenhouse"
+domain = "krafton.com"
+board = "krafton"
+
+[[companies]]
+name = "Scopely"
+enabled = true
+provider = "greenhouse"
+domain = "scopely.com"
+board = "scopely"
+
+[[companies]]
+name = "Kabam"
+enabled = true
+provider = "lever"
+domain = "kabam.com"
+board = "kabam"
+
+[[companies]]
+name = "Remedy"
+enabled = true
+provider = "greenhouse"
+domain = "remedygames.com"
+board = "remedy"
