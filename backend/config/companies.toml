@@ -921,7 +921,84 @@ domain = "fortinet.com"
 host = "edel.fa.us2"
 site = "CX_2001"
 
+# --- Aerospace & defense -----------------------------------------------------
+# Not covered (Radancy / Phenom career sites, no adapter): L3Harris, BAE
+# Systems, General Dynamics (except GDIT). Palantir, SpaceX and Anduril are
+# listed under top-paying tech.
+
+[[companies]]
+name = "Lockheed Martin"
+enabled = true
+provider = "eightfold"
+domain = "lockheedmartin.com"
+host = "lockheedmartin.eightfold.ai"
+domain_param = "lockheedmartin.com"
+job_url_template = "https://lockheedmartin.eightfold.ai/careers/job/{id}"
+
+[[companies]]
+name = "RTX"
+enabled = true
+provider = "workday"
+domain = "rtx.com"
+host = "globalhr.wd5"
+site = "REC_RTX_Ext_Gateway"
+
+[[companies]]
+name = "Northrop Grumman"
+enabled = true
+provider = "workday"
+domain = "northropgrumman.com"
+host = "ngc.wd1"
+site = "Northrop_Grumman_External_Site"
+
+[[companies]]
+name = "Boeing"
+enabled = true
+provider = "workday"
+domain = "boeing.com"
+host = "boeing.wd1"
+site = "EXTERNAL_CAREERS"
+
+[[companies]]
+name = "Leidos"
+enabled = true
+provider = "workday"
+domain = "leidos.com"
+host = "leidos.wd5"
+site = "External"
+
+[[companies]]
+name = "General Dynamics IT"
+enabled = true
+provider = "workday"
+domain = "gdit.com"
+host = "gdit.wd5"
+site = "External_Career_Site"
+
+[[companies]]
+name = "CAE"
+enabled = true
+provider = "workday"
+domain = "cae.com"
+host = "cae.wd3"
+site = "career"
+
+[[companies]]
+name = "Shield AI"
+enabled = true
+provider = "lever"
+domain = "shield.ai"
+board = "shieldai"
+
 # --- Games (EA and its studios intentionally excluded) ----------------------
+
+[[companies]]
+name = "Unity"
+enabled = true
+provider = "workday"
+domain = "unity.com"
+host = "unitytech.wd1"
+site = "Unity"
 
 [[companies]]
 name = "Riot Games"
@@ -988,7 +1065,7 @@ board = "2k"
 
 [[companies]]
 name = "Ubisoft"
-enabled = true
+enabled = false
 provider = "smartrecruiters"
 domain = "ubisoft.com"
 board = "Ubisoft2"
