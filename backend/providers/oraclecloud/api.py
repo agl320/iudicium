@@ -150,7 +150,33 @@ class OracleCloudClient:
                         ),
                         location=location,
                         url=self.job_url_template.format(id=req_id),
+                        external_id=req_id,
                     )
                 )
 
         return postings, total
+
+    def get_details(self, req_id: str) -> tuple[str, list[str]]:
+        """(description html, locations) for one requisition."""
+        base_url = self.api_url.split("/recruitingCEJobRequisitions")[0]
+        finder = quote(f'ById;Id="{req_id}",siteNumber={self.site_number}', safe=";,=")
+        request = Request(
+            f"{base_url}/recruitingCEJobRequisitionDetails"
+            f"?expand=all&onlyData=true&finder={finder}",
+            headers={"Accept": "application/json", "User-Agent": "iudicium/0.1"},
+        )
+        with urlopen(request, timeout=self.timeout_s) as response:
+            decoded = json.loads(response.read().decode("utf-8"))
+        items = decoded.get("items") or [{}]
+        item = items[0] if isinstance(items[0], dict) else {}
+        text = "\n".join(
+            str(value)
+            for key, value in item.items()
+            if key.endswith("DescriptionStr") or key.startswith("External")
+            if isinstance(value, str)
+        )
+        locations = [str(item.get("PrimaryLocation") or "")]
+        for extra in item.get("secondaryLocations") or []:
+            if isinstance(extra, dict) and extra.get("Name"):
+                locations.append(str(extra["Name"]))
+        return text, [loc for loc in locations if loc]

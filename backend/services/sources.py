@@ -34,6 +34,8 @@ from backend.providers.ashby.api import AshbyAPIClient
 from backend.providers.eightfold import EightfoldClient
 from backend.providers.eightfold.api import PAGE_SIZE as EIGHTFOLD_PAGE_SIZE
 from backend.providers.greenhouse.board import GreenhouseBoardClient
+from backend.providers.lever import LeverClient
+from backend.providers.tesla import TeslaClient
 from backend.providers.oraclecloud import OracleCloudClient
 from backend.providers.smartrecruiters import SmartRecruitersClient
 from backend.providers.workday.cxs import WorkdayCxsClient
@@ -190,7 +192,9 @@ def _fetch_eightfold(
         domain=company.option("domain_param"),
         company=company.name,
         company_url=company.domain,
-        job_url_template=company.option("job_url_template"),
+        # Empty = use the URL the API reports for each position.
+        job_url_template=str(company.options.get("job_url_template", "")),
+        api=str(company.options.get("api", "pcsx")),
     )
     # Results are sorted newest first and the API rate limits hard, so only
     # look at the first few pages of each query.
@@ -384,6 +388,22 @@ def _fetch_smartrecruiters(
     return client.search_job_postings()
 
 
+def _fetch_lever(
+    company: Company, tracks: tuple[Track, ...], settings: Settings
+) -> list[JobPosting]:
+    client = LeverClient(
+        company.option("board"), company=company.name, company_url=company.domain
+    )
+    return client.search_job_postings()
+
+
+def _fetch_tesla(
+    company: Company, tracks: tuple[Track, ...], settings: Settings
+) -> list[JobPosting]:
+    # One request returns every listing; classification happens locally.
+    return TeslaClient(company=company.name, company_url=company.domain).search_job_postings()
+
+
 def _fetch_custom(
     company: Company, tracks: tuple[Track, ...], settings: Settings
 ) -> list[JobPosting]:
@@ -420,6 +440,8 @@ FETCHERS: dict[
     "greenhouse": _threaded(_fetch_greenhouse),
     "ashby": _threaded(_fetch_ashby),
     "smartrecruiters": _threaded(_fetch_smartrecruiters),
+    "lever": _threaded(_fetch_lever),
+    "tesla": _threaded(_fetch_tesla),
     "custom": _threaded(_fetch_custom),
 }
 

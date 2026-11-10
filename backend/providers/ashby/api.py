@@ -9,6 +9,7 @@ from backend.providers.errors import AshbyAPIError
 from backend.config import ASHBY_API_URL, DEFAULT_HEADERS, COMPANY_URL_MAPPING
 from backend.models import JobPosting
 from backend.services.classifier import normalize_employment_type
+from backend.services.salary import with_salary
 
 # GraphQL query for Ashby's API to fetch job board data with teams.
 API_JOB_BOARD_WITH_TEAMS_QUERY = """query ApiJobBoardWithTeams($organizationHostedJobsPageName: String!) {
@@ -142,24 +143,30 @@ class AshbyAPIClient:
 
             job_id = str(job.get("id") or "")
             title = str(job.get("title") or "")
-            location = str(job.get("locationName") or "")
+            locations = [str(job.get("locationName") or "")]
+            for extra in job.get("secondaryLocations") or []:
+                if isinstance(extra, dict) and extra.get("locationName"):
+                    locations.append(str(extra["locationName"]))
+            location = "; ".join(dict.fromkeys(loc for loc in locations if loc))
 
             if not title or not job_id or job_id in seen_ids:
                 continue
 
             seen_ids.add(job_id)
+            posting = JobPosting(
+                source=self.api_url,
+                title=title,
+                company=company,
+                company_url=COMPANY_URL_MAPPING.get(company, company_url),
+                location=location,
+                url=f"https://jobs.ashbyhq.com/{board}/{job_id}" if board else "",
+                employment_type=normalize_employment_type(job.get("employmentType")),
+                external_id=job_id,
+                # Ashby's pay summary ("CA$85K – CA$110K") is all it publishes.
+                details_checked=True,
+            )
             postings.append(
-                JobPosting(
-                    source=self.api_url,
-                    title=title,
-                    company=company,
-                    company_url=COMPANY_URL_MAPPING.get(company, company_url),
-                    location=location,
-                    url=f"https://jobs.ashbyhq.com/{board}/{job_id}" if board else "",
-                    employment_type=normalize_employment_type(
-                        job.get("employmentType")
-                    ),
-                )
+                with_salary(posting, str(job.get("compensationTierSummary") or ""))
             )
 
         return postings

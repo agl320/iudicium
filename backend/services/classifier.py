@@ -11,8 +11,9 @@ import json
 import re
 from dataclasses import replace
 
-from backend.config.loader import Track
+from backend.config.loader import Track, TrackFilter
 from backend.models import JobPosting
+from backend.services.location import in_regions, is_unknown_location
 
 STUDENT_ROLE_PATTERNS = [
     # Intern variations
@@ -78,6 +79,10 @@ NOT_FULL_TIME_PATTERNS = [
     r"\bcasual\b",
     r"\bfreelance\b",
 ]
+
+# Bump when backend/services/location.py or salary.py changes so stored rows
+# are re-checked.
+_LOCATION_RULES_VERSION = 2
 
 _STUDENT = [re.compile(p) for p in STUDENT_ROLE_PATTERNS]
 _DEFINITELY_STUDENT = [re.compile(p) for p in DEFINITELY_STUDENT_PATTERNS]
@@ -145,12 +150,87 @@ def matches_track(posting: JobPosting, track: Track) -> bool:
     return True
 
 
+def broad_track(posting: JobPosting, tracks: tuple[Track, ...]) -> Track | None:
+    """First track whose own title/employment rules match (no filters)."""
+    return next((track for track in tracks if matches_track(posting, track)), None)
+
+
+def match_track(posting: JobPosting, tracks: tuple[Track, ...]) -> str:
+    """Key of the first track the posting's title/type matches, ignoring
+    filters (location, salary, ...); "" if none match."""
+    track = broad_track(posting, tracks)
+    return track.key if track else ""
+
+
+# --- Track filters (filters.toml) -------------------------------------------
+
+
+def filter_title_ok(title: str, track_filter: TrackFilter) -> bool:
+    if track_filter.titles and not any(p.search(title) for p in track_filter.titles):
+        return False
+    return not any(p.search(title) for p in track_filter.exclude_titles)
+
+
+def filter_location_ok(location: str, track_filter: TrackFilter) -> bool:
+    return in_regions(
+        location, track_filter.regions, allow_remote=track_filter.allow_remote
+    )
+
+
+def filter_salary_ok(posting: JobPosting, track_filter: TrackFilter) -> bool:
+    if posting.salary_min is None or posting.salary_max is None:
+        return not track_filter.require_salary
+    threshold = track_filter.min_salary_cad
+    if threshold is None:
+        return True
+    value = {
+        "min": posting.salary_min,
+        "mid": (posting.salary_min + posting.salary_max) / 2,
+        "max": posting.salary_max,
+    }[track_filter.salary_basis]
+    if posting.salary_currency == "USD":
+        value *= track_filter.usd_to_cad
+    return value >= threshold
+
+
+def passes_filter(posting: JobPosting, track_filter: TrackFilter) -> bool:
+    return (
+        filter_title_ok(posting.title, track_filter)
+        and filter_location_ok(posting.location, track_filter)
+        and filter_salary_ok(posting, track_filter)
+    )
+
+
+def needs_details(posting: JobPosting, tracks: tuple[Track, ...]) -> bool:
+    """Whether reading the job's detail page could get this posting into its
+    track: it passes everything that is already known, but the salary or
+    the full location list is still missing."""
+    if posting.details_checked:
+        return False
+    track = broad_track(posting, tracks)
+    if track is None or track.filter is None or not track.filter.fetch_details:
+        return False
+    track_filter = track.filter
+    if not filter_title_ok(posting.title, track_filter):
+        return False
+    unknown_location = is_unknown_location(posting.location)
+    if not unknown_location and not filter_location_ok(posting.location, track_filter):
+        return False
+    missing_salary = track_filter.needs_salary and posting.salary_max is None
+    return missing_salary or (
+        unknown_location and track_filter.regions != ("north_america",)
+    )
+
+
 def classify(posting: JobPosting, tracks: tuple[Track, ...]) -> str:
-    """Returns the key of the first matching track, or "" if none match."""
-    for track in tracks:
-        if matches_track(posting, track):
-            return track.key
-    return ""
+    """Returns the key of the first track whose rules match, provided the
+    posting also passes that track's filters (filters.toml; North America
+    only when a track has none). Otherwise "": the posting is still stored
+    and shows up unfiltered, just not in the track."""
+    track = broad_track(posting, tracks)
+    if track is None or not passes_filter(posting, track.active_filter):
+        return ""
+    return track.key
 
 
 def rules_fingerprint(tracks: tuple[Track, ...]) -> str:
@@ -160,10 +240,12 @@ def rules_fingerprint(tracks: tuple[Track, ...]) -> str:
         "student": STUDENT_ROLE_PATTERNS,
         "definitely_student": DEFINITELY_STUDENT_PATTERNS,
         "not_full_time": NOT_FULL_TIME_PATTERNS,
+        "location": _LOCATION_RULES_VERSION,
         "tracks": [
             {
                 "key": track.key,
                 "employment": track.employment,
+                "filter": track.filter.raw if track.filter else None,
                 **{
                     name: [p.pattern for p in getattr(track, name)]
                     for name in (

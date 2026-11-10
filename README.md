@@ -10,9 +10,11 @@ Iudicium aggregates job postings from company career sites, stores them in a Pos
 
 Configuration
 - Everything lives in `backend/config/companies.toml` (no env vars needed):
-	- `[[companies]]` — one entry per company; flip `enabled` to turn it on/off. Each names a `provider` (`workday`, `greenhouse`, `ashby`, `smartrecruiters`, `oraclecloud`, `eightfold`, `amd`, `amazon`, `apple`, `google`, `sap`, `successfactors`, `avature`, `custom`) plus the board details. Enabled: semiconductors at AMD tier and up, big tech, and large Vancouver employers; smaller companies stay configured but switched off.
+	- `[[companies]]` — one entry per company; flip `enabled` to turn it on/off. Each names a `provider` (`workday`, `greenhouse`, `ashby`, `smartrecruiters`, `lever`, `oraclecloud`, `eightfold`, `amd`, `amazon`, `apple`, `google`, `sap`, `successfactors`, `avature`, `custom`) plus the board details. Enabled: semiconductors at AMD tier and up, big tech, and large Vancouver employers; smaller companies stay configured but switched off.
 	- `[tracks.*]` — the job categories to collect. Currently `tech_intern` (blue Discord cards) and `hr` (HR / HRIS / payroll, full-time only, pink cards). Each track has title regexes (`priority_titles` always match, `include_titles`/`exclude_titles` for generic words, `block_titles` never match), an employment requirement (`intern` / `full_time` / `any`), keyword `search_terms` and a `color`.
 	- `[settings]` — paging limits, concurrency, and notification flood protection.
+- `backend/config/filters.toml` (optional) narrows what each track *shows*: stricter titles, a region (`north_america`, `canada`, `british_columbia`), and salary rules (`require_salary`, `min_salary`, `salary_basis`, `usd_to_cad`). Postings that fail a filter are still stored and appear under "All". Without the file (or a track's section) a track uses its broad `companies.toml` rules, limited to North America. The `hr` filter currently targets HRIS / payroll / HR-analyst roles in BC paying over CA$70k.
+- For filtered tracks, job detail pages are read for candidates only (`backend/services/details.py`) to find pay ranges (`backend/services/salary.py`) and full location lists; results are cached in the database (`salary*`, `details_checked_at` columns).
 - Boards disagree on job types, so `backend/services/classifier.py` normalizes provider hints (Workday facets, Ashby `employmentType`, SmartRecruiters `typeOfEmployment`, …) and job titles into one employment type, then assigns each posting a `category` (track key).
 
 Running locally
@@ -29,10 +31,13 @@ Architecture
 	- `backend/services/discord.py` — Discord embeds, coloured per track.
 	- `backend/providers/` — HTTP clients for each job board.
 	- `backend/api/main.py` — HTTP API that returns recent postings (optionally filtered by `category`).
-	- Data model: `job_postings` contains `id, entry_hash, company, company_url, title, url, source, location, category, first_seen, last_seen`.
+	- Data model: `job_postings` contains `id, entry_hash, company, company_url, title, url, source, location, category, salary, salary_min, salary_max, salary_currency, details_checked_at, first_seen, last_seen`.
 	- When the track rules change, every stored posting is re-classified on the next run so the website filters stay accurate.
 	- New companies/tracks are seeded silently on their first run, reposted jobs (same company/title/location under a new URL) are not re-announced, and notifications are capped per company per run.
 
 - Frontend: React + Vite + Tailwind under `frontend/`.
 	- Uses the Supabase client to read from the `job_postings` table (`frontend/src/api/jobs.ts`), filtered by search terms and category.
 	- Category labels/colours live in `frontend/src/utils/categories.ts` and mirror the tracks in `companies.toml`.
+	- The job list loads 25 postings at a time (Supabase `range()` + exact count) with infinite scroll (`frontend/src/hooks/useJobFeed.ts`).
+	- Resume builder at `#/resume` (`frontend/src/resume/`, lazy-loaded): reorder sections / entries / points by drag and drop (dnd-kit), edit the selection in the side panel, keep a pool of alternate points per entry, and export PDF (print), .docx (docx), .txt or .tex. Exports are built for ATS parsing (Workday, Greenhouse, ...): real text with ligatures off, single column, Heading-styled sections in .docx, and an "ATS check" panel plus a "What an ATS reads" view (`frontend/src/resume/ats.ts`).
+	- Accounts (Supabase Auth, same project): `#/login` (password, magic link, reset) and `#/account` (password, resumes, sign out everywhere, delete account). Signed in, resumes autosave to the `resumes` table with version checks; signed out, the builder saves to the browser. One-time setup: run `supabase/resume_schema.sql` in the SQL editor, enable the Email provider, and add the site URL (e.g. `https://iudicium.netlify.app`) to Authentication → URL Configuration.

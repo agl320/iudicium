@@ -8,7 +8,13 @@ from time import monotonic
 
 from backend.config.loader import AppConfig, Company, Track
 from backend.models import JobPosting
-from backend.services.classifier import categorize, classify, rules_fingerprint
+from backend.services.classifier import (
+    categorize,
+    classify,
+    match_track,
+    rules_fingerprint,
+)
+from backend.services.details import enrich
 from backend.services.discord import send_discord_notification
 from backend.services.job_store import JobPostingStore
 from backend.services.sources import fetch_company
@@ -59,13 +65,20 @@ class Poller:
                 result.seconds = monotonic() - start
                 return result
 
-        postings = categorize(postings, self.tracks)
-        result.fetched = len(postings)
-        if not self.settings.store_uncategorized:
-            postings = [p for p in postings if p.category]
-        # Count unique postings so repeated hits across queries are not
-        # double counted.
-        unique = JobPostingStore._unique_postings(postings)
+            result.fetched = len(postings)
+            if not self.settings.store_uncategorized:
+                # Track filters (location, salary, stricter titles) are ignored
+                # here: postings that fail them are still stored uncategorized
+                # and show up unfiltered, just not in the track.
+                postings = [p for p in postings if match_track(p, self.tracks)]
+            # Unique postings only, so repeated hits across queries are neither
+            # double counted nor fetched twice.
+            postings = JobPostingStore._unique_postings(postings)
+            if self.store is not None:
+                postings = self.store.apply_cached_details(postings)
+            postings = await enrich(company, postings, self.tracks, self.settings)
+
+        unique = categorize(postings, self.tracks)
         result.by_category = Counter(p.category or "-" for p in unique)
         result.samples = unique[:5]
 
@@ -111,14 +124,11 @@ class Poller:
         if self.store is None:
             return
 
-        def classify_title(title: str) -> str:
-            posting = JobPosting(
-                source="", title=title, company="", company_url="", location="", url=""
-            )
+        def classify_row(posting: JobPosting) -> str:
             return classify(posting, self.tracks)
 
         updated = self.store.backfill_categories(
-            classify_title, rules_fingerprint(self.tracks)
+            classify_row, rules_fingerprint(self.tracks)
         )
         if updated:
             logger.info("Updated categories for %d existing postings", updated)

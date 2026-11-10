@@ -198,7 +198,10 @@ search_terms = ["intern", "internship", "student"]
 # provider = "ashby"            board
 # provider = "smartrecruiters"  board
 # provider = "oraclecloud"      host, site
-# provider = "eightfold"        host, domain_param, job_url_template
+# provider = "eightfold"        host, domain_param, job_url_template (optional),
+#                               api = "pcsx" (default) or "v2" (older sites)
+# provider = "lever"            board
+# provider = "tesla"            (tesla.com careers JSON)
 # provider = "amd"              (careers.amd.com)
 # provider = "amazon"           (amazon.jobs)
 # provider = "apple"            (jobs.apple.com)
@@ -360,6 +363,27 @@ enabled = false
 provider = "smartrecruiters"
 domain = "westerndigital.com"
 board = "westerndigital"
+
+[[companies]]
+name = "SK hynix"
+enabled = true
+provider = "greenhouse"
+domain = "skhynix.com"
+board = "skhynixamerica"
+
+[[companies]]
+name = "SK hynix Memory Solutions"
+enabled = true
+provider = "greenhouse"
+domain = "skhynix.com"
+board = "skhynixmemorysolutionsamericainc"
+
+[[companies]]
+name = "Tenstorrent"
+enabled = false
+provider = "greenhouse"
+domain = "tenstorrent.com"
+board = "tenstorrent"
 
 # --- Software / hardware ---------------------------------------------------
 
@@ -603,6 +627,254 @@ provider = "oraclecloud"
 domain = "oracle.com"
 host = "eeho.fa.us2"
 site = "CX_45001"
+
+[[companies]]
+name = "Netflix"
+enabled = true
+provider = "eightfold"
+domain = "netflix.com"
+host = "explore.jobs.netflix.net"
+domain_param = "netflix.com"
+api = "v2"
+
+[[companies]]
+name = "Snap"
+enabled = true
+provider = "workday"
+domain = "snap.com"
+host = "snapchat.wd1"
+site = "snap"
+
+# --- Top-paying tech (AMD tier and up) ---------------------------------------
+# Not covered (custom or bot-protected career sites): Meta, Uber, Shopify,
+# Arm, ASML, TSMC, Citadel, Two Sigma.
+
+[[companies]]
+# Bot-protected site, but its careers JSON answers browser-like requests.
+# If the poller's host gets blocked this shows up as an HTTP 403 error.
+name = "Tesla"
+enabled = true
+provider = "tesla"
+domain = "tesla.com"
+
+[[companies]]
+name = "Roblox"
+enabled = true
+provider = "greenhouse"
+domain = "roblox.com"
+board = "roblox"
+
+[[companies]]
+name = "Airbnb"
+enabled = true
+provider = "greenhouse"
+domain = "airbnb.com"
+board = "airbnb"
+
+[[companies]]
+name = "Lyft"
+enabled = true
+provider = "greenhouse"
+domain = "lyft.com"
+board = "lyft"
+
+[[companies]]
+name = "Coinbase"
+enabled = true
+provider = "greenhouse"
+domain = "coinbase.com"
+board = "coinbase"
+
+[[companies]]
+name = "DoorDash"
+enabled = true
+provider = "greenhouse"
+domain = "doordash.com"
+board = "doordashusa"
+
+[[companies]]
+name = "Reddit"
+enabled = true
+provider = "greenhouse"
+domain = "reddit.com"
+board = "reddit"
+
+[[companies]]
+name = "Robinhood"
+enabled = true
+provider = "greenhouse"
+domain = "robinhood.com"
+board = "robinhood"
+
+[[companies]]
+name = "Figma"
+enabled = true
+provider = "greenhouse"
+domain = "figma.com"
+board = "figma"
+
+[[companies]]
+name = "Notion"
+enabled = true
+provider = "ashby"
+domain = "notion.so"
+board = "notion"
+
+[[companies]]
+name = "Plaid"
+enabled = true
+provider = "ashby"
+domain = "plaid.com"
+board = "plaid"
+
+[[companies]]
+name = "Palantir"
+enabled = true
+provider = "lever"
+domain = "palantir.com"
+board = "palantir"
+
+[[companies]]
+name = "Spotify"
+enabled = true
+provider = "lever"
+domain = "spotify.com"
+board = "spotify"
+
+[[companies]]
+name = "OpenAI"
+enabled = true
+provider = "ashby"
+domain = "openai.com"
+board = "openai"
+
+[[companies]]
+name = "Anthropic"
+enabled = true
+provider = "greenhouse"
+domain = "anthropic.com"
+board = "anthropic"
+
+[[companies]]
+name = "xAI"
+enabled = true
+provider = "greenhouse"
+domain = "x.ai"
+board = "xai"
+
+[[companies]]
+name = "Scale AI"
+enabled = true
+provider = "greenhouse"
+domain = "scale.com"
+board = "scaleai"
+
+[[companies]]
+name = "Cursor"
+enabled = true
+provider = "ashby"
+domain = "cursor.com"
+board = "cursor"
+
+[[companies]]
+name = "Waymo"
+enabled = true
+provider = "greenhouse"
+domain = "waymo.com"
+board = "waymo"
+
+[[companies]]
+name = "SpaceX"
+enabled = true
+provider = "greenhouse"
+domain = "spacex.com"
+board = "spacex"
+
+[[companies]]
+name = "Anduril"
+enabled = true
+provider = "greenhouse"
+domain = "anduril.com"
+board = "andurilindustries"
+
+[[companies]]
+name = "Jane Street"
+enabled = true
+provider = "greenhouse"
+domain = "janestreet.com"
+board = "janestreet"
+
+[[companies]]
+name = "Hudson River Trading"
+enabled = true
+provider = "greenhouse"
+domain = "hudsonrivertrading.com"
+board = "wehrtyou"
+
+[[companies]]
+name = "Jump Trading"
+enabled = true
+provider = "greenhouse"
+domain = "jumptrading.com"
+board = "jumptrading"
+
+[[companies]]
+name = "IMC"
+enabled = true
+provider = "greenhouse"
+domain = "imc.com"
+board = "imc"
+
+[[companies]]
+name = "Tower Research"
+enabled = true
+provider = "greenhouse"
+domain = "tower-research.com"
+board = "towerresearchcapital"
+
+# Borderline vs. AMD: configured but off.
+
+[[companies]]
+name = "Point72"
+enabled = false
+provider = "greenhouse"
+domain = "point72.com"
+board = "point72"
+
+[[companies]]
+name = "Zoox"
+enabled = false
+provider = "lever"
+domain = "zoox.com"
+board = "zoox"
+
+[[companies]]
+name = "Instacart"
+enabled = false
+provider = "greenhouse"
+domain = "instacart.com"
+board = "instacart"
+
+[[companies]]
+name = "Dropbox"
+enabled = false
+provider = "greenhouse"
+domain = "dropbox.com"
+board = "dropbox"
+
+[[companies]]
+name = "Discord"
+enabled = false
+provider = "greenhouse"
+domain = "discord.com"
+board = "discord"
+
+[[companies]]
+name = "Harvey"
+enabled = false
+provider = "ashby"
+domain = "harvey.ai"
+board = "harvey"
 
 # --- Large Vancouver employers (HR) ------------------------------------------
 

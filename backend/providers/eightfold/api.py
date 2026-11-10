@@ -33,8 +33,16 @@ class EightfoldClient:
         headers: dict[str, str] | None = None,
         max_attempts: int = 4,
         error_cls: type[RuntimeError] = EightfoldAPIError,
+        api: str = "pcsx",
     ) -> None:
-        self.api_url = f"https://{host}/api/pcsx/search"
+        # "pcsx" (Microsoft, Qualcomm) or the older "v2" API (Netflix).
+        self.api = api
+        self.host = host
+        self.api_url = (
+            f"https://{host}/api/apply/v2/jobs"
+            if api == "v2"
+            else f"https://{host}/api/pcsx/search"
+        )
         self.domain = domain
         self.company = company
         self.company_url = company_url
@@ -53,6 +61,8 @@ class EightfoldClient:
             "sort_by": "timestamp",
             "hl": "en",
         }
+        if self.api == "v2":
+            params["num"] = PAGE_SIZE
         request_headers = dict(self.headers)
         request_headers.setdefault("Accept", "application/json")
         request_headers.setdefault("User-Agent", "iudicium/0.1")
@@ -117,7 +127,7 @@ class EightfoldClient:
         self, *, query: str = "", start: int = 0
     ) -> tuple[list[JobPosting], int | None]:
         decoded = self.search_raw(query=query, start=start)
-        data = decoded.get("data")
+        data = decoded if self.api == "v2" else decoded.get("data")
         if not isinstance(data, dict):
             return [], None
 
@@ -151,8 +161,35 @@ class EightfoldClient:
                     company=self.company,
                     company_url=self.company_url,
                     location=location,
-                    url=self.job_url_template.format(id=position_id),
+                    url=(
+                        self.job_url_template.format(id=position_id)
+                        if self.job_url_template
+                        else str(item.get("canonicalPositionUrl") or "")
+                    ),
+                    external_id=str(position_id),
                 )
             )
 
         return postings, count if isinstance(count, int) else None
+
+    def get_details(self, position_id: str) -> tuple[str, list[str]]:
+        """(description html, locations) for one position."""
+        if self.api == "v2":
+            url = f"https://{self.host}/api/apply/v2/jobs/{position_id}?" + urlencode(
+                {"domain": self.domain}
+            )
+            description_key = "job_description"
+        else:
+            url = f"https://{self.host}/api/pcsx/position_details?" + urlencode(
+                {"position_id": position_id, "domain": self.domain, "hl": "en"}
+            )
+            description_key = "jobDescription"
+        request = Request(
+            url,
+            headers={"Accept": "application/json", "User-Agent": "iudicium/0.1"},
+        )
+        with urlopen(request, timeout=self.timeout_s) as response:
+            decoded = json.loads(response.read().decode("utf-8"))
+        data = decoded.get("data") if isinstance(decoded.get("data"), dict) else decoded
+        locations = data.get("locations") or data.get("standardizedLocations") or []
+        return str(data.get(description_key) or ""), [str(x) for x in locations if x]

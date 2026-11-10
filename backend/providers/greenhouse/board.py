@@ -134,6 +134,7 @@ class GreenhouseBoardClient:
                     company_url=company_url,
                     location=location_str,
                     url=url_str,
+                    external_id=str(job.get("id") or ""),
                 )
             )
 

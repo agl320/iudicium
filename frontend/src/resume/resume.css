@@ -1,0 +1,337 @@
+/* Resume fonts: Computer Modern (LaTeX default) + LaTeX-friendly families. */
+@import url("https://cdn.jsdelivr.net/gh/aaaakshat/cm-web-fonts@latest/font/Serif/cmun-serif.css");
+@import url("https://fonts.googleapis.com/css2?family=Charis+SIL:ital,wght@0,400;0,700;1,400;1,700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap");
+
+/* --- Page ----------------------------------------------------------------- */
+
+.rb-page {
+  position: relative;
+  width: 8.5in;
+  min-height: 11in;
+  background: #fff;
+  color: #111;
+  text-align: left;
+  font-kerning: normal;
+  /* Ligatures turn "fi"/"fl" into single glyphs that ATS text extraction
+     reads as one odd character ("Paciﬁc"), breaking keyword matches. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "clig" 0, "dlig" 0;
+}
+
+.rb-header {
+  margin-bottom: 0.15em;
+}
+.rb-align-center {
+  text-align: center;
+}
+.rb-name {
+  margin: 0;
+  font-size: 2.05em;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+.rb-contact {
+  margin: 0.25em 0 0;
+}
+.rb-sep {
+  color: #777;
+}
+
+.rb-section {
+  margin-top: var(--rb-section-gap);
+}
+.rb-section-title {
+  margin: 0 0 0.3em;
+  padding-bottom: 0.08em;
+  border-bottom: 0.6pt solid #111;
+  font-size: 1.15em;
+  font-weight: 700;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+}
+
+.rb-entry + .rb-entry {
+  margin-top: var(--rb-entry-gap);
+}
+.rb-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+}
+.rb-row > :last-child {
+  flex-shrink: 0;
+  text-align: right;
+}
+.rb-title span {
+  font-weight: 400;
+}
+
+.rb-points,
+.rb-lines {
+  margin: 0.1em 0 0;
+  padding: 0;
+  list-style: none;
+}
+/* Hanging bullet kept in normal text flow, so a PDF's text stream reads
+   "• point" in order (an absolutely positioned marker is written last). */
+.rb-points > li {
+  padding-left: 1.1em;
+  text-indent: -0.8em;
+}
+.rb-points > li::before {
+  content: "•";
+  display: inline-block;
+  width: 0.8em;
+  text-indent: 0;
+}
+/* Drag handles still position against the point. */
+.rb-block.rb-point {
+  position: relative;
+}
+.rb-points > li + li,
+.rb-lines > li + li {
+  margin-top: var(--rb-point-gap);
+}
+
+/* --- Editor frame ---------------------------------------------------------- */
+
+.rb-frame {
+  min-height: 100%;
+  padding: 40px 48px 120px;
+  display: flex;
+  justify-content: center;
+}
+.rb-scaler {
+  position: relative;
+  flex-shrink: 0;
+}
+.rb-scaled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+}
+.rb-scaled > .rb-page {
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px rgb(15 23 42 / 0.06),
+    0 2px 4px rgb(15 23 42 / 0.04),
+    0 12px 32px -8px rgb(15 23 42 / 0.14);
+}
+
+.rb-page-break {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1px dashed #c4c8cf;
+  pointer-events: none;
+}
+.rb-page-break span {
+  position: absolute;
+  right: -76px;
+  top: -9px;
+  font: 500 10px/18px "Geist", ui-sans-serif, sans-serif;
+  color: #9aa1ad;
+}
+
+/* --- Interactive blocks ------------------------------------------------------ */
+
+.rb-block {
+  position: relative;
+  cursor: pointer;
+  border-radius: 3px;
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  transition:
+    outline-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 180ms ease;
+}
+
+/* Only the innermost hovered block lights up. */
+.rb-block:hover:not(:has(.rb-block:hover)) {
+  outline-color: rgb(225 29 116 / 0.45);
+  background-color: rgb(225 29 116 / 0.04);
+}
+.rb-block.is-selected {
+  outline: 1.5px solid #e11d74;
+  background-color: rgb(225 29 116 / 0.07);
+}
+
+.rb-handle {
+  position: absolute;
+  top: 0.15em;
+  left: -26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid #d4d7dd;
+  border-radius: 4px;
+  background: #fff;
+  color: #6b7280;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+  cursor: grab;
+  opacity: 0;
+  transform: translateX(4px);
+  transition:
+    opacity 140ms ease,
+    transform 160ms ease,
+    background-color 120ms ease,
+    color 120ms ease;
+  touch-action: none;
+}
+.rb-handle svg {
+  width: 8px;
+  height: 14px;
+  fill: currentColor;
+}
+/* Three columns in the margin so handles never overlap:
+   section | entry | point. */
+.rb-section > .rb-handle {
+  left: -48px;
+}
+.rb-entry > .rb-handle {
+  left: -32px;
+}
+.rb-point > .rb-handle {
+  left: -16px;
+}
+/* Empty blocks (no name, entry with everything in the pool) stay clickable. */
+.rb-block.rb-entry,
+.rb-header-block {
+  min-height: 1.2em;
+}
+.rb-placeholder {
+  color: #d6d3d1;
+  font-weight: 400;
+}
+.rb-block:hover:not(:has(.rb-block:hover)) > .rb-handle,
+.rb-block.is-selected > .rb-handle,
+.rb-handle:focus-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.rb-handle:hover {
+  border-color: #e11d74;
+  color: #e11d74;
+}
+.rb-handle:active {
+  cursor: grabbing;
+}
+
+.rb-block.is-dragging {
+  z-index: 10;
+  cursor: grabbing;
+  background: #fff;
+  outline: 1.5px solid #e11d74;
+  box-shadow: 0 12px 28px -6px rgb(15 23 42 / 0.25);
+}
+.rb-block.is-dragging > .rb-handle {
+  opacity: 1;
+  transform: none;
+  color: #1c1917;
+}
+
+
+
+.rb-pool-badge {
+  position: absolute;
+  right: -92px;
+  top: 0.1em;
+  padding: 0 6px;
+  border: 1px dashed #c4c8cf;
+  border-radius: 999px;
+  background: #fff;
+  font: 500 10px/16px "Geist", ui-sans-serif, sans-serif;
+  color: #6b7280;
+  white-space: nowrap;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+.rb-entry:hover > .rb-pool-badge,
+.rb-entry.is-selected > .rb-pool-badge {
+  border-style: solid;
+  border-color: #e11d74;
+  color: #be185d;
+}
+
+/* --- Panel / misc animations -------------------------------------------------- */
+
+
+@keyframes rb-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+.rb-popover {
+  animation: rb-popover-in 140ms ease-out;
+  transform-origin: top;
+}
+
+@keyframes rb-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+.rb-toast {
+  animation: rb-toast-in 200ms ease-out;
+}
+
+@keyframes rb-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.rb-dropzone {
+  animation: rb-fade-in 120ms ease-out;
+}
+
+.rb-range {
+  accent-color: #e11d74;
+  cursor: pointer;
+}
+
+/* --- Print (Export PDF) --------------------------------------------------------- */
+
+.rb-print {
+  display: none;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+  .rb-app {
+    display: block !important;
+    height: auto !important;
+    background: #fff !important;
+  }
+  .rb-screen {
+    display: none !important;
+  }
+  .rb-print {
+    display: block;
+  }
+  /* Margins come from @page so they repeat on every page. */
+  .rb-print .rb-page {
+    width: auto;
+    min-height: 0;
+    padding: 0 !important;
+  }
+  .rb-entry,
+  .rb-points > li,
+  .rb-lines > li {
+    break-inside: avoid;
+  }
+  .rb-section-title {
+    break-after: avoid;
+  }
+}

@@ -1,30 +1,34 @@
+import { supabase } from "../lib/supabase";
 import type { JobPosting } from "../types/jobs";
-import { createClient } from "@supabase/supabase-js";
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error(
-    "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in environment",
-  );
-}
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 type BackendStatus = {
   last_updated_at: string | null;
 };
 
-export async function fetchRecentJobs(
+export const PAGE_SIZE = 25;
+
+export type JobsPage = {
+  jobs: JobPosting[];
+  // Total matching rows (for "x of y"), null if the count was unavailable.
+  total: number | null;
+};
+
+// "*" rather than a column list so the page keeps working whether or not the
+// backend has added newer columns (e.g. salary) yet.
+const COLUMNS = "*";
+
+export async function fetchJobsPage(
   query: string,
-  category: string | null = null,
-): Promise<JobPosting[]> {
+  category: string | null,
+  page: number,
+): Promise<JobsPage> {
+  const from = page * PAGE_SIZE;
   let q = supabase
     .from("job_postings")
-    .select("*")
+    .select(COLUMNS, { count: page === 0 ? "exact" : undefined })
     .order("first_seen", { ascending: false })
-    .limit(100);
+    .order("id", { ascending: false })
+    .range(from, from + PAGE_SIZE - 1);
 
   if (category) {
     q = q.eq("category", category);
@@ -42,12 +46,12 @@ export async function fetchRecentJobs(
     }
   }
 
-  const { data, error } = await q;
+  const { data, error, count } = await q;
   if (error) {
     throw new Error(`Failed to fetch jobs: ${error.message}`);
   }
 
-  return (data || []) as JobPosting[];
+  return { jobs: (data || []) as JobPosting[], total: count ?? null };
 }
 
 export async function fetchBackendStatus(): Promise<BackendStatus> {

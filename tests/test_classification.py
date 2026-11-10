@@ -1,9 +1,11 @@
 import unittest
+from dataclasses import replace
 
 from backend.config.loader import load_config
 from backend.models import JobPosting
-from backend.services.classifier import classify, normalize_employment_type
+from backend.services.classifier import classify, match_track, normalize_employment_type
 from backend.services.discord import build_embed
+from backend.services.location import is_north_america
 from backend.services.sources import (
     WORKDAY_FULL_TIME_FACETS,
     WORKDAY_FULL_TIME_LABEL,
@@ -12,7 +14,9 @@ from backend.services.sources import (
     _resolve_workday_facet,
 )
 
-CONFIG = load_config()
+# The track rules on their own (broad search); filters.toml is tested in
+# test_filters.py.
+CONFIG = load_config(filters_path=None)
 
 
 def posting(title: str, employment_type: str = "") -> JobPosting:
@@ -239,6 +243,83 @@ class WorkdayFacetTests(unittest.TestCase):
             _resolve_workday_facet([], WORKDAY_INTERN_FACETS, WORKDAY_INTERN_LABEL),
             {},
         )
+
+
+class LocationTests(unittest.TestCase):
+    NORTH_AMERICA = [
+        "",
+        "Remote",
+        "Hybrid",
+        "N/A",
+        "Santa Clara, CA",
+        "US, CA, Santa Clara",
+        "US-CA-Menlo Park",
+        "CA - San Francisco",
+        "CA-Ontario-Toronto",
+        "Plano, TX",
+        "Toronto, ON, CAN",
+        "Toronto",
+        "London, ON",
+        "London, Ontario",
+        "Dublin, CA",
+        "Vancouver, Washington, United States of America",
+        "Remote - US",
+        "Remote (Canada)",
+        "MONTR�AL, Quebec, Canada",
+        "Mexico City, Mexico",
+        "San Francisco, CA, US; Remote, US",
+        "AMER - Canada - Ontario - Toronto - University Ave",
+        "ON-81 Bay Street-Virtual",
+        "Washington, D.C.",
+        "16 YORK ST:TORONTO",
+        "2 Locations",
+        "12 Locations",
+        "Multiple Locations",
+        "multiple location",
+        "Various locations",
+        "Krakow, Poland, More...",
+    ]
+    OUTSIDE = [
+        "Pune, India",
+        "Pune, IN",
+        "IN-Pune",
+        "DE-Munich-MSO",
+        "Bangalore, In",
+        "Bengaluru",
+        "Dublin",
+        "Dublin, Ireland (Mountain View)",
+        "London",
+        "London, UK",
+        "Nottingham,  Eng",
+        "GB-London",
+        "Singapore",
+        "Remote - India",
+        "Japan - Tokyo",
+        "EMEA - Poland - Krak�w - Lubomirskiego",
+        "APAC - India - Pune",
+        "Tel Aviv, IL",
+        "Costa Rica, San Jose",
+        "Sao Paulo, Brazil",
+        "Sydney, Australia",
+    ]
+
+    def test_north_america_kept(self):
+        for location in self.NORTH_AMERICA:
+            with self.subTest(location=location):
+                self.assertTrue(is_north_america(location))
+
+    def test_elsewhere_rejected(self):
+        for location in self.OUTSIDE:
+            with self.subTest(location=location):
+                self.assertFalse(is_north_america(location))
+
+    def test_classify_skips_non_north_america(self):
+        us = replace(posting("Software Engineer Intern"), location="Austin, TX")
+        india = replace(us, location="Pune, India")
+        self.assertEqual(classify(us, CONFIG.tracks), "tech_intern")
+        self.assertEqual(classify(india, CONFIG.tracks), "")
+        # The title still matches, so the poller keeps (uncategorized) the posting.
+        self.assertEqual(match_track(india, CONFIG.tracks), "tech_intern")
 
 
 class DiscordEmbedTests(unittest.TestCase):

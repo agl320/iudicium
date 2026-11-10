@@ -1,0 +1,89 @@
+# Iudicium track filters (optional).
+#
+# companies.toml decides which postings are collected and stored. This file
+# narrows what each track (category) *shows*: a posting must pass its track's
+# rules in companies.toml AND the section below. Postings that fail a filter
+# are still stored and appear in the unfiltered "All" list.
+#
+# Delete this file, delete a section, or set `enabled = false` to go back to
+# the broad search for that track (its companies.toml rules, North America).
+#
+# Options (all optional):
+#   enabled         false = ignore this section
+#   titles          regexes; the title must also match one of these
+#   exclude_titles  regexes; ...and none of these
+#   regions         any of "north_america", "canada", "british_columbia"
+#                   (default ["north_america"])
+#   allow_remote    count "Remote" / "Remote - Canada" as inside the region
+#   require_salary  only show postings that advertise pay
+#   min_salary      annual minimum in salary_currency (hourly pay x 2080)
+#   salary_currency "CAD" or "USD" (default "CAD")
+#   salary_basis    which end of an advertised range must reach min_salary:
+#                   "min" (the floor), "mid", or "max" (the ceiling)
+#   usd_to_cad      exchange rate for postings that only list USD
+#   fetch_details   read job pages to find pay / full location lists
+#                   (default true; needed for salary on most boards)
+#
+# All regexes are case-insensitive. Changing anything here re-checks every
+# stored posting on the next run.
+
+# HRIS / payroll / HR operations roles in British Columbia paying over
+# CA$70k. Titles are kept close to an "HR Analyst II / HRIS / payroll"
+# profile instead of every HR, recruiting and L&D job.
+[hr]
+enabled = true
+regions = ["british_columbia"]
+allow_remote = true
+require_salary = true
+min_salary = 70000
+salary_currency = "CAD"
+salary_basis = "max"
+usd_to_cad = 1.38
+titles = [
+  # HRIS / HR technology
+  '\bhris\b',
+  '\bhrms\b',
+  '\bhcm\b',
+  '\bhr\s*(information|tech(nology)?|digital|data|systems?|reporting|analytics|operations|ops|service delivery|shared services|services)\b',
+  'human resources?\s*(information|tech(nology)?|systems?|data|reporting|analytics|operations|services)',
+  'people\s*(systems?|tech(nology)?|analytics|data|insights|operations|ops|services|reporting)',
+  'workday',
+  'successfactors',
+  'oracle\s*(hcm|hr|cloud hcm)',
+  'peoplesoft',
+  '\bukg\b',
+  'kronos',
+  'dayforce',
+  'ceridian',
+  '\badp\b',
+  'servicenow\s*hr',
+  'workforce\s*(analytics|planning|management|reporting|systems?)',
+  'employee\s*(data|records|systems?|services)',
+  # Analyst / specialist / generalist-type HR roles (e.g. "HR Analyst II")
+  '\bhr\s*(analyst|specialist|generalist|advisor|associate|coordinator|administrator|consultant)\b',
+  'human resources?\s*(analyst|specialist|generalist|advisor|associate|coordinator|administrator|consultant)',
+  'people\s*(analyst|specialist|advisor|partner|coordinator|generalist)',
+  # Payroll
+  '\bpayroll\b',
+  'time\s*(and|&)\s*(attendance|labou?r)',
+  # Compensation, benefits, rewards
+  'compensation\s*(analyst|specialist|partner|consultant|associate|advisor|administrator|lead)',
+  '(total\s*)?rewards?\s*(analyst|specialist|partner|consultant|associate|advisor|administrator)',
+  'benefits\s*(analyst|specialist|administrator|coordinator|advisor|consultant)',
+  '\bpension\b',
+  'leaves?\s*(of absence\s*)?(analyst|specialist|administrator|coordinator)',
+  'global\s*mobility\s*(analyst|specialist|advisor|coordinator)',
+]
+exclude_titles = [
+  # Above the target level
+  '\bdirector\b',
+  '\bvice\s*president\b',
+  '\b(s|e)?vp\b',
+  '\bhead of\b',
+  '\bchief\b',
+  '\bexecutive\b',
+  # Building or selling HR software, not running it
+  '\b(software|full[- ]?stack|front[- ]?end|back[- ]?end)\b',
+  '\bsales\b',
+  '\baccount (executive|manager)\b',
+]

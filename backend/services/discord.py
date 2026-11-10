@@ -55,6 +55,8 @@ def build_embed(posting: JobPosting, track: Track) -> dict[str, Any]:
         ],
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+    if posting.salary:
+        embed["fields"].append({"name": "Salary", "value": posting.salary, "inline": True})
 
     logo_url = get_company_logo_url(posting.company_url)
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 import re
+from dataclasses import replace
 from typing import Callable
 
 import psycopg2
@@ -78,6 +79,18 @@ class JobPostingStore:
                     CREATE INDEX IF NOT EXISTS idx_job_postings_category_first_seen
                     ON job_postings(category, first_seen DESC)
                 """)
+                # Advertised pay (annualized, in salary_currency) and when the
+                # job's detail page was last read (NULL = never).
+                for column, kind in (
+                    ("salary", "TEXT"),
+                    ("salary_min", "DOUBLE PRECISION"),
+                    ("salary_max", "DOUBLE PRECISION"),
+                    ("salary_currency", "TEXT"),
+                    ("details_checked_at", "TEXT"),
+                ):
+                    cursor.execute(
+                        f"ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS {column} {kind}"
+                    )
                 conn.commit()
         finally:
             self.__class__._put_conn(conn)
@@ -133,6 +146,11 @@ class JobPostingStore:
                 posting.source,
                 posting.location,
                 posting.category,
+                posting.salary or None,
+                posting.salary_min,
+                posting.salary_max,
+                posting.salary_currency or None,
+                posting.details_checked,
             )
             for posting in unique_postings
         ]
@@ -151,9 +169,20 @@ class JobPostingStore:
                         url,
                         source,
                         location,
-                        category
+                        category,
+                        salary,
+                        salary_min,
+                        salary_max,
+                        salary_currency,
+                        details_checked
                     ) AS (
                         VALUES %s
+                    ),
+                    now_utc AS (
+                        SELECT to_char(
+                            timezone('UTC', CURRENT_TIMESTAMP),
+                            'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"'
+                        ) AS ts
                     ),
                     inserted AS (
                         INSERT INTO job_postings (
@@ -165,6 +194,11 @@ class JobPostingStore:
                             source,
                             location,
                             category,
+                            salary,
+                            salary_min,
+                            salary_max,
+                            salary_currency,
+                            details_checked_at,
                             first_seen,
                             last_seen
                         )
@@ -177,15 +211,14 @@ class JobPostingStore:
                             source,
                             location,
                             category,
-                            to_char(
-                                timezone('UTC', CURRENT_TIMESTAMP),
-                                'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"'
-                            ),
-                            to_char(
-                                timezone('UTC', CURRENT_TIMESTAMP),
-                                'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"'
-                            )
-                        FROM incoming
+                            salary,
+                            salary_min,
+                            salary_max,
+                            salary_currency,
+                            CASE WHEN details_checked THEN now_utc.ts END,
+                            now_utc.ts,
+                            now_utc.ts
+                        FROM incoming, now_utc
                         ON CONFLICT(entry_hash) DO NOTHING
                         RETURNING
                             entry_hash,
@@ -196,6 +229,10 @@ class JobPostingStore:
                             source,
                             location,
                             category,
+                            salary,
+                            salary_min,
+                            salary_max,
+                            salary_currency,
                             first_seen,
                             last_seen
                     ),
@@ -209,11 +246,16 @@ class JobPostingStore:
                             source = incoming.source,
                             location = incoming.location,
                             category = incoming.category,
-                            last_seen = to_char(
-                                timezone('UTC', CURRENT_TIMESTAMP),
-                                'YYYY-MM-DD"T"HH24:MI:SS.MS"+00:00"'
-                            )
-                        FROM incoming
+                            salary = incoming.salary,
+                            salary_min = incoming.salary_min,
+                            salary_max = incoming.salary_max,
+                            salary_currency = incoming.salary_currency,
+                            details_checked_at = CASE
+                                WHEN NOT incoming.details_checked THEN NULL
+                                ELSE COALESCE(job.details_checked_at, now_utc.ts)
+                            END,
+                            last_seen = now_utc.ts
+                        FROM incoming, now_utc
                         WHERE job.entry_hash = incoming.entry_hash
                         RETURNING job.entry_hash
                     )
@@ -226,13 +268,20 @@ class JobPostingStore:
                         source,
                         location,
                         category,
+                        salary,
+                        salary_min,
+                        salary_max,
+                        salary_currency,
                         first_seen,
                         last_seen
                     FROM inserted
                     ORDER BY first_seen DESC
                     """,
                     rows,
-                    template="(%s, %s, %s, %s, %s, %s, %s, %s)",
+                    template=(
+                        "(%s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                        "%s::double precision, %s::double precision, %s, %s::boolean)"
+                    ),
                     page_size=len(rows),
                     fetch=True,
                 )
@@ -247,6 +296,10 @@ class JobPostingStore:
                         location=row[6],
                         url=row[4],
                         category=row[7] or "",
+                        salary=row[8] or "",
+                        salary_min=row[9],
+                        salary_max=row[10],
+                        salary_currency=row[11] or "",
                     )
                     for row in inserted_rows
                 ]
@@ -284,6 +337,7 @@ class JobPostingStore:
                         source,
                         location,
                         COALESCE(category, '') AS category,
+                        COALESCE(salary, '') AS salary,
                         first_seen,
                         last_seen
                     FROM job_postings
@@ -297,8 +351,53 @@ class JobPostingStore:
         finally:
             self.__class__._put_conn(conn)
 
+    def apply_cached_details(self, postings: list[JobPosting]) -> list[JobPosting]:
+        """Fills in location/salary for postings whose detail page was read
+        on an earlier run, so it is not fetched again."""
+        if not postings:
+            return postings
+        hashes = [
+            self.build_entry_hash(company=p.company, title=p.title, url=p.url)
+            for p in postings
+        ]
+        conn = self.__class__._get_conn()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT entry_hash, location, salary, salary_min, salary_max,
+                           salary_currency
+                    FROM job_postings
+                    WHERE entry_hash = ANY(%s) AND details_checked_at IS NOT NULL
+                    """,
+                    (hashes,),
+                )
+                cached = {row[0]: row[1:] for row in cursor.fetchall()}
+        finally:
+            self.__class__._put_conn(conn)
+
+        result = []
+        for entry_hash, posting in zip(hashes, postings):
+            row = cached.get(entry_hash)
+            if row is None or posting.details_checked:
+                result.append(posting)
+                continue
+            location, salary, salary_min, salary_max, currency = row
+            result.append(
+                replace(
+                    posting,
+                    location=location or posting.location,
+                    salary=salary or "",
+                    salary_min=salary_min,
+                    salary_max=salary_max,
+                    salary_currency=currency or "",
+                    details_checked=True,
+                )
+            )
+        return result
+
     def backfill_categories(
-        self, classify_title: Callable[[str], str], rules_fingerprint: str
+        self, classify_row: Callable[[JobPosting], str], rules_fingerprint: str
     ) -> int:
         """Classifies unclassified rows, or every row when the track rules
         changed since the last run (so old categories don't go stale)."""
@@ -317,15 +416,34 @@ class JobPostingStore:
                 row = cursor.fetchone()
                 rules_changed = row is None or row[0] != rules_fingerprint
 
+                columns = (
+                    "SELECT id, category, title, location, salary, salary_min, "
+                    "salary_max, salary_currency, details_checked_at FROM job_postings"
+                )
                 if rules_changed:
-                    cursor.execute("SELECT id, title, category FROM job_postings")
+                    cursor.execute(columns)
                 else:
-                    cursor.execute(
-                        "SELECT id, title, category FROM job_postings WHERE category IS NULL"
-                    )
+                    cursor.execute(f"{columns} WHERE category IS NULL")
                 updates = []
-                for row_id, title, current in cursor.fetchall():
-                    category = classify_title(title)
+                for (
+                    row_id, current, title, location, salary, salary_min,
+                    salary_max, salary_currency, details_checked_at,
+                ) in cursor.fetchall():
+                    category = classify_row(
+                        JobPosting(
+                            source="",
+                            title=title,
+                            company="",
+                            company_url="",
+                            location=location,
+                            url="",
+                            salary=salary or "",
+                            salary_min=salary_min,
+                            salary_max=salary_max,
+                            salary_currency=salary_currency or "",
+                            details_checked=details_checked_at is not None,
+                        )
+                    )
                     if category != current:
                         updates.append((category, row_id))
                 if updates:

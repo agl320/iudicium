@@ -213,6 +213,7 @@ class WorkdayCxsClient:
                     company_url=COMPANY_URL_MAPPING.get(self.company, ""),
                     location=location_str,
                     url=external_path_str,
+                    external_id=str(external_path or ""),
                 )
             )
 
@@ -261,6 +262,7 @@ class WorkdayCxsClient:
                     company_url=COMPANY_URL_MAPPING.get(self.company, ""),
                     location=location_str,
                     url=external_path_str,
+                    external_id=str(external_path or ""),
                 )
             )
 

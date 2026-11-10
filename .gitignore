@@ -239,3 +239,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Frontend source folder (the Python "lib/" rule above would hide it)
+!frontend/src/lib/

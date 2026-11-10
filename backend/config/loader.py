@@ -7,13 +7,20 @@ from __future__ import annotations
 
 import re
 import tomllib
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
 DEFAULT_CONFIG_PATH = Path(__file__).with_name("companies.toml")
+# Optional per-track filters (stricter titles, region, salary). When the file
+# or a track's section is missing, that track uses its broad rules from
+# companies.toml and is limited to North America.
+DEFAULT_FILTERS_PATH = Path(__file__).with_name("filters.toml")
+_USE_DEFAULT: Any = object()
 
 EMPLOYMENT_REQUIREMENTS = {"intern", "full_time", "any"}
+REGIONS = {"north_america", "canada", "british_columbia"}
+SALARY_BASES = {"min", "mid", "max"}
 PROVIDERS = {
     "workday",
     "greenhouse",
@@ -28,6 +35,8 @@ PROVIDERS = {
     "sap",
     "successfactors",
     "avature",
+    "lever",
+    "tesla",
     "custom",
 }
 
@@ -43,6 +52,48 @@ class Settings:
     concurrency: int = 6
     seed_silently: bool = True
     max_notifications_per_company: int = 10
+    # Detail pages (salary, full location list) read per company per run.
+    max_detail_fetches_per_company: int = 40
+
+
+@dataclass(frozen=True)
+class TrackFilter:
+    """Extra conditions a posting must meet to be shown in a track, on top of
+    the track's own title/employment rules (see filters.toml)."""
+
+    # When set, the title must also match one of these...
+    titles: tuple[re.Pattern[str], ...] = ()
+    # ...and none of these (e.g. seniority that is not wanted).
+    exclude_titles: tuple[re.Pattern[str], ...] = ()
+    regions: tuple[str, ...] = ("north_america",)
+    # Count "Remote" / "Remote - Canada" postings as inside the region.
+    allow_remote: bool = True
+    # Only show postings that advertise a salary.
+    require_salary: bool = False
+    # Minimum annual salary (in `salary_currency`), compared against the
+    # advertised range's "min" (floor), "mid" or "max" (ceiling).
+    min_salary: float | None = None
+    salary_currency: str = "CAD"
+    salary_basis: str = "max"
+    usd_to_cad: float = 1.38
+    # Read job detail pages to find salaries / full location lists.
+    fetch_details: bool = True
+    # The raw section, used to notice when the rules change.
+    raw: dict[str, Any] = field(default_factory=dict, compare=False)
+
+    @property
+    def needs_salary(self) -> bool:
+        return self.require_salary or self.min_salary is not None
+
+    @property
+    def min_salary_cad(self) -> float | None:
+        if self.min_salary is None:
+            return None
+        rate = self.usd_to_cad if self.salary_currency == "USD" else 1.0
+        return self.min_salary * rate
+
+
+DEFAULT_FILTER = TrackFilter()
 
 
 @dataclass(frozen=True)
@@ -58,6 +109,12 @@ class Track:
     # Titles matching these are never in the track, not even priority ones.
     block_titles: tuple[re.Pattern[str], ...]
     search_terms: tuple[str, ...]
+    # Stricter conditions from filters.toml; None = broad search (North America).
+    filter: TrackFilter | None = None
+
+    @property
+    def active_filter(self) -> TrackFilter:
+        return self.filter or DEFAULT_FILTER
 
     @property
     def color_hex(self) -> str:
@@ -145,6 +202,59 @@ def _parse_tracks(raw: dict[str, Any]) -> tuple[Track, ...]:
     return tuple(tracks)
 
 
+def _parse_filter(key: str, data: dict[str, Any]) -> TrackFilter:
+    where = f"filters.{key}"
+    known = {name for name in TrackFilter.__dataclass_fields__ if name != "raw"}
+    unknown = set(data) - known
+    if unknown:
+        raise ConfigError(f"Unknown option(s) in [{where}]: {', '.join(sorted(unknown))}")
+
+    regions = tuple(data.get("regions", DEFAULT_FILTER.regions))
+    if not regions or any(region not in REGIONS for region in regions):
+        raise ConfigError(
+            f"[{where}] regions must be some of {sorted(REGIONS)}, got {list(regions)}"
+        )
+    basis = data.get("salary_basis", DEFAULT_FILTER.salary_basis)
+    if basis not in SALARY_BASES:
+        raise ConfigError(f"[{where}] salary_basis must be one of {sorted(SALARY_BASES)}")
+    currency = str(data.get("salary_currency", DEFAULT_FILTER.salary_currency)).upper()
+    if currency not in {"CAD", "USD"}:
+        raise ConfigError(f"[{where}] salary_currency must be CAD or USD")
+    min_salary = data.get("min_salary")
+    if min_salary is not None and not isinstance(min_salary, (int, float)):
+        raise ConfigError(f"[{where}] min_salary must be a number")
+
+    return TrackFilter(
+        titles=_compile(data.get("titles", []), where),
+        exclude_titles=_compile(data.get("exclude_titles", []), where),
+        regions=regions,
+        allow_remote=bool(data.get("allow_remote", DEFAULT_FILTER.allow_remote)),
+        require_salary=bool(data.get("require_salary", False)),
+        min_salary=float(min_salary) if min_salary is not None else None,
+        salary_currency=currency,
+        salary_basis=basis,
+        usd_to_cad=float(data.get("usd_to_cad", DEFAULT_FILTER.usd_to_cad)),
+        fetch_details=bool(data.get("fetch_details", True)),
+        raw=dict(data),
+    )
+
+
+def load_filters(path: Path | str | None) -> dict[str, TrackFilter]:
+    """Reads filters.toml. A missing file means no filters (broad search)."""
+    if path is None or not Path(path).exists():
+        return {}
+    with Path(path).open("rb") as handle:
+        raw = tomllib.load(handle)
+    filters: dict[str, TrackFilter] = {}
+    for key, data in raw.items():
+        if not isinstance(data, dict):
+            raise ConfigError(f"filters.toml: [{key}] must be a table")
+        if data.get("enabled", True):
+            options = {k: v for k, v in data.items() if k != "enabled"}
+            filters[key] = _parse_filter(key, options)
+    return filters
+
+
 def _parse_companies(raw: list[dict[str, Any]]) -> tuple[Company, ...]:
     companies: list[Company] = []
     seen: set[str] = set()
@@ -171,14 +281,28 @@ def _parse_companies(raw: list[dict[str, Any]]) -> tuple[Company, ...]:
     return tuple(companies)
 
 
-def load_config(path: Path | str | None = None) -> AppConfig:
+def load_config(
+    path: Path | str | None = None, *, filters_path: Any = _USE_DEFAULT
+) -> AppConfig:
+    """Loads companies.toml plus the filters.toml next to it. Pass
+    `filters_path=None` to ignore filters (broad search for every track)."""
     config_path = Path(path) if path else DEFAULT_CONFIG_PATH
     with config_path.open("rb") as handle:
         raw = tomllib.load(handle)
 
-    settings = Settings(**raw.get("settings", {}))
+    if filters_path is _USE_DEFAULT:
+        filters_path = config_path.with_name(DEFAULT_FILTERS_PATH.name)
+    filters = load_filters(filters_path)
+    tracks = _parse_tracks(raw.get("tracks", {}))
+    unknown = set(filters) - {track.key for track in tracks}
+    if unknown:
+        raise ConfigError(
+            f"filters.toml has sections for unknown or disabled tracks: {sorted(unknown)}"
+        )
+    tracks = tuple(replace(track, filter=filters.get(track.key)) for track in tracks)
+
     return AppConfig(
-        settings=settings,
-        tracks=_parse_tracks(raw.get("tracks", {})),
+        settings=Settings(**raw.get("settings", {})),
+        tracks=tracks,
         companies=_parse_companies(raw.get("companies", [])),
     )
