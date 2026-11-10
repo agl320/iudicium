@@ -2,6 +2,7 @@ import { AuthProvider } from "../auth/AuthProvider";
 import { navigate } from "../hooks/useHashRoute";
 import { type FormEvent, useEffect, useState } from "react";
 import { useAuth } from "../auth/context";
+import { BRAND_FILL, SlidingTabs, type SlidingTabOption } from "../components/SlidingTabs";
 import { AUTH_NOTICE_KEY } from "../lib/supabase";
 import { resendConfirmation, sendMagicLink, sendPasswordReset, signIn, signUp } from "../resume/cloud";
 import { Card, Field, Message, Shell, SubmitButton } from "./Shell";
@@ -9,6 +10,11 @@ import { Card, Field, Message, Shell, SubmitButton } from "./Shell";
 type Mode = "signin" | "signup" | "magic" | "reset";
 
 const MIN_PASSWORD = 8;
+
+const TABS: SlidingTabOption<Mode>[] = [
+  { key: "signin", label: "Sign in", fill: BRAND_FILL },
+  { key: "signup", label: "Create account", fill: BRAND_FILL },
+];
 
 function AuthPageInner() {
   const { user } = useAuth();
@@ -94,21 +100,10 @@ function AuthPageInner() {
   const copy = titles[mode];
 
   return (
-    <Shell>
+    <Shell wordmark>
       {mode === "signin" || mode === "signup" ? (
-        <div className="mb-4 flex w-full rounded-lg bg-wash p-[3px] text-sm">
-          {(["signin", "signup"] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => switchMode(tab)}
-              className={`flex-1 cursor-pointer rounded-md py-1.5 font-semibold transition-all ${
-                mode === tab ? "bg-paper text-ink shadow-sm" : "text-neutral-500 hover:text-ink"
-              }`}
-            >
-              {tab === "signin" ? "Sign in" : "Create account"}
-            </button>
-          ))}
+        <div className="mb-4">
+          <SlidingTabs label="Account" options={TABS} value={mode} onChange={switchMode} stretch />
         </div>
       ) : null}
       <form onSubmit={submit} key={mode}>

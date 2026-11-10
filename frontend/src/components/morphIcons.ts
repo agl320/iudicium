@@ -11,3 +11,9 @@ export const DOCUMENT_ICON = [
   "M9 12h6", // text line
   "M9 15.5h4", // text line
 ];
+
+export const DOWNLOAD_ICON = [
+  "M12 4v11", // shaft
+  "M7.5 10.5L12 15l4.5-4.5", // head
+  "M5 19.5h14", // tray
+];

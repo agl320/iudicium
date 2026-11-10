@@ -1,0 +1,127 @@
+import { useEffect, useRef, useState } from "react";
+
+export type SlidingTabOption<K> = { key: K; label: string; fill: string };
+
+type Rect = { left: number; width: number };
+
+export const BRAND_FILL = "linear-gradient(120deg, #e3277a 0%, #f2594a 60%, #f97a2a 100%)";
+
+// Leading edge moves fast, trailing edge follows: a short stretch-and-settle.
+const FAST = "220ms cubic-bezier(0.3, 0.7, 0.2, 1)";
+const SLOW = "380ms cubic-bezier(0.3, 0.7, 0.2, 1)";
+
+/**
+ * Segmented control with one sliding block in the option's colour. The block
+ * follows the hovered (or focused) option, stretching toward it (leading edge
+ * first, trailing edge catching up), and returns to the selected option.
+ * `stretch` makes it fill its container with equal-width options.
+ */
+export function SlidingTabs<K>({
+  options,
+  value,
+  onChange,
+  label,
+  stretch = false,
+}: {
+  options: SlidingTabOption<K>[];
+  value: K;
+  onChange: (value: K) => void;
+  label: string;
+  stretch?: boolean;
+}) {
+  const root = useRef<HTMLDivElement>(null);
+  const buttons = useRef<(HTMLButtonElement | null)[]>([]);
+  const [rects, setRects] = useState<Rect[]>([]);
+  const [width, setWidth] = useState(0);
+  const [hover, setHover] = useState<number | null>(null);
+  const [direction, setDirection] = useState<"left" | "right">("right");
+
+  const selected = Math.max(0, options.findIndex((option) => option.key === value));
+  const target = hover ?? selected;
+
+  // Measure option positions (and re-measure when fonts load or the layout changes).
+  useEffect(() => {
+    const node = root.current;
+    if (!node) return;
+    const measure = () => {
+      setWidth(node.clientWidth);
+      setRects(buttons.current.map((b) => (b ? { left: b.offsetLeft, width: b.offsetWidth } : { left: 0, width: 0 })));
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    buttons.current.forEach((b) => b && observer.observe(b));
+    return () => observer.disconnect();
+  }, [options.length]);
+
+  function moveTo(next: number | null) {
+    const to = next ?? selected;
+    if (to !== target) setDirection(to > target ? "right" : "left");
+    setHover(next);
+  }
+
+  const rect = rects[target];
+  const transition =
+    direction === "right" ? `right ${FAST}, left ${SLOW}, box-shadow 200ms` : `left ${FAST}, right ${SLOW}, box-shadow 200ms`;
+
+  return (
+    <div
+      ref={root}
+      role="tablist"
+      aria-label={label}
+      onMouseLeave={() => moveTo(null)}
+      className={`surface-fade relative h-10 items-stretch gap-1 rounded-lg border border-[#d4d7dd] p-1 ${
+        stretch ? "flex w-full" : "inline-flex shrink-0"
+      }`}
+    >
+      {rect ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1 bottom-1 overflow-hidden rounded-md"
+          style={{
+            left: rect.left,
+            right: width - rect.left - rect.width,
+            transition,
+            boxShadow: "0 1px 2px rgb(15 23 42 / 0.15), inset 0 1px 0 rgb(255 255 255 / 0.2)",
+          }}
+        >
+          {options.map((option, index) => (
+            <span
+              key={option.label}
+              className="absolute inset-0 transition-opacity duration-200"
+              style={{ background: option.fill, opacity: index === target ? 1 : 0 }}
+            />
+          ))}
+        </span>
+      ) : null}
+      {options.map((option, index) => {
+        const active = index === selected;
+        // White label on whichever option the block is over (hovered or selected).
+        const filled = index === target;
+        return (
+          <button
+            key={option.label}
+            ref={(node) => {
+              buttons.current[index] = node;
+            }}
+            role="tab"
+            type="button"
+            aria-selected={active}
+            onClick={() => {
+              moveTo(index);
+              onChange(option.key);
+            }}
+            onMouseEnter={() => moveTo(index)}
+            onFocus={() => moveTo(index)}
+            onBlur={() => moveTo(null)}
+            // One font weight for every state, so the control never changes width.
+            className={`relative z-10 inline-flex cursor-pointer items-center rounded-md px-3.5 text-sm font-semibold transition-colors duration-200 ${
+              stretch ? "flex-1 justify-center" : ""
+            } ${filled ? "text-white" : active ? "text-ink" : "text-neutral-500 hover:text-ink"}`}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}

@@ -66,11 +66,33 @@ function Wordmark() {
 }
 
 /**
- * Top bar shared by the job board and the account pages. `wordmark` swaps the
- * small logo for the oversized, cropped one (job board only); the page must
- * set `--header-h` (see `.job-board`).
+ * Whether supabase-js has a session saved in this browser. Read straight from
+ * storage so the job board can pick "Sign in" vs "Account" without loading
+ * the auth client.
  */
-export function SiteHeader({ right, wordmark = false }: { right?: React.ReactNode; wordmark?: boolean }) {
+function hasStoredSession(): boolean {
+  try {
+    const ref = new URL(import.meta.env.VITE_SUPABASE_URL as string).hostname.split(".")[0];
+    return localStorage.getItem(`sb-${ref}-auth-token`) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Top bar shared by the job board and the account pages. `wordmark` swaps the
+ * small logo for the oversized, cropped one (height: `--header-h`, App.css);
+ * `signIn` adds a Sign in (or Account) link.
+ */
+export function SiteHeader({
+  right,
+  wordmark = false,
+  signIn = false,
+}: {
+  right?: React.ReactNode;
+  wordmark?: boolean;
+  signIn?: boolean;
+}) {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-paper/70 backdrop-blur-md">
       <div
@@ -87,6 +109,17 @@ export function SiteHeader({ right, wordmark = false }: { right?: React.ReactNod
         <a href="#/" className="btn btn-sm btn-ghost hidden shrink-0 sm:inline-flex">
           Jobs
         </a>
+        {signIn ? (
+          hasStoredSession() ? (
+            <a href="#/account" className="btn btn-sm shrink-0">
+              Account
+            </a>
+          ) : (
+            <a href="#/login" className="btn btn-sm shrink-0">
+              Sign in
+            </a>
+          )
+        ) : null}
         {right ?? (
           <a href="#/resume" aria-label="Resume builder" className="btn btn-sm btn-primary morph-btn shrink-0">
             <MorphLabel text="Resume builder" paths={DOCUMENT_ICON} />

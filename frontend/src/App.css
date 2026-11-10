@@ -334,6 +334,20 @@ body {
   animation: mb-scan 900ms ease-in-out infinite;
 }
 
+/* Exporting: the download arrow bobs instead of looking around. */
+@keyframes mb-bob {
+  0%,
+  100% {
+    transform: translateY(-1.5px);
+  }
+  50% {
+    transform: translateY(1.5px);
+  }
+}
+.morph-btn.morph-download.is-loading .mb-icon {
+  animation: mb-bob 700ms ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .morph-btn .mb-letter,
   .morph-btn .mb-icon,
@@ -432,7 +446,8 @@ body {
   font-style: normal;
   font-display: swap;
 }
-.job-board {
+:root {
+  /* Height of the wordmark header (job board, sign in). */
   --header-h: clamp(3.5rem, 8.25vw, 5.5rem);
 }
 .wordmark {

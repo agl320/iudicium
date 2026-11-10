@@ -1,6 +1,8 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import "./resume.css";
 import { HoverArrow } from "../components/HoverArrow";
+import { MorphLabel } from "../components/MorphLabel";
+import { DOWNLOAD_ICON } from "../components/morphIcons";
 import { AtsPanel } from "./AtsPanel";
 import { checkAts, toPlainText } from "./ats";
 import { toLatex } from "./exportLatex";
@@ -188,31 +190,44 @@ export function Editor({ initial, onChange, toolbar, account, storageNote }: Edi
       className="rb-app flex h-screen flex-col bg-wash text-neutral-900"
     >
       {/* Top bar */}
-      <header className="rb-screen grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-line bg-paper px-4">
+      {/* Equal minmax(0,1fr) side columns keep the middle island centred on
+          the viewport whatever the sides hold. */}
+      <header className="rb-screen grid h-14 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-b border-line bg-paper px-4">
         <div className="flex min-w-0 items-center gap-3">
-          <a href="#/" className="btn btn-sm btn-ghost hover-arrow-host">
+          <a href="#/" className="btn btn-sm btn-ghost hover-arrow-host shrink-0">
             <HoverArrow direction="left" />
             Jobs
           </a>
-          <span className="text-[15px] font-semibold tracking-tight">Resume builder</span>
           {toolbar}
-          <div className="ml-4 flex items-center gap-1">
-            <Button size="xs" variant="ghost" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
-              ↶ Undo
-            </Button>
-            <Button size="xs" variant="ghost" onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)">
-              ↷ Redo
-            </Button>
+          {/* Undo/redo island, centred in the gap before the middle island. */}
+          <div className="flex min-w-0 flex-1 justify-center">
+            <div className="flex items-center gap-0.5 rounded-xl border border-line bg-paper p-1 shadow-soft">
+              <Button size="xs" variant="ghost" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
+                ↶ Undo
+              </Button>
+              <span className="h-4 w-px bg-line" aria-hidden="true" />
+              <Button size="xs" variant="ghost" onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)">
+                ↷ Redo
+              </Button>
+            </div>
           </div>
         </div>
-        {/* The chosen format also drives the ATS check. */}
-        <FormatPicker label="Export format" options={FORMAT_OPTIONS} value={format} onChange={setFormat} />
-        <div className="flex items-center justify-end gap-2">
+        {/* Island: format + export. The chosen format also drives the ATS check. */}
+        <div className="flex items-center gap-2 rounded-xl border border-line bg-paper p-1 shadow-soft">
+          <FormatPicker label="Export format" options={FORMAT_OPTIONS} value={format} onChange={setFormat} />
+          <span className="h-5 w-px bg-line" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={exportSelected}
+            aria-label={`Export ${FORMAT_LABELS[format]}`}
+            className={`btn btn-sm btn-primary morph-btn morph-download${busy ? " is-loading" : ""}`}
+          >
+            {/* Keyed so switching format replays the letters rising in. */}
+            <MorphLabel key={format} text={`Export ${FORMAT_LABELS[format]}`} paths={DOWNLOAD_ICON} />
+          </button>
+        </div>
+        <div className="flex min-w-0 items-center justify-end gap-2">
           {busy ? <span className="text-xs text-neutral-400">{busy}</span> : null}
-          <Button variant="primary" onClick={exportSelected}>
-            Export {FORMAT_LABELS[format]}
-          </Button>
-          {account ? <span className="mx-1 h-5 w-px bg-neutral-200" /> : null}
           {account}
         </div>
       </header>

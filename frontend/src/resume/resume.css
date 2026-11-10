@@ -258,13 +258,13 @@
 
 .rb-pool-badge {
   position: absolute;
-  right: -92px;
-  top: 0.1em;
-  padding: 0 6px;
+  right: -104px;
+  top: 0.05em;
+  padding: 1px 8px;
   border: 1px dashed #c4c8cf;
   border-radius: 999px;
   background: #fff;
-  font: 500 10px/16px "Geist", ui-sans-serif, sans-serif;
+  font: 500 11.5px/18px "Geist", ui-sans-serif, sans-serif;
   color: #6b7280;
   white-space: nowrap;
   transition: color 140ms ease, border-color 140ms ease;

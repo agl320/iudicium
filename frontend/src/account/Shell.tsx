@@ -2,10 +2,10 @@ import type { ReactNode } from "react";
 import { SiteHeader } from "../components/SiteHeader";
 
 /** Centered page used by sign-in and account settings. */
-export function Shell({ children, wide }: { children: ReactNode; wide?: boolean }) {
+export function Shell({ children, wide, wordmark }: { children: ReactNode; wide?: boolean; wordmark?: boolean }) {
   return (
     <div className="min-h-screen text-neutral-900">
-      <SiteHeader />
+      <SiteHeader wordmark={wordmark} />
       <main className={`mx-auto px-6 py-16 ${wide ? "max-w-2xl" : "max-w-sm"}`}>
         <div className="rb-panel-in">{children}</div>
       </main>
