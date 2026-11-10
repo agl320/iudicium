@@ -50,11 +50,11 @@ function JobBoard() {
       : `${feed.jobs.length} postings`;
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader />
+    <div className="job-board flex min-h-screen flex-col">
+      <SiteHeader wordmark />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4">
-        <div className="sticky top-14 z-20 -mx-4 flex flex-col gap-3 border-b border-line bg-paper/80 px-4 py-3 backdrop-blur-md lg:flex-row lg:items-center">
+        <div className="sticky top-[var(--header-h)] z-20 -mx-4 flex flex-col gap-3 border-b border-line bg-paper/80 px-4 py-3 backdrop-blur-md lg:flex-row lg:items-center">
           <SearchForm
             searchTerm={searchTerm}
             loading={feed.loading}

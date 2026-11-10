@@ -2,9 +2,10 @@
 // readiness: a plain-text rendering in reading order — what a parser
 // extracts — and checks for things that commonly break parsing.
 
+import { droppedInLatex } from "./exportLatex";
 import type { Selection } from "./Preview";
 import { parseRuns } from "./runs";
-import type { Resume } from "./types";
+import type { ExportFormat, Resume } from "./types";
 
 /** Section names parsers map to their resume fields. */
 const STANDARD_SECTIONS =
@@ -66,7 +67,7 @@ function dateStyle(date: string): string | null {
   return null;
 }
 
-export function checkAts(resume: Resume): AtsIssue[] {
+export function checkAts(resume: Resume, format: ExportFormat = "pdf"): AtsIssue[] {
   const issues: AtsIssue[] = [];
   const header: Selection = { kind: "header" };
   const contact = resume.contact.join(" ");
@@ -148,6 +149,41 @@ export function checkAts(resume: Resume): AtsIssue[] {
   const contactOdd = oddCharacters(contact);
   if (contactOdd.length) {
     issues.push({ level: "warning", message: `Contact line has “${contactOdd.join(" ")}” (icons/symbols); use plain text.`, target: header });
+  }
+  issues.push(...formatIssues(resume, format));
+  return issues;
+}
+
+/** What changes with the file type: how it is read, and what the export loses. */
+function formatIssues(resume: Resume, format: ExportFormat): AtsIssue[] {
+  const issues: AtsIssue[] = [];
+  if (format === "pdf") {
+    issues.push({
+      level: "tip",
+      message: "In the print dialog, turn off “Headers and footers”, or the page URL and date are printed into the PDF text.",
+    });
+  } else if (format === "tex") {
+    issues.push({ level: "tip", message: "ATS can't read .tex; compile it (e.g. on Overleaf) and upload the PDF." });
+    for (const section of resume.sections) {
+      for (const entry of section.entries) {
+        const target: Selection = { kind: "entry", sectionId: section.id, entryId: entry.id };
+        const texts = [entry.title, entry.subtitle, entry.date, entry.location, ...entry.points.filter((p) => p.active).map((p) => plain(p.text))];
+        const dropped = droppedInLatex(texts.join(" "));
+        if (dropped.length) {
+          issues.push({
+            level: "warning",
+            message: `${entry.title || section.title}: “${dropped.join(" ")}” can't be typeset by pdflatex and is left out of the .tex.`,
+            target,
+          });
+        }
+      }
+    }
+    const droppedHeader = droppedInLatex(`${resume.name} ${resume.contact.join(" ")}`);
+    if (droppedHeader.length) {
+      issues.push({ level: "warning", message: `Header: “${droppedHeader.join(" ")}” is left out of the .tex.`, target: { kind: "header" } });
+    }
+  } else if (format === "txt") {
+    issues.push({ level: "tip", message: "Plain text is for “paste your resume” boxes; upload a PDF or .docx as the file." });
   }
   return issues;
 }

@@ -74,7 +74,7 @@ export const JobCard = memo(function JobCard({ job, logoDevPublicKey }: JobCardP
     <>
       <Logo job={job} logoDevPublicKey={logoDevPublicKey} />
       <div className="min-w-0 flex-1">
-        <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-neutral-900 group-hover:text-accent-strong">
+        <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-neutral-900 transition-colors duration-200 ease-out group-hover:text-accent-strong">
           {job.title}
         </h3>
         <p className="mt-1 flex min-w-0 items-center gap-1.5 text-sm">
@@ -100,7 +100,7 @@ export const JobCard = memo(function JobCard({ job, logoDevPublicKey }: JobCardP
     </>
   );
 
-  const className = `job-card group flex items-start gap-3 border-b border-line px-3 py-3.5 transition-colors hover:bg-wash focus-visible:bg-wash focus-visible:outline-none ${ROW_GRID}`;
+  const className = `job-card group flex items-start gap-3 border-b border-line px-3 py-3.5 transition-[background-color] duration-200 ease-out hover:bg-wash focus-visible:bg-wash focus-visible:outline-none ${ROW_GRID}`;
 
   return linked ? (
     <a href={job.url} target="_blank" rel="noreferrer" className={className}>

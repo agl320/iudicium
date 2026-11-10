@@ -28,7 +28,20 @@ export type Section = {
   entries: Entry[];
 };
 
-export type FontKey = "cm" | "charter" | "garamond" | "sourceSerif" | "sourceSans";
+export type FontKey =
+  | "cm"
+  | "charter"
+  | "garamond"
+  | "sourceSerif"
+  | "sourceSans"
+  | "calibri"
+  | "georgia"
+  | "arial"
+  | "times";
+
+export type ExportFormat = "pdf" | "docx" | "tex" | "txt";
+
+export const FORMAT_LABELS: Record<ExportFormat, string> = { pdf: "PDF", docx: ".docx", tex: ".tex", txt: ".txt" };
 
 export type Style = {
   font: FontKey;
@@ -48,43 +61,111 @@ export type Resume = {
   style: Style;
 };
 
-export const FONTS: Record<
-  FontKey,
-  // docx: closest font that ships with Microsoft Office, so the file looks
-  // the same on a recruiter's machine (web fonts are not embedded).
-  { label: string; css: string; docx: string; latex: string }
-> = {
+type FontInfo = {
+  label: string;
+  css: string;
+  // The Word font a .docx uses: the font itself when Word ships it (docxName
+  // set), otherwise the closest one. Fonts are not embedded, which keeps the
+  // file small; Word fonts show on screen through metric-compatible clones
+  // (Carlito, Gelasio, Arimo, Tinos), so line breaks match Word.
+  word: FontKey;
+  docxName?: string;
+};
+
+export const FONTS: Record<FontKey, FontInfo> = {
   cm: {
     label: "Computer Modern",
     css: "'Computer Modern Serif', 'Latin Modern Roman', serif",
-    docx: "Cambria",
-    latex: "\\usepackage{lmodern}",
+    word: "times",
   },
   charter: {
     label: "Charter",
     css: "'Charis SIL', Charter, 'Bitstream Charter', serif",
-    docx: "Georgia",
-    latex: "\\usepackage[charter]{mathdesign}",
+    word: "georgia",
   },
   garamond: {
     label: "EB Garamond",
     css: "'EB Garamond', Garamond, serif",
-    docx: "Garamond",
-    latex: "\\usepackage{ebgaramond}",
+    word: "times",
   },
   sourceSerif: {
     label: "Source Serif",
     css: "'Source Serif 4', 'Source Serif Pro', serif",
-    docx: "Constantia",
-    latex: "\\usepackage{sourceserifpro}",
+    word: "georgia",
   },
   sourceSans: {
     label: "Source Sans",
     css: "'Source Sans 3', 'Source Sans Pro', sans-serif",
-    docx: "Calibri",
-    latex: "\\usepackage[default]{sourcesanspro}",
+    word: "calibri",
+  },
+  calibri: {
+    label: "Calibri",
+    css: "Calibri, Carlito, sans-serif",
+    word: "calibri",
+    docxName: "Calibri",
+  },
+  georgia: {
+    label: "Georgia",
+    css: "Georgia, Gelasio, serif",
+    word: "georgia",
+    docxName: "Georgia",
+  },
+  arial: {
+    label: "Arial",
+    css: "Arial, Arimo, sans-serif",
+    // Helvetica has Arial's widths.
+    word: "arial",
+    docxName: "Arial",
+  },
+  times: {
+    label: "Times New Roman",
+    css: "'Times New Roman', Tinos, serif",
+    word: "times",
+    docxName: "Times New Roman",
   },
 };
+
+/** Fonts each format reproduces exactly: .docx is limited to Word's own
+ *  fonts, .tex to Computer Modern (LaTeX's own; other TeX fonts differ in
+ *  width from their web versions, so lines would wrap differently). */
+export function fontsFor(format: ExportFormat): FontKey[] {
+  const all = Object.keys(FONTS) as FontKey[];
+  if (format === "docx") return all.filter((key) => FONTS[key].docxName);
+  if (format === "tex") return ["cm"];
+  return all;
+}
+
+/** The font a format actually renders (Word swaps in its own; LaTeX always
+ *  uses Computer Modern). */
+export function effectiveFont(font: FontKey, format: ExportFormat): FontKey {
+  const known = font in FONTS ? font : DEFAULT_STYLE.font;
+  if (format === "docx") return FONTS[known].word;
+  if (format === "tex") return "cm";
+  return known;
+}
+
+// Layout constants shared by the page (CSS), the .docx and the .tex, so all
+// three are built from the same numbers. Sizes are multiples of the body font
+// size unless noted.
+export const LAYOUT = {
+  nameSize: 2.05,
+  nameLeading: 1.1, // line height, × name size
+  nameTracking: 0.01, // em of the name
+  contactGap: 0.25, // above the contact line
+  headerGap: 0.15, // below the header
+  headingSize: 1.15,
+  headingLeading: 1.25, // × heading size
+  headingTracking: 0.04, // em of the heading
+  smallCaps: 0.7, // size of the small capitals in headings
+  headingRulePad: 0.08, // text to rule, em of the heading
+  headingAfter: 0.3, // rule to first entry, em of the heading
+  rule: 0.6, // pt
+  listGap: 0.1, // above a list of points
+  bulletIndent: 1.1, // text indent of a point
+  bulletWidth: 0.8, // box the bullet sits in (hangs into the indent)
+  separator: " | ", // between contact items
+  separatorColor: "#777777",
+} as const;
 
 export const STYLE_LIMITS = {
   fontSize: { min: 9, max: 12.5, step: 0.5, unit: "pt" },

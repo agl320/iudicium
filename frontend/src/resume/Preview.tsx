@@ -16,8 +16,9 @@ import {
 } from "@dnd-kit/sortable";
 import { type CSSProperties, type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { RichText } from "./richText";
+import { smallCapsRuns } from "./runs";
 import type { ResumeActions } from "./store";
-import { type Entry, FONTS, type Resume, type Section } from "./types";
+import { effectiveFont, type Entry, type ExportFormat, FONTS, LAYOUT, type Resume, type Section } from "./types";
 
 export type Selection =
   | { kind: "header" }
@@ -31,16 +32,38 @@ type DragData = { type: "section" | "entry" | "point"; parent: string };
 const PAGE_WIDTH_PX = 816; // 8.5in at 96dpi
 const PAGE_HEIGHT_PX = 1056; // 11in
 
-function pageStyle(resume: Resume): CSSProperties {
+const em = (value: number) => `${value}em`;
+
+function pageStyle(resume: Resume, format: ExportFormat): CSSProperties {
   const { style } = resume;
+  const vars: Record<string, string | number> = {
+    "--rb-section-gap": `${style.sectionGap}pt`,
+    "--rb-entry-gap": `${style.entryGap}pt`,
+    "--rb-point-gap": `${style.pointGap}pt`,
+    "--rb-name-size": em(LAYOUT.nameSize),
+    "--rb-name-leading": LAYOUT.nameLeading,
+    "--rb-name-tracking": em(LAYOUT.nameTracking),
+    "--rb-contact-gap": em(LAYOUT.contactGap),
+    "--rb-header-gap": em(LAYOUT.headerGap),
+    "--rb-heading-size": em(LAYOUT.headingSize),
+    "--rb-heading-leading": LAYOUT.headingLeading,
+    "--rb-heading-tracking": em(LAYOUT.headingTracking),
+    "--rb-small-caps": em(LAYOUT.smallCaps),
+    "--rb-heading-rule-pad": em(LAYOUT.headingRulePad),
+    "--rb-heading-after": em(LAYOUT.headingAfter),
+    "--rb-rule": `${LAYOUT.rule}pt`,
+    "--rb-list-gap": em(LAYOUT.listGap),
+    "--rb-bullet-indent": em(LAYOUT.bulletIndent),
+    "--rb-bullet-width": em(LAYOUT.bulletWidth),
+    "--rb-sep-color": LAYOUT.separatorColor,
+  };
   return {
-    fontFamily: FONTS[style.font].css,
+    // Rendered in the font the selected format really uses.
+    fontFamily: FONTS[effectiveFont(style.font, format)].css,
     fontSize: `${style.fontSize}pt`,
     lineHeight: style.lineHeight,
     padding: `${style.margin}in`,
-    ["--rb-section-gap" as string]: `${style.sectionGap}pt`,
-    ["--rb-entry-gap" as string]: `${style.entryGap}pt`,
-    ["--rb-point-gap" as string]: `${style.pointGap}pt`,
+    ...vars,
   };
 }
 
@@ -116,6 +139,7 @@ type DocumentProps = {
   scale?: number;
   selection?: Selection;
   onSelect?: (selection: Selection) => void;
+  format?: ExportFormat;
 };
 
 function EntryView({ section, entry, interactive, scale = 1, selection, onSelect }: DocumentProps & { section: Section; entry: Entry }) {
@@ -215,7 +239,17 @@ function SectionView(props: DocumentProps & { section: Section }) {
 
   return (
     <>
-      <h2 className="rb-section-title">{section.title}</h2>
+      <h2 className="rb-section-title">
+        {smallCapsRuns(section.title).map((run, index) =>
+          run.small ? (
+            <span key={index} className="rb-sc">
+              {run.text}
+            </span>
+          ) : (
+            run.text
+          ),
+        )}
+      </h2>
       {interactive ? (
         <SortableContext items={section.entries.map((e) => `e:${e.id}`)} strategy={verticalListSortingStrategy}>
           {entries}
@@ -249,7 +283,7 @@ export function ResumeDocument(props: DocumentProps) {
       <p className="rb-contact">
         {resume.contact.map((item, index) => (
           <span key={index}>
-            {index > 0 ? <span className="rb-sep"> | </span> : null}
+            {index > 0 ? <span className="rb-sep">{LAYOUT.separator}</span> : null}
             {item}
           </span>
         ))}
@@ -283,7 +317,7 @@ export function ResumeDocument(props: DocumentProps) {
   });
 
   return (
-    <article className="rb-page" style={pageStyle(resume)}>
+    <article className="rb-page" style={pageStyle(resume, props.format ?? "pdf")}>
       {header}
       {interactive ? (
         <SortableContext items={resume.sections.map((s) => `s:${s.id}`)} strategy={verticalListSortingStrategy}>
@@ -316,9 +350,10 @@ type PreviewProps = {
   actions: ResumeActions;
   selection: Selection;
   onSelect: (selection: Selection) => void;
+  format: ExportFormat;
 };
 
-export function Preview({ resume, actions, selection, onSelect }: PreviewProps) {
+export function Preview({ resume, actions, selection, onSelect, format }: PreviewProps) {
   const frame = useRef<HTMLDivElement>(null);
   const page = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -378,7 +413,14 @@ export function Preview({ resume, actions, selection, onSelect }: PreviewProps) 
       <div className="rb-scaler" style={{ width: PAGE_WIDTH_PX * scale, height: Math.max(height, PAGE_HEIGHT_PX) * scale }}>
         <div ref={page} className="rb-scaled" style={{ transform: `scale(${scale})` }}>
           <DndContext sensors={sensors} collisionDetection={siblingsOnly} onDragEnd={handleDragEnd}>
-            <ResumeDocument resume={resume} interactive scale={scale} selection={selection} onSelect={onSelect} />
+            <ResumeDocument
+              resume={resume}
+              format={format}
+              interactive
+              scale={scale}
+              selection={selection}
+              onSelect={onSelect}
+            />
           </DndContext>
           {breaks.map((y, index) => (
             <div key={y} className="rb-page-break" style={{ top: y }}>

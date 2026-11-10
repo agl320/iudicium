@@ -1,6 +1,6 @@
 /* Resume fonts: Computer Modern (LaTeX default) + LaTeX-friendly families. */
 @import url("https://cdn.jsdelivr.net/gh/aaaakshat/cm-web-fonts@latest/font/Serif/cmun-serif.css");
-@import url("https://fonts.googleapis.com/css2?family=Charis+SIL:ital,wght@0,400;0,700;1,400;1,700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,700;1,400;1,700&family=Carlito:ital,wght@0,400;0,700;1,400;1,700&family=Gelasio:ital,wght@0,400;0,700;1,400;1,700&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&family=Charis+SIL:ital,wght@0,400;0,700;1,400;1,700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap");
 
 /* --- Page ----------------------------------------------------------------- */
 
@@ -18,38 +18,54 @@
   font-feature-settings: "liga" 0, "clig" 0, "dlig" 0;
 }
 
+/* Spacing comes from LAYOUT (types.ts) through --rb-* variables, so the
+   .docx and .tex are built from the same numbers. */
 .rb-header {
-  margin-bottom: 0.15em;
+  margin-bottom: var(--rb-header-gap);
 }
 .rb-align-center {
   text-align: center;
 }
 .rb-name {
   margin: 0;
-  font-size: 2.05em;
+  font-size: var(--rb-name-size);
   font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: 0.01em;
+  line-height: var(--rb-name-leading);
+  letter-spacing: var(--rb-name-tracking);
 }
 .rb-contact {
-  margin: 0.25em 0 0;
+  margin: var(--rb-contact-gap) 0 0;
 }
 .rb-sep {
-  color: #777;
+  color: var(--rb-sep-color);
+  white-space: pre;
+}
+
+/* Flex columns: vertical margins add up instead of collapsing, the way the
+   .docx and .tex stack their gaps. */
+.rb-page,
+.rb-section,
+.rb-entry {
+  display: flex;
+  flex-direction: column;
 }
 
 .rb-section {
   margin-top: var(--rb-section-gap);
 }
 .rb-section-title {
-  margin: 0 0 0.3em;
-  padding-bottom: 0.08em;
-  border-bottom: 0.6pt solid #111;
-  font-size: 1.15em;
+  margin: 0 0 var(--rb-heading-after);
+  padding-bottom: var(--rb-heading-rule-pad);
+  border-bottom: var(--rb-rule) solid #111;
+  font-size: var(--rb-heading-size);
   font-weight: 700;
-  font-variant: small-caps;
-  letter-spacing: 0.04em;
-  line-height: 1.25;
+  letter-spacing: var(--rb-heading-tracking);
+  line-height: var(--rb-heading-leading);
+}
+
+/* Hand-made small caps (see smallCapsRuns). */
+.rb-sc {
+  font-size: var(--rb-small-caps);
 }
 
 .rb-entry + .rb-entry {
@@ -70,20 +86,20 @@
 
 .rb-points,
 .rb-lines {
-  margin: 0.1em 0 0;
+  margin: var(--rb-list-gap) 0 0;
   padding: 0;
   list-style: none;
 }
 /* Hanging bullet kept in normal text flow, so a PDF's text stream reads
    "• point" in order (an absolutely positioned marker is written last). */
 .rb-points > li {
-  padding-left: 1.1em;
-  text-indent: -0.8em;
+  padding-left: var(--rb-bullet-indent);
+  text-indent: calc(-1 * var(--rb-bullet-width));
 }
 .rb-points > li::before {
   content: "•";
   display: inline-block;
-  width: 0.8em;
+  width: var(--rb-bullet-width);
   text-indent: 0;
 }
 /* Drag handles still position against the point. */
@@ -296,6 +312,21 @@
 .rb-range {
   accent-color: #e11d74;
   cursor: pointer;
+}
+
+/* --- Format picker (shared sliding fill, see FormatPicker.tsx) ------------ */
+
+/* The real buttons stay plain; the fill is a clipped overlay on top. No press
+   nudge, so the two layers never drift apart. */
+.rb-fill-btn:active {
+  transform: none;
+}
+.rb-fill-copy {
+  border-color: #d61f6f;
+  background-origin: border-box;
+  background-repeat: no-repeat;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
 }
 
 /* --- Print (Export PDF) --------------------------------------------------------- */

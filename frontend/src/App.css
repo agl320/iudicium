@@ -230,22 +230,24 @@ body {
   animation: rb-panel-in 160ms ease-out;
 }
 
-/* --- Search button: the word collapses and a magnifier draws in ---------- */
-.search-btn {
+/* --- Morphing buttons (Search, Resume builder): the word collapses and an
+   icon draws in; on leave the letters rise back from below. ------------- */
+.morph-btn {
   position: relative;
   overflow: hidden;
 }
-.search-btn .sb-word {
+.morph-btn .mb-word {
   display: inline-flex;
+  white-space: pre;
 }
-.search-btn .sb-letter {
+.morph-btn .mb-letter {
   display: inline-block;
   transition:
     transform 320ms cubic-bezier(0.6, 0, 0.3, 1) var(--delay),
     opacity 220ms ease var(--delay),
     filter 320ms ease var(--delay);
 }
-.search-btn .sb-icon {
+.morph-btn .mb-icon {
   position: absolute;
   inset: 0;
   margin: auto;
@@ -253,47 +255,47 @@ body {
   height: 1.25rem;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.4;
+  stroke-width: 2.2;
   stroke-linecap: round;
+  stroke-linejoin: round;
   opacity: 0;
-  transform: scale(0.55) rotate(-35deg);
+  transform: scale(0.6) translateY(-2px);
   transition:
-    opacity 180ms ease 60ms,
-    transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 60ms;
+    opacity 140ms ease,
+    transform 200ms ease;
 }
-.search-btn .sb-lens,
-.search-btn .sb-handle {
+.morph-btn .mb-stroke {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-}
-.search-btn .sb-lens {
-  transition: stroke-dashoffset 360ms ease 90ms;
-}
-.search-btn .sb-handle {
-  transition: stroke-dashoffset 200ms ease 300ms;
+  transition: stroke-dashoffset 160ms ease;
 }
 
-.search-btn:hover .sb-letter,
-.search-btn:focus-visible .sb-letter,
-.search-btn.is-loading .sb-letter {
+.morph-btn:hover .mb-letter,
+.morph-btn:focus-visible .mb-letter,
+.morph-btn.is-loading .mb-letter {
   transform: translateX(var(--dx)) scale(0.35);
   opacity: 0;
   filter: blur(2px);
 }
-.search-btn:hover .sb-icon,
-.search-btn:focus-visible .sb-icon,
-.search-btn.is-loading .sb-icon {
+.morph-btn:hover .mb-icon,
+.morph-btn:focus-visible .mb-icon,
+.morph-btn.is-loading .mb-icon {
   opacity: 1;
   transform: scale(1) rotate(0deg);
+  transition:
+    opacity 180ms ease 60ms,
+    transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 60ms;
 }
-.search-btn:hover :is(.sb-lens, .sb-handle),
-.search-btn:focus-visible :is(.sb-lens, .sb-handle),
-.search-btn.is-loading :is(.sb-lens, .sb-handle) {
+.morph-btn:hover .mb-stroke,
+.morph-btn:focus-visible .mb-stroke,
+.morph-btn.is-loading .mb-stroke {
   stroke-dashoffset: 0;
+  transition: stroke-dashoffset 300ms ease var(--draw-delay);
 }
-/* Leaving: the icon shrinks away and the letters rise into place from just
-   below, left to right (instead of expanding back out of the centre). */
-@keyframes sb-letter-in {
+
+/* Way back (after hover, after a search finishes): letters rise in from
+   just below, left to right; no transitions so they never expand outward. */
+@keyframes mb-letter-in {
   from {
     transform: translateY(0.55em);
     opacity: 0;
@@ -305,30 +307,18 @@ body {
     filter: none;
   }
 }
-/* Always this way back: after a hover AND after a search finishes (e.g. on
-   page load). Transitions are off here so the letters never expand back out
-   of the centre; the animation alone brings them in. */
-.search-btn:not(:hover):not(:focus-visible):not(.is-loading) .sb-letter {
+.morph-btn:not(:hover):not(:focus-visible):not(.is-loading) .mb-letter {
   transition: none;
-  animation: sb-letter-in 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: mb-letter-in 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   animation-delay: calc(var(--order) + 90ms);
 }
-.search-btn:not(:hover):not(:focus-visible):not(.is-loading) .sb-icon {
-  transform: scale(0.6) translateY(-2px);
-  transition:
-    opacity 140ms ease,
-    transform 200ms ease;
-}
-.search-btn:not(:hover):not(:focus-visible):not(.is-loading) :is(.sb-lens, .sb-handle) {
-  transition: stroke-dashoffset 160ms ease;
-}
-.search-btn:active .sb-icon {
+.morph-btn:active .mb-icon {
   transform: scale(0.88) rotate(-8deg);
   transition-duration: 90ms;
   transition-delay: 0ms;
 }
-/* Searching: the lens looks around. */
-@keyframes sb-scan {
+/* Searching: the icon looks around. */
+@keyframes mb-scan {
   0%,
   100% {
     transform: translate(0, 0) rotate(0deg);
@@ -340,17 +330,15 @@ body {
     transform: translate(2px, 1px) rotate(10deg);
   }
 }
-.search-btn.is-loading .sb-icon {
-  animation: sb-scan 900ms ease-in-out infinite;
+.morph-btn.is-loading .mb-icon {
+  animation: mb-scan 900ms ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .search-btn .sb-letter,
-  .search-btn .sb-icon,
-  .search-btn .sb-lens,
-  .search-btn .sb-handle {
+  .morph-btn .mb-letter,
+  .morph-btn .mb-icon,
+  .morph-btn .mb-stroke {
     transition: opacity 150ms ease !important;
-    animation: none !important;
     transform: none !important;
     filter: none !important;
     animation: none !important;
@@ -405,4 +393,75 @@ body {
     border-color: #f5a3a3;
     background-color: #fee2e2;
   }
+}
+
+/* --- Stripe-style hover arrow: shaft fades in, tip slides forward. ------ */
+.hover-arrow {
+  flex: none;
+  position: relative;
+  top: 0.5px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.hover-arrow-left {
+  transform: scaleX(-1);
+}
+.hover-arrow-line {
+  opacity: 0;
+  transition: opacity 150ms cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.hover-arrow-tip {
+  transition: transform 150ms cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.hover-arrow-host:hover .hover-arrow-line,
+.hover-arrow-host:focus-visible .hover-arrow-line {
+  opacity: 1;
+}
+.hover-arrow-host:hover .hover-arrow-tip,
+.hover-arrow-host:focus-visible .hover-arrow-tip {
+  transform: translateX(3px);
+}
+
+/* --- Job board wordmark: huge wiggly Helvetica cropped by the nav bar. -- */
+@font-face {
+  font-family: "Iudicium Helvetica";
+  src: url("./fonts/Helvetica-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+.job-board {
+  --header-h: clamp(3.5rem, 8.25vw, 5.5rem);
+}
+.wordmark {
+  display: flex;
+  flex: 1 1 auto;
+  align-self: stretch;
+  align-items: flex-end;
+  min-width: 0;
+  /* The nav bar is the mask: anything above or below it is cut off. */
+  overflow: hidden;
+  /* Room for the displaced edge pixels so the left side is not shaved. */
+  margin-left: -0.375rem;
+  padding-left: 0.375rem;
+}
+.wordmark-text {
+  display: block;
+  /* Push the baseline below the bar so the letters run off its bottom. */
+  margin-bottom: -0.2em;
+  padding-right: 0.08em;
+  font-family: "Iudicium Helvetica", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(3.75rem, 15vw, 10rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(100deg, var(--color-accent) 10%, var(--color-accent-2) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: url(#wordmark-wiggle);
+  user-select: none;
 }

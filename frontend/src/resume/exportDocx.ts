@@ -1,5 +1,10 @@
-// Word export with the same layout: name + contact, ruled section headings,
-// title/date and subtitle/location lines with right tab stops, bullet lists.
+// Word export laid out like the page: same numbers (LAYOUT), exact line
+// heights, and a Word font shown on screen through a metric-compatible clone,
+// so line breaks and page count match the preview.
+//
+// Spacing mirrors the page's CSS, where margins add up (flex columns): every
+// gap is written as the next paragraph's "space before" and nothing uses
+// "space after", so Word's own rules for combining the two never matter.
 // Only the points in use are exported.
 
 import {
@@ -8,6 +13,7 @@ import {
   Document,
   HeadingLevel,
   LevelFormat,
+  LineRuleType,
   Packer,
   Paragraph,
   Tab,
@@ -15,25 +21,30 @@ import {
   TextRun,
 } from "docx";
 import { normalizeText } from "./exportLatex";
-import { parseRuns } from "./runs";
-import { FONTS, type Resume } from "./types";
+import { parseRuns, smallCapsRuns } from "./runs";
+import { effectiveFont, FONTS, LAYOUT, type Resume } from "./types";
 
 const TWIPS_PER_INCH = 1440;
 const PAGE_WIDTH_IN = 8.5;
+const twips = (pt: number) => Math.round(pt * 20);
+const halfPoints = (pt: number) => Math.round(pt * 2);
+// Paragraph border widths are in eighths of a point, spacing in whole points.
+const eighths = (pt: number) => Math.max(2, Math.round(pt * 8));
 
 export async function toDocx(resume: Resume): Promise<Blob> {
   const { style } = resume;
-  const font = FONTS[style.font].docx;
-  const size = Math.round(style.fontSize * 2); // half-points
-  const line = Math.round(240 * style.lineHeight); // 240 = single spacing
-  const rightTab = Math.round((PAGE_WIDTH_IN - 2 * style.margin) * TWIPS_PER_INCH);
-  const twips = (pt: number) => Math.round(pt * 20);
-  const tabs = [{ type: TabStopType.RIGHT, position: rightTab }];
+  const font = FONTS[effectiveFont(style.font, "docx")].docxName ?? "Times New Roman";
+  const size = style.fontSize;
+  const exact = (pt: number) => ({ line: twips(pt), lineRule: LineRuleType.EXACT });
+  const body = exact(size * style.lineHeight);
 
-  const runs = (text: string, extra: { italics?: boolean; bold?: boolean } = {}) =>
-    parseRuns(normalizeText(text)).map(
-      (run) => new TextRun({ text: run.text, bold: run.bold || extra.bold, italics: extra.italics }),
-    );
+  const namePt = size * LAYOUT.nameSize;
+  const headingPt = size * LAYOUT.headingSize;
+  const textWidth = Math.round((PAGE_WIDTH_IN - 2 * style.margin) * TWIPS_PER_INCH);
+  const tabs = [{ type: TabStopType.RIGHT, position: textWidth }];
+
+  const runs = (text: string) =>
+    parseRuns(normalizeText(text)).map((run) => new TextRun({ text: run.text, bold: run.bold }));
 
   const paragraphs: Paragraph[] = [];
   const headerAlign = style.headerAlign === "center" ? AlignmentType.CENTER : AlignmentType.LEFT;
@@ -41,42 +52,68 @@ export async function toDocx(resume: Resume): Promise<Blob> {
   paragraphs.push(
     new Paragraph({
       alignment: headerAlign,
-      spacing: { after: 40, line },
-      children: [new TextRun({ text: normalizeText(resume.name), bold: true, size: Math.round(size * 1.9) })],
-    }),
-    new Paragraph({
-      alignment: headerAlign,
-      spacing: { after: 0, line },
-      children: [new TextRun(resume.contact.map(normalizeText).filter(Boolean).join("  |  "))],
+      spacing: { before: 0, after: 0, ...exact(namePt * LAYOUT.nameLeading) },
+      children: [
+        new TextRun({
+          text: normalizeText(resume.name),
+          bold: true,
+          size: halfPoints(namePt),
+          characterSpacing: twips(namePt * LAYOUT.nameTracking),
+        }),
+      ],
     }),
   );
+  const contact = resume.contact.map(normalizeText).filter(Boolean);
+  if (contact.length) {
+    paragraphs.push(
+      new Paragraph({
+        alignment: headerAlign,
+        spacing: { before: twips(size * LAYOUT.contactGap), after: 0, ...body },
+        children: contact.flatMap((item, index) => [
+          ...(index > 0 ? [new TextRun({ text: LAYOUT.separator, color: LAYOUT.separatorColor.slice(1) })] : []),
+          new TextRun(item),
+        ]),
+      }),
+    );
+  }
 
-  for (const section of resume.sections) {
+  resume.sections.forEach((section, sectionIndex) => {
+    const above = (sectionIndex === 0 ? size * LAYOUT.headerGap : 0) + style.sectionGap;
     // A real "Heading 1" so parsers (Workday, Taleo, ...) see section boundaries.
     paragraphs.push(
       new Paragraph({
         heading: HeadingLevel.HEADING_1,
         keepNext: true,
-        spacing: { before: twips(style.sectionGap), after: 60, line },
-        border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "000000", space: 1 } },
-        children: [new TextRun(normalizeText(section.title))],
+        spacing: { before: twips(above), after: 0, ...exact(headingPt * LAYOUT.headingLeading) },
+        border: {
+          bottom: {
+            style: BorderStyle.SINGLE,
+            size: eighths(LAYOUT.rule),
+            color: "111111",
+            space: Math.round(headingPt * LAYOUT.headingRulePad),
+          },
+        },
+        children: smallCapsRuns(normalizeText(section.title)).map(
+          (run) => new TextRun({ text: run.text, ...(run.small ? { size: halfPoints(headingPt * LAYOUT.smallCaps) } : {}) }),
+        ),
       }),
     );
 
-    section.entries.forEach((entry, index) => {
-      const before = index > 0 ? twips(style.entryGap) : 0;
-      let first = true;
-      const gap = () => {
-        const value = first ? before : 0;
-        first = false;
-        return value;
+    section.entries.forEach((entry, entryIndex) => {
+      // Gap carried into the entry's first paragraph.
+      let pending = entryIndex === 0 ? headingPt * LAYOUT.headingAfter : style.entryGap;
+      const before = (extra = 0) => {
+        const value = pending + extra;
+        pending = 0;
+        return twips(value);
       };
+
       if (entry.title || entry.date) {
         paragraphs.push(
           new Paragraph({
             tabStops: tabs,
-            spacing: { before: gap(), after: 0, line },
             keepNext: true,
+            spacing: { before: before(), after: 0, ...body },
             children: [
               new TextRun({ text: normalizeText(entry.title), bold: true }),
               new TextRun({ children: [new Tab(), normalizeText(entry.date)] }),
@@ -88,7 +125,8 @@ export async function toDocx(resume: Resume): Promise<Blob> {
         paragraphs.push(
           new Paragraph({
             tabStops: tabs,
-            spacing: { before: gap(), after: 0, line },
+            keepNext: true,
+            spacing: { before: before(), after: 0, ...body },
             children: [
               new TextRun({ text: normalizeText(entry.subtitle), italics: true }),
               new TextRun({ children: [new Tab(), normalizeText(entry.location)], italics: true }),
@@ -96,27 +134,40 @@ export async function toDocx(resume: Resume): Promise<Blob> {
           }),
         );
       }
-      for (const point of entry.points.filter((p) => p.active && normalizeText(p.text))) {
+      const points = entry.points.filter((p) => p.active && normalizeText(p.text));
+      points.forEach((point, pointIndex) => {
+        const gap = pointIndex === 0 ? size * LAYOUT.listGap : style.pointGap;
         paragraphs.push(
           new Paragraph({
             ...(entry.plain ? {} : { numbering: { reference: "points", level: 0 } }),
-            spacing: { before: gap(), after: twips(style.pointGap), line },
+            // Like the page (break-inside: avoid): an entry stays on one page.
+            keepLines: true,
+            keepNext: pointIndex < points.length - 1,
+            spacing: { before: before(gap), after: 0, ...body },
             children: runs(point.text),
           }),
         );
-      }
+      });
     });
-  }
+  });
 
+  const margin = Math.round(style.margin * TWIPS_PER_INCH);
   const document = new Document({
     title: `${resume.name} - Resume`,
     creator: resume.name,
     description: "Resume",
     styles: {
       default: {
-        document: { run: { font, size } },
+        // kern: pair kerning from 1pt up, like the browser.
+        document: { run: { font, size: halfPoints(size), kern: 2 } },
         heading1: {
-          run: { font, size: Math.round(size * 1.2), bold: true, smallCaps: true, color: "000000" },
+          run: {
+            font,
+            size: halfPoints(headingPt),
+            bold: true,
+            color: "000000",
+            characterSpacing: twips(headingPt * LAYOUT.headingTracking),
+          },
           paragraph: { spacing: { before: 0, after: 0 } },
         },
       },
@@ -131,7 +182,12 @@ export async function toDocx(resume: Resume): Promise<Blob> {
               format: LevelFormat.BULLET,
               text: "•",
               alignment: AlignmentType.LEFT,
-              style: { paragraph: { indent: { left: 300, hanging: 200 } } },
+              style: {
+                run: { font },
+                paragraph: {
+                  indent: { left: twips(size * LAYOUT.bulletIndent), hanging: twips(size * LAYOUT.bulletWidth) },
+                },
+              },
             },
           ],
         },
@@ -142,12 +198,7 @@ export async function toDocx(resume: Resume): Promise<Blob> {
         properties: {
           page: {
             size: { width: PAGE_WIDTH_IN * TWIPS_PER_INCH, height: 11 * TWIPS_PER_INCH },
-            margin: {
-              top: Math.round(style.margin * TWIPS_PER_INCH),
-              bottom: Math.round(style.margin * TWIPS_PER_INCH),
-              left: Math.round(style.margin * TWIPS_PER_INCH),
-              right: Math.round(style.margin * TWIPS_PER_INCH),
-            },
+            margin: { top: margin, bottom: margin, left: margin, right: margin },
           },
         },
         children: paragraphs,
