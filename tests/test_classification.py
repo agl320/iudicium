@@ -51,11 +51,12 @@ class ConfigTests(unittest.TestCase):
         for name in (
             "NVIDIA", "AMD", "Intel", "Qualcomm", "Broadcom",
             "Microsoft", "Amazon", "Apple", "Google", "Stripe", "Mastercard",
-            "SAP", "Workday", "Electronic Arts", "TELUS", "lululemon", "Fortinet",
+            "SAP", "Workday", "TELUS", "lululemon", "Fortinet",
+            "Riot Games", "Discord", "Reddit", "CD PROJEKT RED",
         ):
             self.assertIn(name, enabled)
         # Smaller companies stay configured but switched off.
-        for name in ("Marvell", "Micron", "RAMP", "WealthSimple"):
+        for name in ("Marvell", "Micron", "RAMP", "WealthSimple", "Electronic Arts"):
             self.assertNotIn(name, enabled)
 
 
