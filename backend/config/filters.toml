@@ -12,8 +12,9 @@
 #   enabled         false = ignore this section
 #   titles          regexes; the title must also match one of these
 #   exclude_titles  regexes; ...and none of these
-#   regions         any of "north_america", "canada", "british_columbia"
-#                   (default ["north_america"])
+#   regions         any of "north_america", "canada", "british_columbia",
+#                   "australia" (default ["north_america"]). North America
+#                   also keeps "Remote", "2 Locations" and other unclear ones.
 #   allow_remote    count "Remote" / "Remote - Canada" as inside the region
 #   require_salary  only show postings that advertise pay
 #   min_salary      annual minimum in salary_currency (hourly pay x 2080)
@@ -27,9 +28,18 @@
 # All regexes are case-insensitive. Changing anything here re-checks every
 # stored posting on the next run.
 
-# HRIS / payroll / HR operations roles in British Columbia paying over
-# CA$70k. Titles are kept close to an "HR Analyst II / HRIS / payroll"
-# profile instead of every HR, recruiting and L&D job.
+# Tech internships in North America or Australia, or remote (plain "Remote";
+# "Remote - India" is out). Location only, so no detail pages are needed.
+[tech_intern]
+enabled = true
+regions = ["north_america", "australia"]
+allow_remote = true
+fetch_details = false
+
+# HRIS / payroll / HR operations roles in a British Columbia city, or remote
+# ("Remote", "Remote - Canada"), paying over CA$70k. Titles are kept close to
+# an "HR Analyst II / HRIS / payroll" profile instead of every HR, recruiting
+# and L&D job.
 [hr]
 enabled = true
 regions = ["british_columbia"]

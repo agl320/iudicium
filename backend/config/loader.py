@@ -19,7 +19,7 @@ DEFAULT_FILTERS_PATH = Path(__file__).with_name("filters.toml")
 _USE_DEFAULT: Any = object()
 
 EMPLOYMENT_REQUIREMENTS = {"intern", "full_time", "any"}
-REGIONS = {"north_america", "canada", "british_columbia"}
+REGIONS = {"north_america", "canada", "british_columbia", "australia"}
 SALARY_BASES = {"min", "mid", "max"}
 PROVIDERS = {
     "workday",

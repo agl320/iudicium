@@ -86,6 +86,9 @@ class ClassifierTests(unittest.TestCase):
             "Manufacturing Software Intern",
             "Intern, Facilities AI Engineering",
             "Associate Software Engineer",
+            "Software Engineering INTERN",
+            "INTERN_mNAND System Architecture",
+            "SAP China iXp Intern - HANA Cloud Microservice Developer - Xi'an",
         ):
             self.assertEqual(category(title), "tech_intern", title)
 

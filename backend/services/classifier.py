@@ -82,7 +82,9 @@ NOT_FULL_TIME_PATTERNS = [
 
 # Bump when backend/services/location.py or salary.py changes so stored rows
 # are re-checked.
-_LOCATION_RULES_VERSION = 2
+_LOCATION_RULES_VERSION = 3
+# Bump when the title clean-up below changes, for the same reason.
+_TITLE_RULES_VERSION = 2
 
 _STUDENT = [re.compile(p) for p in STUDENT_ROLE_PATTERNS]
 _DEFINITELY_STUDENT = [re.compile(p) for p in DEFINITELY_STUDENT_PATTERNS]
@@ -109,16 +111,22 @@ def normalize_employment_type(value: str | None) -> str:
     return ""
 
 
+def clean_title(title: str) -> str:
+    """Underscores count as spaces, so "INTERN_mNAND" still has the word
+    "intern" (regex \b treats "_" as part of a word)."""
+    return title.replace("_", " ")
+
+
 def is_student_role(title: str) -> bool:
     """Returns True if a job title appears to be a student/new grad role."""
-    normalized = title.lower()
+    normalized = clean_title(title).lower()
     return any(pattern.search(normalized) for pattern in _STUDENT)
 
 
 def is_full_time_role(posting: JobPosting) -> bool:
     if posting.employment_type and posting.employment_type != "full_time":
         return False
-    normalized = posting.title.lower()
+    normalized = clean_title(posting.title).lower()
     if any(pattern.search(normalized) for pattern in _DEFINITELY_STUDENT):
         return False
     return not any(pattern.search(normalized) for pattern in _NOT_FULL_TIME)
@@ -131,6 +139,7 @@ def is_intern_role(posting: JobPosting) -> bool:
 
 
 def title_matches_track(title: str, track: Track) -> bool:
+    title = clean_title(title)
     if any(p.search(title) for p in track.block_titles):
         return False
     if any(p.search(title) for p in track.priority_titles):
@@ -241,6 +250,7 @@ def rules_fingerprint(tracks: tuple[Track, ...]) -> str:
         "definitely_student": DEFINITELY_STUDENT_PATTERNS,
         "not_full_time": NOT_FULL_TIME_PATTERNS,
         "location": _LOCATION_RULES_VERSION,
+        "title": _TITLE_RULES_VERSION,
         "tracks": [
             {
                 "key": track.key,

@@ -1,4 +1,5 @@
-"""Decides whether a posting's free-text location is in North America.
+"""Decides whether a posting's free-text location is in a region (North
+America; Canada / British Columbia and Australia further down).
 
 Boards report locations inconsistently ("US-CA-Menlo Park", "Toronto, ON, CAN",
 "2 Locations", "Remote - India", ...), so a location is only rejected when it
@@ -270,8 +271,44 @@ def is_unknown_location(location: str | None) -> bool:
     return not text or is_multiple_locations(text)
 
 
+# --- Australia ------------------------------------------------------------------
+#
+# Positive match, like Canada / BC. Places that share a name with somewhere in
+# North America (Perth ON, Sydney NS, Melbourne FL) still count, which is
+# harmless while Australia is only ever combined with North America.
+
+_AUSTRALIA = re.compile(
+    r"\b(australian?|new\s+south\s+wales|queensland|tasmania|"
+    r"australian\s+capital\s+territory|northern\s+territory|"
+    r"sydney|melbourne|brisbane|perth|adelaide|canberra|hobart|darwin|"
+    r"gold\s+coast|parramatta|north\s+sydney)\b",
+    re.IGNORECASE,
+)
+# State/country codes, upper case only. WA, SA and NT are left out: they also
+# mean Washington, South Africa / Saudi Arabia and the Northwest Territories.
+_AUSTRALIA_CODES = re.compile(r"(?<![A-Za-z])(AUS|AU|NSW|VIC|QLD|TAS|ACT)(?![A-Za-z])")
+
+
+def is_australia(location: str | None) -> bool:
+    """Any part of a multi-location string ("Sydney; London, UK") counts."""
+    return any(_australia_part(part) for part in _parts(location or ""))
+
+
+def _australia_part(text: str) -> bool:
+    if not (_AUSTRALIA.search(text) or _AUSTRALIA_CODES.search(text)):
+        return False
+    # A city name alone is not enough when another country is named
+    # ("Perth, Scotland, UK").
+    other_country = any(
+        not m.group(1).lower().startswith("austral")
+        for m in _FOREIGN_COUNTRY_NAMES.finditer(text)
+    )
+    return not other_country or bool(re.search(r"australia", text, re.IGNORECASE))
+
+
 REGIONS = {
     "north_america": lambda location, allow_remote: is_north_america(location),
+    "australia": lambda location, allow_remote: is_australia(location),
     "canada": lambda location, allow_remote: is_canada(location, allow_remote=allow_remote),
     "british_columbia": lambda location, allow_remote: is_british_columbia(
         location, allow_remote=allow_remote

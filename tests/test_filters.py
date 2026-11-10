@@ -7,7 +7,7 @@ from backend.config.loader import ConfigError, DEFAULT_CONFIG_PATH, load_config
 from backend.models import JobPosting
 from backend.services.classifier import classify, match_track, needs_details
 from backend.services.details import Details, apply_details
-from backend.services.location import is_british_columbia, is_canada
+from backend.services.location import is_australia, is_british_columbia, is_canada
 from backend.services.salary import find_salaries, pick_salary, with_salary
 
 FILTERED = load_config()
@@ -45,7 +45,7 @@ class HrFilterTests(unittest.TestCase):
         self.assertEqual(hr.regions, ("british_columbia",))
         self.assertTrue(hr.require_salary)
         self.assertEqual(hr.min_salary, 70000)
-        self.assertIsNone(FILTERED.track("tech_intern").filter)
+        self.assertEqual(FILTERED.track("tech_intern").filter.regions, ("north_america", "australia"))
 
     def test_hris_and_payroll_roles_in_bc_with_pay(self):
         for title in (
@@ -186,6 +186,24 @@ class BritishColumbiaTests(unittest.TestCase):
             self.assertTrue(is_british_columbia(location), location)
             self.assertFalse(is_british_columbia(location, allow_remote=False), location)
         self.assertTrue(is_canada("Toronto, ON"))
+
+
+class TechInternRegionTests(unittest.TestCase):
+    def test_north_america_australia_and_remote(self):
+        for location in (
+            "Santa Clara, CA", "Toronto, ON", "Mexico City", "Sydney, NSW, Australia",
+            "Melbourne, VIC", "AUS-Sydney", "Brisbane", "Remote - Australia", "Remote",
+            "Sydney; London, UK", "2 Locations",
+        ):
+            self.assertEqual(classify(posting("Software Engineer Intern", location), FILTERED.tracks), "tech_intern", location)
+
+    def test_elsewhere(self):
+        for location in (
+            "Xi'an, China", "Tampere, Finland", "Remote - India", "London", "Singapore",
+            "Perth, Scotland, UK",
+        ):
+            self.assertEqual(classify(posting("Software Engineer Intern", location), FILTERED.tracks), "", location)
+        self.assertFalse(is_australia("Austin, TX"))
 
 
 class FilterConfigTests(unittest.TestCase):
