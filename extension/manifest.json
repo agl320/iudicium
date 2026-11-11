@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "iudicium autofill",
+  "version": "0.1.0",
+  "description": "Fills job applications from your iudicium profiles, one page at a time. You review and submit.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://*.myworkdayjobs.com/*", "https://*.myworkdaysite.com/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "iudicium autofill" },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": ["https://*.myworkdayjobs.com/*", "https://*.myworkdaysite.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
