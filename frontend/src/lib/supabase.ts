@@ -19,6 +19,8 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 export const AUTH_NOTICE_KEY = "iudicium.auth.notice";
 export const RECOVERY_KEY = "iudicium.auth.recovering";
+// Page a signed-out visitor was heading to; #/login returns there after sign-in.
+export const RETURN_KEY = "iudicium.auth.return";
 
 const PROJECT_REF = new URL(SUPABASE_URL).hostname.split(".")[0];
 const VERIFIER_KEY = `sb-${PROJECT_REF}-auth-token-code-verifier`;

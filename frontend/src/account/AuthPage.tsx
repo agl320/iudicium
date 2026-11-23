@@ -3,7 +3,7 @@ import { navigate } from "../hooks/useHashRoute";
 import { type FormEvent, useEffect, useState } from "react";
 import { useAuth } from "../auth/context";
 import { BRAND_FILL, SlidingTabs, type SlidingTabOption } from "../components/SlidingTabs";
-import { AUTH_NOTICE_KEY } from "../lib/supabase";
+import { AUTH_NOTICE_KEY, RETURN_KEY } from "../lib/supabase";
 import { resendConfirmation, sendMagicLink, sendPasswordReset, signIn, signUp } from "../resume/cloud";
 import { Card, Field, Message, Shell, SubmitButton } from "./Shell";
 
@@ -31,9 +31,12 @@ function AuthPageInner() {
   });
   const [unconfirmed, setUnconfirmed] = useState(false);
 
-  // Already signed in (or just signed in): go to the editor.
+  // Already signed in (or just signed in): back to the page that sent us here.
   useEffect(() => {
-    if (user) navigate("#/resume");
+    if (!user) return;
+    const back = sessionStorage.getItem(RETURN_KEY);
+    sessionStorage.removeItem(RETURN_KEY);
+    navigate(back && !back.startsWith("#/login") ? back : "#/");
   }, [user]);
 
   function switchMode(next: Mode) {
@@ -100,7 +103,7 @@ function AuthPageInner() {
   const copy = titles[mode];
 
   return (
-    <Shell wordmark>
+    <Shell>
       {mode === "signin" || mode === "signup" ? (
         <div className="mb-4">
           <SlidingTabs label="Account" options={TABS} value={mode} onChange={switchMode} stretch />
@@ -149,9 +152,6 @@ function AuthPageInner() {
           </div>
         </Card>
       </form>
-      <p className="mt-4 text-center text-xs text-neutral-400">
-        Or <a href="#/resume" className="underline-offset-2 hover:text-neutral-700 hover:underline">keep using the builder without an account</a>.
-      </p>
     </Shell>
   );
 }

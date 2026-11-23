@@ -1,17 +1,22 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, type ReactNode, Suspense, useEffect, useState } from "react";
 import "./App.css";
 import { fetchBackendStatus } from "./api/jobs";
 import { CategoryFilter } from "./components/CategoryFilter";
 import { JobList } from "./components/JobList";
 import { SearchForm } from "./components/SearchForm";
 import { SiteFooter, SiteHeader } from "./components/SiteHeader";
-import { useHashRoute } from "./hooks/useHashRoute";
+import { AuthProvider } from "./auth/AuthProvider";
+import { useAuth } from "./auth/context";
+import { navigate, useHashRoute } from "./hooks/useHashRoute";
+import { RETURN_KEY } from "./lib/supabase";
 import { type JobsRequest, useJobFeed } from "./hooks/useJobFeed";
 
 // Loaded on demand so the job board does not download the editor/account UI.
 const ResumeBuilder = lazy(() => import("./resume/ResumeBuilder"));
 const AuthPage = lazy(() => import("./account/AuthPage"));
 const AccountPage = lazy(() => import("./account/AccountPage"));
+const ApplicationsPage = lazy(() => import("./autofill/ApplicationsPage"));
+const TrendsPage = lazy(() => import("./trends/TrendsPage"));
 
 const LOGO_DEV_PUBLIC_KEY = import.meta.env.VITE_LOGO_DEV_PUBLIC_KEY;
 
@@ -51,7 +56,7 @@ function JobBoard() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <SiteHeader wordmark signIn />
+      <SiteHeader />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4">
         <div className="sticky top-[var(--header-h)] z-20 -mx-4 flex flex-col gap-3 border-b border-line bg-paper/80 px-4 py-3 backdrop-blur-md lg:flex-row lg:items-center">
@@ -94,27 +99,45 @@ const PAGES: Record<string, React.LazyExoticComponent<() => React.JSX.Element>> 
   "/resume": ResumeBuilder,
   "/login": AuthPage,
   "/account": AccountPage,
+  "/applications": ApplicationsPage,
+  "/trends": TrendsPage,
 };
+
+// Pages reachable while signed out; everything else needs an account.
+const PUBLIC = new Set(["/login"]);
+
+const loadingScreen = (
+  <div className="flex h-screen items-center justify-center text-sm text-neutral-500">Loading…</div>
+);
+
+/** Sends signed-out visitors to #/login, remembering where they were going. */
+function Gate({ route, children }: { route: string; children: ReactNode }) {
+  const { user, loading } = useAuth();
+  const blocked = !loading && !user && !PUBLIC.has(route);
+  useEffect(() => {
+    if (!blocked) return;
+    sessionStorage.setItem(RETURN_KEY, window.location.hash || "#/");
+    navigate("#/login");
+  }, [blocked]);
+  if (loading || blocked) return loadingScreen;
+  return <>{children}</>;
+}
 
 function App() {
   const route = useHashRoute().split("?")[0];
   const Page = PAGES[route];
   return (
-    <>
-      {Page ? (
-        <Suspense
-          fallback={
-            <div className="flex h-screen items-center justify-center text-sm text-neutral-500">
-              Loading…
-            </div>
-          }
-        >
-          <Page />
-        </Suspense>
-      ) : (
-        <JobBoard />
-      )}
-    </>
+    <AuthProvider>
+      <Gate route={route}>
+        {Page ? (
+          <Suspense fallback={loadingScreen}>
+            <Page />
+          </Suspense>
+        ) : (
+          <JobBoard />
+        )}
+      </Gate>
+    </AuthProvider>
   );
 }
 

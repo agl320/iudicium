@@ -38,6 +38,13 @@ export function AccountMenu({ user, beforeSignOut }: { user: User; beforeSignOut
               Account settings
             </a>
             <a
+              href="#/applications"
+              onClick={close}
+              className="block rounded-lg px-2.5 py-1.5 text-neutral-700 transition-colors hover:bg-neutral-50"
+            >
+              Applications
+            </a>
+            <a
               href="#/"
               onClick={close}
               className="block rounded-lg px-2.5 py-1.5 text-neutral-700 transition-colors hover:bg-neutral-50"

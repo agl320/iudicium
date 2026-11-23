@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../auth/context";
 import { MorphLabel } from "./MorphLabel";
 import { DOCUMENT_ICON } from "./morphIcons";
 
@@ -66,65 +67,43 @@ function Wordmark() {
 }
 
 /**
- * Whether supabase-js has a session saved in this browser. Read straight from
- * storage so the job board can pick "Sign in" vs "Account" without loading
- * the auth client.
+ * Top bar shared by every page except the resume editor (which has its own
+ * toolbar): the oversized, cropped wordmark (height: `--header-h`, App.css),
+ * page links and Account. `right` replaces the Resume builder
+ * button.
  */
-function hasStoredSession(): boolean {
-  try {
-    const ref = new URL(import.meta.env.VITE_SUPABASE_URL as string).hostname.split(".")[0];
-    return localStorage.getItem(`sb-${ref}-auth-token`) !== null;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Top bar shared by the job board and the account pages. `wordmark` swaps the
- * small logo for the oversized, cropped one (height: `--header-h`, App.css);
- * `signIn` adds a Sign in (or Account) link.
- */
-export function SiteHeader({
-  right,
-  wordmark = false,
-  signIn = false,
-}: {
-  right?: React.ReactNode;
-  wordmark?: boolean;
-  signIn?: boolean;
-}) {
+export function SiteHeader({ right }: { right?: React.ReactNode } = {}) {
+  const route = window.location.hash.replace(/^#/, "").split("?")[0] || "/";
+  const signedIn = Boolean(useAuth().user);
+  const link = (href: string, label: string) => (
+    <a
+      href={`#${href}`}
+      aria-current={route === href ? "page" : undefined}
+      className="btn btn-sm btn-ghost hidden shrink-0 sm:inline-flex aria-[current=page]:bg-wash"
+    >
+      {label}
+    </a>
+  );
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-paper/70 backdrop-blur-md">
-      <div
-        className={`mx-auto flex max-w-6xl items-center gap-2 px-4 ${wordmark ? "h-[var(--header-h)]" : "h-14"}`}
-      >
-        {wordmark ? (
-          <Wordmark />
-        ) : (
-          <a href="#/" className="mr-auto flex items-center gap-2 text-[15px] font-semibold tracking-tight">
-            <span className="inline-block size-4 rounded-[5px] bg-gradient-to-br from-[#e3277a] to-[#f97a2a] shadow-[inset_0_1px_0_rgb(255_255_255/0.3)]" aria-hidden="true" />
-            Iudicium
-          </a>
-        )}
-        <a href="#/" className="btn btn-sm btn-ghost hidden shrink-0 sm:inline-flex">
-          Jobs
-        </a>
-        {signIn ? (
-          hasStoredSession() ? (
-            <a href="#/account" className="btn btn-sm shrink-0">
+      <div className="mx-auto flex h-[var(--header-h)] max-w-6xl items-center gap-2 px-4">
+        <Wordmark />
+        {/* Signed out (the sign-in page) shows only the wordmark. */}
+        {signedIn ? (
+          <>
+            {link("/", "Jobs")}
+            {link("/applications", "Applications")}
+            {link("/trends", "Trends")}
+            <a href="#/account" aria-current={route === "/account" ? "page" : undefined} className="btn btn-sm shrink-0">
               Account
             </a>
-          ) : (
-            <a href="#/login" className="btn btn-sm shrink-0">
-              Sign in
-            </a>
-          )
+            {right ?? (
+              <a href="#/resume" aria-label="Resume builder" className="btn btn-sm btn-primary morph-btn shrink-0">
+                <MorphLabel text="Resume builder" paths={DOCUMENT_ICON} />
+              </a>
+            )}
+          </>
         ) : null}
-        {right ?? (
-          <a href="#/resume" aria-label="Resume builder" className="btn btn-sm btn-primary morph-btn shrink-0">
-            <MorphLabel text="Resume builder" paths={DOCUMENT_ICON} />
-          </a>
-        )}
       </div>
     </header>
   );
