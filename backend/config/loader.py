@@ -54,6 +54,14 @@ class Settings:
     max_notifications_per_company: int = 10
     # Detail pages (salary, full location list) read per company per run.
     max_detail_fetches_per_company: int = 40
+    # Requests to one host (e.g. wd5.myworkdayjobs.com, shared by many
+    # tenants): at most this many at once, this many seconds apart.
+    per_host_concurrency: int = 2
+    per_host_interval_seconds: float = 0.35
+    # Companies that fail with a temporary error (429, 5xx, timeout) get one
+    # more try at the end of the run, after this pause, one at a time.
+    retry_failed: bool = True
+    retry_delay_seconds: float = 45.0
 
 
 @dataclass(frozen=True)
@@ -109,6 +117,11 @@ class Track:
     # Titles matching these are never in the track, not even priority ones.
     block_titles: tuple[re.Pattern[str], ...]
     search_terms: tuple[str, ...]
+    # Workday: job-family facet labels that mean "this track" (e.g. Human
+    # Resources). When a tenant has one, a single facet query replaces the
+    # keyword searches, plus `facet_terms` for roles filed elsewhere.
+    facet_labels: re.Pattern[str] | None = None
+    facet_terms: tuple[str, ...] = ()
     # Stricter conditions from filters.toml; None = broad search (North America).
     filter: TrackFilter | None = None
 
@@ -127,6 +140,9 @@ class Company:
     provider: str
     domain: str
     enabled: bool = True
+    # Polled only by `python -m backend --local` on your own machine (boards
+    # that block GitHub's runners, e.g. Tesla); the scheduled run skips it.
+    local_only: bool = False
     # Provider specific keys (host, site, board, ...).
     options: dict[str, Any] = field(default_factory=dict)
 
@@ -197,6 +213,12 @@ def _parse_tracks(raw: dict[str, Any]) -> tuple[Track, ...]:
                 ),
                 block_titles=_compile(data.get("block_titles", []), f"tracks.{key}"),
                 search_terms=tuple(data.get("search_terms", [])),
+                facet_labels=(
+                    _compile([data["facet_labels"]], f"tracks.{key}.facet_labels")[0]
+                    if data.get("facet_labels")
+                    else None
+                ),
+                facet_terms=tuple(data.get("facet_terms", [])),
             )
         )
     return tuple(tracks)
@@ -275,6 +297,7 @@ def _parse_companies(raw: list[dict[str, Any]]) -> tuple[Company, ...]:
                 provider=provider,
                 domain=str(data.pop("domain", "")),
                 enabled=bool(data.pop("enabled", True)),
+                local_only=bool(data.pop("local_only", False)),
                 options=data,
             )
         )

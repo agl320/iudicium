@@ -14,6 +14,14 @@ store_uncategorized = false
 max_jobs_per_query = 200
 # How many companies are polled at the same time.
 concurrency = 6
+# Requests to one host at once / seconds between them (many Workday tenants
+# share a host, and it rate limits per client).
+per_host_concurrency = 2
+per_host_interval_seconds = 0.35
+# Retry companies that failed with 429 / 5xx / timeouts once more at the end
+# of the run, one at a time, after this pause.
+retry_failed = true
+retry_delay_seconds = 45
 # When a company/track pair has never been stored before (new company, new
 # track), store its current postings without sending Discord notifications.
 seed_silently = true
@@ -101,6 +109,10 @@ exclude_titles = [
   '(functional|implementation|technical) consultant', 'product (instructor|trainer)',
   'account (executive|manager)', '\bproduct (manager|marketing)',
 ]
+# Workday tenants with an HR job-family facet get one facet query instead of
+# the keyword list below, plus facet_terms for HR roles filed under IT/Finance.
+facet_labels = '\bhr\b|human (resources|capital)|\bpeople\b|talent|total rewards|compensation|payroll|recruit'
+facet_terms = ["HRIS", "payroll"]
 search_terms = [
   "HR",
   "human resources",
@@ -191,7 +203,8 @@ search_terms = ["intern", "internship", "student"]
 # ---------------------------------------------------------------------------
 # Companies
 #
-# Common keys: name, enabled, provider, domain (used for logos)
+# Common keys: name, enabled, provider, domain (used for logos),
+#   local_only (true = skipped by the scheduled run; polled by `--local`)
 #
 # provider = "workday"          host, site
 # provider = "greenhouse"       board
@@ -650,10 +663,12 @@ site = "snap"
 # Arm, ASML, TSMC, Citadel, Two Sigma.
 
 [[companies]]
-# Bot-protected site, but its careers JSON answers browser-like requests.
-# If the poller's host gets blocked this shows up as an HTTP 403 error.
+# Bot-protected: answers home/office connections but 403s GitHub's runners,
+# so the scheduled run skips it. Poll it from your own machine with
+# `python -m backend --local` (adds to the same database; see README).
 name = "Tesla"
 enabled = true
+local_only = true
 provider = "tesla"
 domain = "tesla.com"
 

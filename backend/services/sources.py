@@ -39,6 +39,7 @@ from backend.providers.tesla import TeslaClient
 from backend.providers.oraclecloud import OracleCloudClient
 from backend.providers.smartrecruiters import SmartRecruitersClient
 from backend.providers.workday.cxs import WorkdayCxsClient
+from backend.services.throttle import current_log
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +49,8 @@ WORKDAY_INTERN_LABEL = re.compile(r"intern|co-?op|student|trainee|apprentice", r
 WORKDAY_FULL_TIME_LABEL = re.compile(r"full[\s-]?time", re.I)
 WORKDAY_INTERN_FACETS = ("workerSubType", "jobFamilyGroup", "workerType")
 WORKDAY_FULL_TIME_FACETS = ("timeType",)
+# Where tenants put departments ("Human Resources", "People & Culture"...).
+WORKDAY_FAMILY_FACETS = ("jobFamilyGroup", "jobFamily")
 WORKDAY_PAGE_SIZE = 20
 
 AMD_API_URL = "https://careers.amd.com/api/jobs"
@@ -87,6 +90,19 @@ def _resolve_workday_facet(
         if parameter in found:
             return {parameter: found[parameter]}
     return {}
+
+
+def _facet_labels(facets: Any, chosen: dict[str, list[str]]) -> list[str]:
+    ids = {value for values in chosen.values() for value in values}
+    return [descriptor for _, descriptor, value_id in _walk_workday_facets(facets) if value_id in ids]
+
+
+def note(message: str) -> None:
+    """A line for this company's dry-run report (how it was queried)."""
+    log = current_log.get()
+    if log is not None:
+        log.notes.append(message)
+    logger.debug(message)
 
 
 async def _collect_workday(
@@ -156,6 +172,27 @@ async def fetch_workday(
             )
             hint = "full_time" if facets else ""
             queries = list(track.search_terms or [""])
+            family = overrides.get(f"{track.key}_family") or (
+                _resolve_workday_facet(available_facets, WORKDAY_FAMILY_FACETS, track.facet_labels)
+                if track.facet_labels
+                else {}
+            )
+            if family:
+                # One query for the department (AND full-time), plus a few
+                # keywords for roles filed elsewhere, instead of every keyword.
+                labels = _facet_labels(available_facets, family)
+                note(
+                    f"{track.key}: {next(iter(family))} facet ({', '.join(labels)[:80]}) "
+                    f"+ {len(track.facet_terms)} keyword(s) instead of {len(queries)}"
+                )
+                for query, applied in [("", {**facets, **family})] + [(t, facets) for t in track.facet_terms]:
+                    results = await _collect_workday(
+                        client, search_text=query, facets=applied, max_jobs=settings.max_jobs_per_query
+                    )
+                    postings.extend(replace(p, employment_type=hint) for p in results)
+                continue
+            if track.facet_labels:
+                note(f"{track.key}: no matching job-family facet; {len(queries)} keyword searches")
         else:
             facets, hint = overrides.get(track.key, {}), ""
             queries = list(track.search_terms or [""])

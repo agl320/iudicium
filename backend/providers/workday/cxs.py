@@ -11,6 +11,7 @@ import aiohttp
 from backend.providers.errors import WorkdayAPIError
 from backend.models import JobPosting
 from backend.config.config import COMPANY_URL_MAPPING
+from backend.services.throttle import RETRYABLE_STATUS, count_request, retry_delay, throttle
 
 
 class WorkdayCxsClient:
@@ -30,7 +31,11 @@ class WorkdayCxsClient:
         error_cls: type[RuntimeError] = WorkdayAPIError,
         company: str = "",
         company_url: str | None = None,
+        max_attempts: int = 5,
+        backoff_base: float = 2.0,
     ) -> None:
+        self.max_attempts = max(1, max_attempts)
+        self.backoff_base = backoff_base
         self.api_url = api_url
         self.headers = dict(headers or {})
         self.payload = dict(payload or {})
@@ -69,66 +74,52 @@ class WorkdayCxsClient:
         request_headers.setdefault("User-Agent", "iudicium/0.1")
 
         logger = logging.getLogger(__name__)
-        # Retry with exponential backoff and jitter for transient network/timeouts
-        max_attempts = 3
-        base_backoff = 0.5
+        # Workday rate limits per host (many tenants share wd1/wd5), so every
+        # request waits its turn at that host's gate. HTTP 429/5xx and network
+        # errors are retried, honouring Retry-After; other 4xx fail at once.
         body = None
-        for attempt in range(1, max_attempts + 1):
+        for attempt in range(1, self.max_attempts + 1):
             timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+            retry_after: str | None = None
             try:
-                logger.debug(
-                    "Workday request attempt %d/%d to %s (limit=%s offset=%s)",
-                    attempt,
-                    max_attempts,
-                    self.api_url,
-                    limit,
-                    offset,
-                )
-                async with aiohttp.ClientSession(timeout=timeout) as session:
-                    async with session.post(
-                        self.api_url,
-                        json=payload,
-                        headers=request_headers,
-                    ) as response:
-                        body = await response.text()
-                        if response.status >= 400:
-                            detail = f"HTTP {response.status} {response.reason}"
-                            if body:
-                                detail += f": {body}"
-                            raise self.error_cls(
-                                f"Workday API request failed: {detail}"
-                            )
-                logger.debug(
-                    "Workday request to %s succeeded on attempt %d",
-                    self.api_url,
-                    attempt,
-                )
-                break
-            except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
-                if attempt >= max_attempts:
-                    logger.error(
-                        "Workday request to %s failed after %d attempts: %s",
-                        self.api_url,
-                        attempt,
-                        exc,
-                    )
-                    # Surface last error after retries
-                    raise self.error_cls(
-                        f"Workday API request failed after {attempt} attempts: {exc}"
-                    ) from exc
-                # backoff with jitter
-                jitter = random.uniform(0, base_backoff)
-                backoff = base_backoff * (2 ** (attempt - 1)) + jitter
+                async with throttle.slot(self.api_url):
+                    count_request(self.api_url, retry=attempt > 1)
+                    async with aiohttp.ClientSession(timeout=timeout) as session:
+                        async with session.post(
+                            self.api_url,
+                            json=payload,
+                            headers=request_headers,
+                        ) as response:
+                            body = await response.text()
+                            status = response.status
+                            retry_after = response.headers.get("Retry-After")
+                            reason = response.reason
+                if status < 400:
+                    break
+                detail = f"HTTP {status} {reason}"
+                if status not in RETRYABLE_STATUS or attempt >= self.max_attempts:
+                    if body and status not in RETRYABLE_STATUS:
+                        detail += f": {body[:300]}"
+                    raise self.error_cls(f"Workday API request failed: {detail}")
+                delay = retry_delay(attempt, retry_after, base=self.backoff_base)
+                if status == 429:
+                    throttle.slow_down(self.api_url, delay)
                 logger.warning(
-                    "Workday request attempt %d/%d to %s failed: %s; backing off %.2fs",
-                    attempt,
-                    max_attempts,
-                    self.api_url,
-                    exc,
-                    backoff,
+                    "Workday %s from %s (attempt %d/%d); retrying in %.1fs",
+                    detail, self.api_url, attempt, self.max_attempts, delay,
                 )
-                await asyncio.sleep(backoff)
-                continue
+                await asyncio.sleep(delay)
+            except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
+                if attempt >= self.max_attempts:
+                    raise self.error_cls(
+                        f"Workday API request failed after {attempt} attempts: {exc or exc.__class__.__name__}"
+                    ) from exc
+                delay = retry_delay(attempt, base=self.backoff_base)
+                logger.warning(
+                    "Workday request to %s failed (%s, attempt %d/%d); retrying in %.1fs",
+                    self.api_url, exc or exc.__class__.__name__, attempt, self.max_attempts, delay,
+                )
+                await asyncio.sleep(delay)
 
         try:
             decoded = json.loads(body)
