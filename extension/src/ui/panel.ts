@@ -50,6 +50,9 @@ ul.results li:hover { background: #fafafa; }
 .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; }
 .filled .dot { background: #2e7d32; } .kept .dot { background: #607d8b; }
 .needs .dot { background: #f9a825; } .failed .dot { background: #c62828; }
+.suggest .dot { background: #1e88e5; }
+.apply { margin-top: 4px; padding: 3px 10px; border-radius: 6px; border: 1px solid #1e88e5; background: #e3f2fd; color: #0d47a1;
+  font-size: 12px; font-weight: 600; cursor: pointer; }
 .q { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .d { color: #555; font-size: 12px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .tag { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: #888; margin-left: 4px; font-weight: 500; }
@@ -68,7 +71,9 @@ ol.log .data { color: #888; }
 
 export type PanelHandlers = {
   onFill(overwrite: boolean): Promise<void>;
-  onRemember(): Promise<void>;
+  onLearn(): Promise<void>;
+  onApplySuggestion(item: ReportItem): Promise<void>;
+  onAutoLearn(on: boolean): void;
   onProfile(id: string): void;
   onOptions(): void;
   /** Extra lines at the top of a copied log (page, profile...). */
@@ -76,6 +81,7 @@ export type PanelHandlers = {
 };
 
 const ORDER = { needs: 0, failed: 1, kept: 2, filled: 3 } as const;
+const rank = (i: ReportItem) => ORDER[i.status] - (i.suggestion ? 0.5 : 0);
 const LOG_ROWS = 600;
 
 export class Panel {
@@ -84,6 +90,7 @@ export class Panel {
   private open = false;
   private busy = false;
   private overwrite = false;
+  private autoLearn = true;
   private tab: "results" | "log" = "results";
   private report: ReportItem[] = [];
   private toast = "";
@@ -121,6 +128,11 @@ export class Panel {
     if (visible && !this.host.isConnected) document.body.appendChild(this.host);
     if (!visible) this.host.remove();
     if (visible) this.render();
+  }
+
+  setAutoLearn(on: boolean) {
+    this.autoLearn = on;
+    this.render();
   }
 
   toggle() {
@@ -240,6 +252,16 @@ export class Panel {
     overwrite.checked = this.overwrite;
     overwrite.onchange = () => (this.overwrite = overwrite.checked);
     opt.append(overwrite, document.createTextNode("Replace values already on the page"));
+    const learnOpt = el("label", "opt");
+    learnOpt.title = "When you click Next / Save and Continue, remember what you answered (not profile, EEO or legal fields).";
+    const auto = document.createElement("input");
+    auto.type = "checkbox";
+    auto.checked = this.autoLearn;
+    auto.onchange = () => {
+      this.autoLearn = auto.checked;
+      this.handlers.onAutoLearn(auto.checked);
+    };
+    learnOpt.append(auto, document.createTextNode("Learn from my answers when I click Next"));
     const row = el("div", "row");
     const fill = el("button", "", this.busy ? "Filling…" : "Fill this page") as HTMLButtonElement;
     fill.disabled = this.busy;
@@ -254,12 +276,12 @@ export class Panel {
         this.render();
       }
     };
-    const remember = el("button", "secondary", "Remember my answers") as HTMLButtonElement;
-    remember.title = "Save what you typed into the yellow/red fields for next time";
-    remember.disabled = this.busy || !this.report.length;
-    remember.onclick = () => this.handlers.onRemember();
-    row.append(fill, remember);
-    controls.append(select, opt, row);
+    const learnBtn = el("button", "secondary", "Learn from this page") as HTMLButtonElement;
+    learnBtn.title = "Remember what's on this page now (also happens automatically on Next)";
+    learnBtn.disabled = this.busy;
+    learnBtn.onclick = () => this.handlers.onLearn();
+    row.append(fill, learnBtn);
+    controls.append(select, opt, learnOpt, row);
     return controls;
   }
 
@@ -288,11 +310,15 @@ export class Panel {
     }
     const count = (s: string) => this.report.filter((i) => i.status === s).length;
     panel.append(
-      el("div", "summary", `${count("filled")} filled · ${count("needs")} need you · ${count("failed")} failed · ${count("kept")} kept. Review, then click Next yourself.`),
+      el(
+        "div",
+        "summary",
+        `${count("filled")} filled · ${count("needs")} need you${this.report.some((i) => i.suggestion) ? ` (${this.report.filter((i) => i.suggestion).length} with a suggestion)` : ""} · ${count("failed")} failed · ${count("kept")} kept. Review, then click Next yourself.`,
+      ),
     );
     const list = el("ul", "results");
-    for (const item of [...this.report].sort((a, b) => ORDER[a.status] - ORDER[b.status])) {
-      const li = el("li", item.status);
+    for (const item of [...this.report].sort((a, b) => rank(a) - rank(b))) {
+      const li = el("li", item.suggestion ? `${item.status} suggest` : item.status);
       const body = el("div");
       const q = el("div", "q", item.question || "(no label)");
       q.title = item.question;
@@ -300,6 +326,14 @@ export class Panel {
       const d = el("div", "d", item.detail ?? "");
       d.title = item.detail ?? "";
       body.append(q, d);
+      if (item.suggestion) {
+        const apply = el("button", "apply", "Apply suggestion");
+        apply.onclick = (e) => {
+          e.stopPropagation();
+          void this.handlers.onApplySuggestion(item);
+        };
+        body.append(apply);
+      }
       li.append(el("div", "dot"), body);
       li.onclick = () => focusField(item.el);
       list.append(li);

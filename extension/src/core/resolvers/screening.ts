@@ -193,8 +193,14 @@ const rules: Rule[] = [
     if (!isBool(q) || q.kind === "text") return null;
     if (!/(experience|proficien\w*|familiar\w*|knowledge|skilled|comfortable|expertise|worked) (with|in|of|using)|do you (know|have|use)|can you (use|code|program|write)/.test(t)) return null;
     const known = ctx.profile.skills.filter((s) => mentionsWord(t, s));
-    if (!known.length) return null;
-    return yes(true, `in your skills: ${known.join(", ")}`, "medium");
+    if (known.length) return yes(true, `in your skills: ${known.join(", ")}`, "medium");
+    // Skills learned from earlier answers ("Experience with Kubernetes? Yes").
+    const learned = Object.entries(ctx.memory.skills).filter(([s]) => mentionsWord(t, s));
+    if (!learned.length) return null;
+    const all = learned.every(([, v]) => v);
+    const none = learned.every(([, v]) => !v);
+    if (!all && !none) return null;
+    return yes(all, `you answered ${all ? "yes" : "no"} for ${learned.map(([s]) => s).join(", ")} before`, "medium");
   },
 ];
 

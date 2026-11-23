@@ -2,6 +2,7 @@
 // control itself for standalone checkboxes).
 
 import type { Answer, AnswerValue, FieldDriver } from "../core/types";
+import type { FileData } from "../core/profile";
 import { isPlaceholder, matchOption, yesNoOption } from "../core/match";
 import { commitText, focusIn, focusOut, labelOf, realClick, sleep } from "../dom/events";
 import { logger } from "../debug/log";
@@ -42,8 +43,12 @@ const isChecked = (el: Element) => (el as HTMLInputElement).checked || el.getAtt
 const TEXT_SEL =
   'textarea, input:not([type]), input[type=text], input[type=email], input[type=tel], input[type=number], input[type=url], input[type=search]';
 
+/** Search boxes that belong to another widget (phone country pickers, comboboxes). */
+const HELPER = '.iti__search-input, [role="combobox"], [aria-autocomplete="list"]';
+
 function textInput(el: Element) {
-  return own<HTMLInputElement | HTMLTextAreaElement>(el, TEXT_SEL)[0];
+  const all = own<HTMLInputElement | HTMLTextAreaElement>(el, TEXT_SEL).filter((i) => !i.matches(HELPER));
+  return all.find((i) => i.getClientRects().length > 0) ?? all[0];
 }
 
 export const textDriver: FieldDriver = {
@@ -149,20 +154,22 @@ export const checkboxGroupDriver: FieldDriver = {
 // --- <select> ----------------------------------------------------------------------
 
 const select = (el: Element) => own<HTMLSelectElement>(el, "select")[0];
+/** Option texts; an empty value is the placeholder ("Select...", "Click here..."). */
+const optionTexts = (s: HTMLSelectElement) => [...s.options].map((o) => (o.value === "" && o.index === 0 ? "" : o.text));
 
 export const selectDriver: FieldDriver = {
   name: "select",
   detect: (el) => !!select(el),
   kind: (el) => (select(el).multiple ? "multi" : "choice"),
-  options: async (el) => [...select(el).options].map((o) => o.text),
+  options: async (el) => optionTexts(select(el)),
   read(el) {
     const s = select(el);
     const o = s.options[s.selectedIndex];
-    return o && !isPlaceholder(o.text) ? o.text : null;
+    return o && o.value !== "" && !isPlaceholder(o.text) ? o.text : null;
   },
   async write(el, answer) {
     const s = select(el);
-    const i = chooseIndex([...s.options].map((o) => o.text), answer);
+    const i = chooseIndex(optionTexts(s), answer);
     if (i < 0) {
       log.warn("select: no matching option", { wanted: wantsOf(answer), options: [...s.options].map((o) => o.text) });
       return { ok: false, note: "no matching option" };
@@ -179,10 +186,30 @@ export const selectDriver: FieldDriver = {
 
 // --- files -------------------------------------------------------------------------
 
+const fileInput = (el: Element) => own<HTMLInputElement>(el, "input[type=file]")[0];
+
+function toFile(f: FileData): File {
+  const bytes = Uint8Array.from(atob(f.data), (c) => c.charCodeAt(0));
+  return new File([bytes], f.name, { type: f.type });
+}
+
 export const fileDriver: FieldDriver = {
   name: "file",
   detect: (el) => own(el, 'input[type=file], [data-automation-id="file-upload-drop-zone"]').length > 0,
   kind: () => "file",
-  read: () => null,
-  write: async () => ({ ok: false, note: "attach by hand" }),
+  read: (el) => fileInput(el)?.files?.[0]?.name ?? null,
+  async write(el, answer) {
+    const input = fileInput(el);
+    if (!answer.file) return { ok: false, note: "attach by hand" };
+    if (!input) return { ok: false, note: "no file input" };
+    if (input.files?.[0]?.name === answer.file.name) return { ok: true, shown: answer.file.name, note: "already attached" };
+    // Same as a file picked in the dialog: set files, then announce it.
+    const dt = new DataTransfer();
+    dt.items.add(toFile(answer.file));
+    input.files = dt.files;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    await sleep(300);
+    return { ok: true, shown: answer.file.name };
+  },
 };

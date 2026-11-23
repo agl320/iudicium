@@ -13,14 +13,16 @@
       .status { font-size: 13px; color: #2e7d32; } .status.error { color: #c62828; }
       table { width: 100%; border-collapse: collapse; font-size: 13px; }
       td, th { text-align: left; padding: 6px; border-bottom: 1px solid #eee; vertical-align: top; }
+      .variants { color: #666; font-size: 12px; margin-top: 2px; }
       .note { color: #666; font-size: 13px; }
+      .button-like { font: inherit; padding: 6px 10px; border-radius: 6px; border: 1px solid #bbb; background: #fff; cursor: pointer; }
     </style>
   </head>
   <body>
     <h1>iudicium autofill: profiles</h1>
     <p class="note">
-      Prototype editor: each profile is JSON. Profiles will move into the iudicium site (with a resume per profile); for now
-      they live in this browser only. EEO values: gender male/female/nonbinary/decline, hispanicLatino yes/no/decline,
+      Each profile is JSON. Profiles sent from the iudicium site (Applications page) are built from a resume and show up
+      here; you can still edit them. They live in this browser only. EEO values: gender male/female/nonbinary/decline, hispanicLatino yes/no/decline,
       race text or decline, veteran not/protected/decline, disability yes/no/decline.
     </p>
     <div class="bar">
@@ -31,13 +33,29 @@
       <button id="save" class="primary">Save</button>
       <span id="status" class="status"></span>
     </div>
+    <div class="bar">
+      <span class="note">Resume to attach: <b id="resume-name">none</b></span>
+      <label class="button-like">Choose file… <input id="resume-file" type="file" accept=".pdf,.doc,.docx" hidden></label>
+      <button id="resume-clear">Remove</button>
+      <span class="note">(or send a resume from the iudicium site: Applications → Send to extension)</span>
+    </div>
     <textarea id="json" spellcheck="false"></textarea>
 
-    <h2>Saved answers for this profile</h2>
-    <p class="note">Added with “Remember my answers” on an application page. Employer names are stored as {company}.</p>
+    <h2>Learned answers for this profile</h2>
+    <p class="note">
+      Learned when you click Next on an application (or “Learn from this page”). Each answer keeps every wording of the
+      question it was given for, so similar questions match. “Kept” and “changed” count how often you left or corrected it
+      when it was filled. Employer names in long answers are stored as {company}.
+    </p>
     <table>
-      <thead><tr><th>Question</th><th>Answer</th><th>Scope</th><th></th></tr></thead>
+      <thead><tr><th>Question (and other wordings)</th><th>Answer</th><th>Scope</th><th>Used · kept · changed</th><th></th></tr></thead>
       <tbody id="saved"></tbody>
+    </table>
+    <h2>Learned skills</h2>
+    <p class="note">From yes/no questions like “Do you have experience with Kubernetes?”. Used together with the skills in your profile.</p>
+    <table>
+      <thead><tr><th>Skill</th><th>Answer</th><th></th></tr></thead>
+      <tbody id="skills"></tbody>
     </table>
     <script src="options.js"></script>
   </body>

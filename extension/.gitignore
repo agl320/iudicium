@@ -1,4 +1,4 @@
 node_modules/
 dist/
-test/panel.png
-test/panel-log.png
+test/.build/
+test/*.png

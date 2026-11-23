@@ -1,4 +1,5 @@
-// Bundles the extension into dist/ (load it via chrome://extensions → Load unpacked).
+// Bundles the extension into dist/ (load it via chrome://extensions → Load unpacked),
+// plus test bundles in test/.build/.
 import * as esbuild from "esbuild";
 import { copyFileSync, mkdirSync } from "node:fs";
 
@@ -7,21 +8,26 @@ mkdirSync("dist", { recursive: true });
 copyFileSync("manifest.json", "dist/manifest.json");
 copyFileSync("src/options/options.html", "dist/options.html");
 
-const ctx = await esbuild.context({
-  entryPoints: {
-    content: "src/ext/content.ts",
-    background: "src/ext/background.ts",
-    options: "src/options/options.ts",
-    harness: "src/harness.ts", // tests only
+const builds = [
+  {
+    entryPoints: {
+      content: "src/ext/content.ts",
+      background: "src/ext/background.ts",
+      bridge: "src/ext/bridge.ts",
+      options: "src/options/options.ts",
+    },
+    outdir: "dist",
+    format: "iife",
+    target: "chrome120",
   },
-  outdir: "dist",
-  bundle: true,
-  format: "iife",
-  target: "chrome120",
-  logLevel: "info",
-});
-if (watch) await ctx.watch();
+  // Tests: engine + Workday adapter in the page, and the learning core in Node.
+  { entryPoints: { harness: "src/harness.ts" }, outdir: "test/.build", format: "iife", target: "chrome120" },
+  { entryPoints: { learn: "src/core/learn/api.ts" }, outdir: "test/.build", format: "esm", platform: "node", outExtension: { ".js": ".mjs" } },
+];
+
+const contexts = await Promise.all(builds.map((b) => esbuild.context({ bundle: true, logLevel: "info", ...b })));
+if (watch) await Promise.all(contexts.map((c) => c.watch()));
 else {
-  await ctx.rebuild();
-  await ctx.dispose();
+  await Promise.all(contexts.map((c) => c.rebuild()));
+  await Promise.all(contexts.map((c) => c.dispose()));
 }

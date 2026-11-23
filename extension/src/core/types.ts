@@ -5,7 +5,9 @@
 // Adapters and drivers know about the page but not where answers come from;
 // resolvers know about the profile but never touch the page.
 
-import type { Profile, SavedAnswer } from "./profile";
+import type { Profile } from "./profile";
+import type { Memory } from "./learn/memory";
+import type { FileData } from "./profile";
 
 export type QuestionKind =
   | "text" // one-line input
@@ -44,7 +46,13 @@ export type CanonicalKey =
   | "website"
   | "previousWorker"
   | "source"
-  | "todayDate";
+  | "todayDate"
+  | "location" // "City, Region, Country" (single box)
+  | "currentCompany"
+  | "currentTitle"
+  | "school" // single-entry education questions (Workday's repeating sections are separate)
+  | "degree"
+  | "fieldOfStudy";
 
 export type Question = {
   id: string;
@@ -57,7 +65,7 @@ export type Question = {
 };
 
 export type Confidence = "high" | "medium" | "low";
-export type AnswerSource = "profile" | "eeo" | "screening" | "saved" | "guard" | "ai" | "draft";
+export type AnswerSource = "profile" | "eeo" | "screening" | "saved" | "guard" | "ai" | "draft" | "file";
 export type AnswerValue = string | string[] | boolean;
 
 export type Answer = {
@@ -69,11 +77,20 @@ export type Answer = {
   evidence?: string; // shown in the review panel
   /** Claimed but left for the person (legal text, consent...). */
   manual?: boolean;
+  /** Not confident enough to fill: offered as a one-click suggestion, and
+   *  doesn't stop later resolvers from answering. */
+  suggest?: boolean;
+  /** For file inputs: the document to attach. */
+  file?: FileData;
+  conceptId?: string; // memory concept it came from
+  score?: number; // similarity, for memory answers
 };
 
 export type Context = {
   profile: Profile;
-  saved: SavedAnswer[];
+  memory: Memory;
+  /** Other profiles' memories: suggestions only. */
+  otherMemories?: Memory[];
   company: string; // employer, as best the adapter can tell
   today: Date;
 };
@@ -113,8 +130,10 @@ export type ReportItem = {
   confidence?: Confidence;
   detail?: string; // what was written, or why not
   el?: Element;
-  /** For "remember my answers". */
-  fingerprintable?: boolean;
   field?: Field;
+  answer?: Answer; // what the resolvers decided
+  suggestion?: Answer; // offered, not filled
   written?: AnswerValue; // what the field showed right after filling
+  /** May be learned from (not profile, EEO, legal, files). */
+  learnable?: boolean;
 };

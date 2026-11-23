@@ -111,7 +111,7 @@ const idOf = (el: Element) => {
   return ids.get(el)!;
 };
 
-async function toField(el: Element): Promise<Field | null> {
+async function toField(el: Element, readOptions = true): Promise<Field | null> {
   const driver = driverFor(el, DRIVERS);
   if (!driver) {
     log.warn(`no driver for field “${questionText(el)}”`, { id: fieldId(el) });
@@ -128,7 +128,7 @@ async function toField(el: Element): Promise<Field | null> {
   };
   const area = el.querySelector("textarea");
   if (area?.maxLength && area.maxLength > 0) question.maxLength = area.maxLength;
-  if ((kind === "choice" || kind === "multi") && driver.options) question.options = await driver.options(el);
+  if ((kind === "choice" || kind === "multi") && driver.options && (readOptions || driver.name !== "listbox")) question.options = await driver.options(el);
   log.debug(`field “${question.text}”`, {
     id: fieldId(el) || undefined,
     kind,
@@ -137,7 +137,7 @@ async function toField(el: Element): Promise<Field | null> {
     required: question.required || undefined,
     options: question.options,
   });
-  if ((kind === "choice" || kind === "multi") && driver.options && !question.options?.length) {
+  if (readOptions && (kind === "choice" || kind === "multi") && driver.options && !question.options?.length) {
     log.warn(`could not read options for “${question.text}”`);
   }
   return { el, driver, question };
@@ -307,13 +307,13 @@ export const workday: SiteAdapter = {
     log.debug(`company from URL: ${found || "(none)"}`);
     return found;
   },
-  async fields(doc, skip) {
+  async fields(doc, skip, opts) {
     const out: Field[] = [];
     const root = pageRoot(doc);
     const list = containers(root).filter((c) => !skip?.has(c));
     log.debug(`${list.length} new field container(s) on “${this.pageLabel(doc)}”`, { root: root.getAttribute("data-automation-id") ?? root.tagName });
     for (const c of list) {
-      const f = await toField(c);
+      const f = await toField(c, opts?.readOptions !== false);
       if (f) out.push(f);
     }
     return out;

@@ -43,9 +43,17 @@ export type Eeo = {
   disability: "yes" | "no" | Decline;
 };
 
+/** A document kept with a profile (base64), attached to upload fields. */
+export type FileData = { name: string; type: string; data: string; updated?: string };
+
 export type Profile = {
   id: string;
   label: string; // "Tech intern", "HRIS"...
+  /** Set when the profile was sent from the iudicium site (built from a resume). */
+  origin?: { resumeId?: string; resumeTitle?: string; syncedAt: string };
+  /** Resume to attach on applications (from the site's .docx export, or picked in options). */
+  resumeFile?: FileData;
+  coverLetterFile?: FileData;
   person: {
     firstName: string;
     middleName?: string;
@@ -79,16 +87,6 @@ export type Profile = {
   skills: string[];
   experience: Experience[];
   education: Education[];
-};
-
-/** An answer the person gave once and asked to reuse. */
-export type SavedAnswer = {
-  fingerprint: string; // normalized question, employer replaced by {company}
-  question: string; // as last seen
-  kind: string;
-  value: string | string[] | boolean;
-  company?: string; // set = only for this employer
-  updated: string;
 };
 
 export function sampleProfile(): Profile {

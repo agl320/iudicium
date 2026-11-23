@@ -3,6 +3,7 @@
 
 import type { Answer, CanonicalKey, Context, Question, Resolver } from "../types";
 import { norm } from "../match";
+import { LEVEL_NAMES } from "../profile";
 
 const LABELS: [RegExp, CanonicalKey][] = [
   [/^(legal )?(first|given) name/, "firstName"],
@@ -17,10 +18,16 @@ const LABELS: [RegExp, CanonicalKey][] = [
   [/^(phone|mobile|cell|telephone)( number)?$/, "phone"],
   [/address line 1|street address|^address$/, "addressLine1"],
   [/address line 2/, "addressLine2"],
+  [/^(current )?location$|^(current )?location \(?city|where are you (currently )?(located|based)|where do you (currently )?(live|reside)|where (do|will) you plan (on|to) work(ing)? from|^city,? (state|province)/, "location"],
   [/^(city|town)/, "city"],
+  [/^current (company|employer|organi[sz]ation)|^(most recent|current or (most )?recent) (company|employer)/, "currentCompany"],
+  [/^current (job )?title|^current (role|position)|^(most recent|current or (most )?recent) (job )?title/, "currentTitle"],
   [/^(state|province|region)|state\/province/, "region"],
   [/postal|zip/, "postalCode"],
-  [/^country( of residence)?$|^country\/(territory|region)/, "country"],
+  [/^country( of residence)?$|^country\/(territory|region)|(current )?country of residence|country (in which|where) you (are )?(currently )?(located|live|reside|based)|which country (are you|do you) (currently )?(located|live|reside|based|in)/, "country"],
+  [/^(school|university|college|institution)( name)?$|which (university|school|college)|(university|school|college) (are you|did you) (currently )?(attend|attending|last attend)/, "school"],
+  [/^degree( type)?$|degree (are you|did you) (pursuing|obtain|earn)|which degree/, "degree"],
+  [/^(field of study|major|discipline|area of study)$|what is your (field of study|major)/, "fieldOfStudy"],
   [/linkedin/, "linkedin"],
   [/github/, "github"],
   [/website|portfolio|personal (site|url)/, "website"],
@@ -83,6 +90,31 @@ function answerFor(key: CanonicalKey, q: Question, ctx: Context): Answer | null 
       return v(ctx.profile.links.github);
     case "website":
       return v(ctx.profile.links.website ?? ctx.profile.links.github);
+    case "location": {
+      // Search boxes match the longest form they offer; typed boxes get "City, Region".
+      const full = [a.city, a.region, a.country].filter(Boolean).join(", ");
+      return v(q.kind === "text" ? `${a.city}, ${a.region}` : full, {
+        candidates: [full, `${a.city}, ${a.region}`, `${a.city}, ${a.country}`, a.city].filter((x) => x && !x.startsWith(",")),
+      });
+    }
+    case "currentCompany":
+    case "currentTitle": {
+      const jobs = ctx.profile.experience;
+      const now = jobs.find((e) => !e.end) ?? [...jobs].sort((x, y) => (y.end ?? "").localeCompare(x.end ?? ""))[0];
+      if (!now) return null;
+      return v(key === "currentCompany" ? now.company : now.title, { evidence: `profile: ${now.end ? "most recent" : "current"} job` });
+    }
+    case "school":
+    case "degree":
+    case "fieldOfStudy": {
+      // Most recent (or current) program.
+      const ed = [...ctx.profile.education].sort((x, y) => (y.end ?? "9999").localeCompare(x.end ?? "9999"))[0];
+      if (!ed) return null;
+      const evidence = `profile: ${ed.school}`;
+      if (key === "school") return v(ed.school, { evidence, candidates: q.kind === "text" ? [] : ["Other"] });
+      if (key === "degree") return v(ed.degree, { evidence, candidates: [...LEVEL_NAMES[ed.level], "Other"] });
+      return v(ed.field, { evidence, candidates: q.kind === "text" ? [] : ["Other"] });
+    }
     case "todayDate":
       return v(iso(ctx.today), { evidence: "today" });
     case "previousWorker":

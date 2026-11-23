@@ -26,6 +26,9 @@ function category(q: Question): Category | null {
   return null;
 }
 
+/** Self-identification questions are never learned or sent anywhere. */
+export const isEeo = (q: Question) => category(q) !== null;
+
 /** Option index for the profile's answer in a category, or -1. */
 function pick(cat: Category, options: string[], ctx: Context): number {
   const e = ctx.profile.eeo;

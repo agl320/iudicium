@@ -4,7 +4,10 @@
 import type { Answer, Resolver } from "../types";
 
 const LEGAL =
-  /\b(certify|attest|acknowledg\w*|consent\w*|signature|e-?sign\w*|terms (?:and|&) conditions|terms of (?:use|service)|privacy (?:policy|notice|statement)|non-?compete|non-?solicit\w*|i agree|agree to|opt[- ]?in|receive (?:sms|text|whatsapp|marketing))\b/i;
+  /\b(certify|attest|acknowledg\w*|consent\w*|signature|e-?sign\w*|terms (?:and|&) conditions|terms of (?:use|service)|privacy (?:policy|notice|statement)|non-?compete|non-?solicit\w*|i agree|agree to|opt[- ]?in|receive (?:sms|text|whatsapp|marketing)|newsletter|subscribe|talent (?:community|network|pool)|marketing (?:emails?|communications?))\b/i;
+
+/** Legal/consent wording: never filled, never learned. */
+export const isLegal = (text: string) => LEGAL.test(text);
 
 export const guardResolver: Resolver = {
   name: "guard",

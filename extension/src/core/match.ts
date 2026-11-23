@@ -82,17 +82,6 @@ export function isPlaceholder(option: string): boolean {
   return /^(select one|select|choose|--|please select)/i.test(norm(option)) || norm(option) === "";
 }
 
-/** Question text reduced to a reusable key: lowercase, no punctuation, the
- *  employer's name replaced by {company}. */
-export function fingerprint(question: string, company: string): string {
-  let s = norm(question);
-  const names = companyVariants(company);
-  for (const n of names) s = s.split(n).join("{company}");
-  // "employed by Acme Corp?" when the adapter didn't know the company name
-  s = s.replace(/\b(employed by|worked (?:for|at)|work(?:ing)? (?:for|at)|employee of|employees of|join|joining) ([a-z0-9&.,' -]{2,40}?)(\?|$| before| previously| in the past)/, "$1 {company}$3");
-  return s.replace(/[^a-z0-9{}+# ]/g, " ").replace(/\s+/g, " ").trim();
-}
-
 export function companyVariants(company: string): string[] {
   const c = norm(company);
   if (!c) return [];
@@ -102,10 +91,13 @@ export function companyVariants(company: string): string[] {
 
 /** "Have you worked for Acme Corp as an intern?" → "Acme Corp". */
 export function employerIn(question: string): string | null {
+  // Up to four words, stopping at the next clause.
   const m = question.match(
-    /(?:employed by|worked (?:for|at)|employee of|employees of|work(?:ing)? (?:for|at))\s+(.+?)(?=\s+(?:as|in|before|previously|during|or|and|at any)\b|\s*[?,*.(]|$)/i,
+    /(?:employed by|worked (?:for|at)|employee of|employees of|work(?:ing)? (?:for|at)|join(?:ing)?)\s+([^\s?,*.(]+(?:\s+[^\s?,*.(]+){0,3}?)(?=\s+(?:as|in|before|previously|during|or|and|at any|without|with|to|because|if|who|that|for|on|since|within)\b|\s*[?,*.(]|$)/i,
   );
-  return m ? m[1].trim() : null;
+  const name = m?.[1].trim();
+  if (!name || /^(us|you|them|it|our|this|the|a|an)(\s+(company|organization|team|firm|employer))?$/i.test(name)) return null;
+  return name;
 }
 
 export function mentionsWord(text: string, word: string): boolean {

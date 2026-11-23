@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import { chromium } from "playwright-core";
 
 const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
-const HARNESS = read("../dist/harness.js");
+const HARNESS = read("./.build/harness.js");
 const MOCKS = read("./mocks.js");
 const TODAY = "2026-11-10T12:00:00";
 
@@ -178,28 +178,66 @@ test("Self Identify (synthetic): name, today's date, disability form", async () 
   assert.deepEqual([await checked(page, "#d1"), await checked(page, "#d2"), await checked(page, "#d3")], [false, false, true]);
 });
 
-test("Remember my answers: what you type is reused, for any employer", async () => {
+const choose = async (page, button, option) => {
+  await page.click(button);
+  await page.click(`.mock-listbox [role="option"]:text("${option}")`);
+};
+
+test("Learning: your answers come back at another employer, even reworded", async () => {
   const page = await open("application-questions.html");
   await fill(page);
   // You answer the ones it couldn't.
-  await page.fill("#q9", "Acme builds the robots I grew up wanting to program.");
-  await page.click("#q15");
-  await page.click('.mock-listbox [role="option"]:text("3rd year")');
-  const saved = await page.evaluate(() => window.__iud.remember());
-  const why = saved.find((s) => /why do you want/.test(s.fingerprint));
-  assert.ok(why, JSON.stringify(saved));
-  assert.equal(why.fingerprint, "why do you want to work at {company}");
-  assert.ok(saved.some((s) => s.value === "3rd year"));
-  // Only what you typed: answers the rules worked out stay live (they depend on the employer/date).
-  assert.equal(saved.length, 2, JSON.stringify(saved.map((s) => s.question)));
+  await page.fill("#q9", "Acme Corp builds the robots I grew up wanting to program.");
+  await choose(page, "#q15", "3rd year");
+  await choose(page, "#q13", "Yes");
+  const { memory, changes } = await page.evaluate(() => window.__iud.learn());
+  // Only what you answered; rule answers stay live (they depend on employer/date).
+  assert.equal(memory.concepts.length, 3, JSON.stringify(changes));
+  assert.equal(memory.skills.kubernetes, true);
+  const why = memory.concepts.find((c) => c.kind === "longtext");
+  assert.equal(why.answer, "{company} builds the robots I grew up wanting to program.");
 
-  // Another employer asks the same things.
-  const other = await open("application-questions.html", { transform: (html) => html.replaceAll("Acme Corp", "Globex") });
-  const r = await fill(other, { saved });
+  // Another employer, different wording.
+  const other = await open("application-questions.html", {
+    transform: (html) =>
+      html
+        .replaceAll("Acme Corp", "Globex")
+        .replace("Why do you want to work at Globex?", "Why are you interested in joining Globex?")
+        .replace("Which of the following best describes your current year of study?", "What is your current year of study?")
+        .replace("Do you have experience with Kubernetes?", "Are you proficient in Kubernetes?"),
+  });
+  const r = await fill(other, { memory });
   assert.equal(r.company, "Globex");
-  assert.equal(await value(other, "#q9"), "Acme builds the robots I grew up wanting to program.");
-  assert.equal(item(r, /Why do you want/).source, "saved");
+  assert.equal(await value(other, "#q9"), "Globex builds the robots I grew up wanting to program.");
+  assert.equal(item(r, /interested in joining/).confidence, "medium"); // long answers are always reviewed
   assert.equal(await shown(other, "#q15"), "3rd year");
+  assert.equal(await shown(other, "#q13"), "Yes");
+});
+
+test("Learning: a correction replaces the remembered answer", async () => {
+  const page = await open("application-questions.html");
+  await fill(page);
+  await choose(page, "#q15", "3rd year");
+  let { memory } = await page.evaluate(() => window.__iud.learn());
+
+  const again = await open("application-questions.html");
+  await fill(again, { memory });
+  assert.equal(await shown(again, "#q15"), "3rd year");
+  await choose(again, "#q15", "4th year"); // you change it
+  ({ memory } = await again.evaluate((m) => window.__iud.learn(m), memory));
+  const c = memory.concepts.find((x) => x.variants.some((v) => /year of study/.test(v.text)));
+  assert.equal(c.answer, "4th year");
+  assert.equal(c.stats.corrected, 1);
+});
+
+test("Learning: pages you fill entirely by hand are learned too", async () => {
+  const page = await open("application-questions.html");
+  // No autofill at all: you answer, then Next.
+  await choose(page, "#q15", "2nd year");
+  await page.fill("#q8", "3 weeks");
+  const { memory } = await page.evaluate(() => window.__iud.learn());
+  const answers = memory.concepts.map((c) => c.answer).sort();
+  assert.deepEqual(answers, ["2nd year", "3 weeks"]);
 });
 
 test("debug log explains a failure", async () => {

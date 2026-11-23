@@ -1,10 +1,13 @@
 // Fill one page: the adapter finds fields, resolvers answer them, drivers
 // write them, and every field ends up in the report. Never submits.
+// Afterwards, observe() turns what the page shows into learning input.
 
 import type { Answer, AnswerValue, Context, Field, ReportItem, Resolver } from "./types";
-import { fingerprint, norm } from "./match";
-import type { SavedAnswer } from "./profile";
+import { norm } from "./match";
 import { RESOLVERS } from "./resolvers";
+import { isEeo } from "./resolvers/eeo";
+import { isLegal } from "./resolvers/guard";
+import type { Observation } from "./learn/memory";
 import { logger, snapshot } from "../debug/log";
 
 const log = logger("engine");
@@ -15,8 +18,9 @@ export interface SiteAdapter {
   active(doc: Document): boolean;
   pageLabel(doc: Document): string;
   company(doc: Document): string;
-  /** Fields on the current page that the generic pipeline should handle. */
-  fields(doc: Document, skip?: Set<Element>): Promise<Field[]>;
+  /** Fields on the current page that the generic pipeline should handle.
+   *  `readOptions: false` skips opening dropdowns (when only reading values). */
+  fields(doc: Document, skip?: Set<Element>, opts?: { readOptions?: boolean }): Promise<Field[]>;
   /** Site-specific work before the generic pass (e.g. repeating sections). */
   prefill?(doc: Document, ctx: Context, report: ReportItem[], opts: FillOptions): Promise<void>;
 }
@@ -28,32 +32,52 @@ export type FillOptions = {
 
 export async function resolveAll(fields: Field[], ctx: Context, resolvers = RESOLVERS): Promise<Map<string, Answer>> {
   const answers = new Map<string, Answer>();
+  const suggestions = new Map<string, Answer>();
   let left = fields.map((f) => f.question);
   for (const r of resolvers) {
     if (!left.length) break;
     const got = await r.resolve(left, ctx);
-    const claimed = left.filter((q) => got.has(q.id) && !answers.has(q.id));
-    for (const [id, a] of got) if (!answers.has(id)) answers.set(id, a);
+    const claimed = left.filter((q) => got.has(q.id) && !got.get(q.id)!.suggest);
+    for (const [id, a] of got) {
+      if (a.suggest) {
+        if (!suggestions.has(id)) suggestions.set(id, a); // keep looking for a real answer
+      } else if (!answers.has(id)) answers.set(id, a);
+    }
     if (claimed.length) {
-      log.debug(`resolver ${r.name}: ${claimed.length}/${left.length}`, claimed.map((q) => {
-        const a = got.get(q.id)!;
-        return `${short(q.text)} → ${a.manual ? "(manual)" : display(a.value)} [${a.confidence}]`;
-      }));
+      log.debug(
+        `resolver ${r.name}: ${claimed.length}/${left.length}`,
+        claimed.map((q) => {
+          const a = got.get(q.id)!;
+          return `${short(q.text)} → ${a.manual ? "(manual)" : display(a.value)} [${a.confidence}]`;
+        }),
+      );
     }
     left = left.filter((q) => !answers.has(q.id));
   }
-  if (left.length) log.debug(`no resolver answered ${left.length}`, left.map((q) => `${short(q.text)} (${q.kind})`));
+  for (const q of left) {
+    const s = suggestions.get(q.id);
+    if (s) answers.set(q.id, s);
+  }
+  if (left.length) log.debug(`no resolver answered ${left.length}`, left.map((q) => `${short(q.text)} (${q.kind})${suggestions.has(q.id) ? " · has suggestion" : ""}`));
   return answers;
 }
 
-export const display = (v: AnswerValue | null) => (v === null ? "" : Array.isArray(v) ? v.join(", ") : String(v));
+export const display = (v: AnswerValue | null | undefined) => (v === null || v === undefined ? "" : Array.isArray(v) ? v.join(", ") : String(v));
 
 function same(current: AnswerValue, answer: Answer): boolean {
   if (typeof current === "boolean" || typeof answer.value === "boolean") return String(current) === String(answer.value);
   return norm(display(current)) === norm(display(answer.value));
 }
 
-const isEmpty = (v: AnswerValue | null) => v === null || v === false || v === "" || (Array.isArray(v) && !v.length);
+export const isEmpty = (v: AnswerValue | null) => v === null || v === false || v === "" || (Array.isArray(v) && !v.length);
+
+/** Fields whose answers may be learned: not profile facts, EEO, legal text or files. */
+export function learnable(field: Field, answer?: Answer): boolean {
+  const q = field.question;
+  if (q.key || q.kind === "file" || q.kind === "unknown") return false;
+  if (answer && (answer.source === "profile" || answer.source === "eeo" || answer.source === "guard")) return false;
+  return !isEeo(q) && !isLegal(q.text);
+}
 
 /** Write one answer, describe what happened, and log it. */
 export async function apply(field: Field, answer: Answer | undefined, opts: FillOptions): Promise<ReportItem> {
@@ -72,18 +96,16 @@ export async function apply(field: Field, answer: Answer | undefined, opts: Fill
 
 async function applyInner(field: Field, answer: Answer | undefined, opts: FillOptions): Promise<ReportItem> {
   const q = field.question;
-  const base: ReportItem = { question: q.text, kind: q.kind, status: "needs", el: field.el, field };
-  if (!answer) {
-    return { ...base, detail: q.required ? "Required: no answer found" : "No answer found", fingerprintable: true };
-  }
-  const meta = { source: answer.source, confidence: answer.confidence };
+  const base: ReportItem = { question: q.text, kind: q.kind, status: "needs", el: field.el, field, learnable: learnable(field, answer) };
+  if (!answer) return { ...base, detail: q.required ? "Required: no answer found" : "No answer found" };
+  if (answer.suggest) return { ...base, suggestion: answer, detail: `Suggestion: ${display(answer.value)} · ${answer.evidence ?? ""}` };
+  const meta = { source: answer.source, confidence: answer.confidence, answer };
   if (answer.manual) return { ...base, ...meta, detail: answer.evidence };
-  const reusable = answer.source === "saved" || answer.source === "screening" || answer.source === "ai";
   const current = field.driver.read(field.el);
   // Facts from your profile replace Workday's defaults and resume-parser guesses;
   // inferred answers defer to what's already there unless asked to replace.
   if (!isEmpty(current) && !opts.overwrite && answer.source !== "profile" && !same(current!, answer)) {
-    return { ...base, ...meta, status: "kept", detail: `Kept “${display(current)}” (profile: “${display(answer.value)}”)`, fingerprintable: reusable };
+    return { ...base, ...meta, status: "kept", detail: `Kept “${display(current)}” (would answer “${display(answer.value)}”)` };
   }
   let result;
   try {
@@ -98,7 +120,6 @@ async function applyInner(field: Field, answer: Answer | undefined, opts: FillOp
     ...meta,
     status: result.ok ? "filled" : "failed",
     detail: result.ok ? `${result.shown ?? display(answer.value)}${why}` : `${result.note ?? "could not fill"} (wanted “${display(answer.value)}”)`,
-    fingerprintable: reusable || !result.ok,
     written: result.ok ? (field.driver.read(field.el) ?? undefined) : undefined,
   };
 }
@@ -111,7 +132,8 @@ export async function fillPage(adapter: SiteAdapter, doc: Document, ctx: Context
   log.info(`Fill started: ${adapter.name} · ${adapter.pageLabel(doc)}`, {
     company: ctx.company || "(unknown)",
     profile: ctx.profile.label,
-    saved: ctx.saved.length,
+    learned: ctx.memory.concepts.length,
+    skills: Object.keys(ctx.memory.skills).length,
     overwrite: !!opts.overwrite,
   });
   if (adapter.prefill) await log.time("site-specific sections", () => adapter.prefill!(doc, ctx, report, opts));
@@ -128,39 +150,40 @@ export async function fillPage(adapter: SiteAdapter, doc: Document, ctx: Context
   log.info(`Fill finished in ${Math.round(performance.now() - start)} ms`, {
     filled: count("filled"),
     needs: count("needs"),
+    suggestions: report.filter((i) => i.suggestion).length,
     failed: count("failed"),
     kept: count("kept"),
+    fromMemory: report.filter((i) => i.status === "filled" && i.source === "saved").length,
   });
   return report;
 }
 
-/** What you typed into fields the autofill couldn't (or got wrong), as saved
- *  answers. Profile, EEO and legal fields are never saved. */
-export function harvest(report: ReportItem[], company: string, perCompany = false): SavedAnswer[] {
-  const out: SavedAnswer[] = [];
+/** What the page shows now, as learning input: fields from the fill report
+ *  (with what was filled, so corrections are recognized) plus fields the
+ *  autofill never touched (answered entirely by you). */
+export function observe(report: ReportItem[], untouched: Field[], company: string): Observation[] {
+  const out: Observation[] = [];
   for (const item of report) {
-    if (!item.fingerprintable || !item.field) continue;
-    if (item.kind === "file" || item.kind === "unknown") continue;
-    const value = item.field.driver.read(item.field.el);
-    if (value === null || isEmpty(value)) continue; // untouched
-    // Unchanged since the autofill wrote it: nothing new to learn.
-    if (item.written !== undefined && display(value) === display(item.written)) continue;
+    const f = item.field;
+    if (!f || !item.learnable || item.status === "kept" || !f.el.isConnected) continue;
+    const value = f.driver.read(f.el);
+    if (value === null || isEmpty(value)) continue;
     out.push({
-      fingerprint: fingerprint(item.question, company),
-      question: item.question,
-      kind: item.kind,
+      question: f.question.text,
+      kind: f.question.kind,
+      options: f.question.options,
       value,
-      company: perCompany ? company : undefined,
-      updated: new Date().toISOString(),
+      company,
+      conceptId: item.status === "filled" ? item.answer?.conceptId : undefined,
+      filled: item.status === "filled" ? item.written : undefined,
+      filledBy: item.status === "filled" ? item.answer?.source : undefined,
     });
   }
-  log.info(`Remember: ${out.length} answer(s)`, out.map((s) => `${s.fingerprint} → ${display(s.value)}`));
+  for (const f of untouched) {
+    if (!learnable(f)) continue;
+    const value = f.driver.read(f.el);
+    if (value === null || isEmpty(value)) continue;
+    out.push({ question: f.question.text, kind: f.question.kind, options: f.question.options, value, company });
+  }
   return out;
-}
-
-export function mergeSaved(existing: SavedAnswer[], incoming: SavedAnswer[]): SavedAnswer[] {
-  const key = (s: SavedAnswer) => `${s.fingerprint}|${s.kind}|${s.company ?? ""}`;
-  const map = new Map(existing.map((s) => [key(s), s]));
-  for (const s of incoming) map.set(key(s), s);
-  return [...map.values()];
 }
